@@ -1,0 +1,94 @@
+{% extends '_seo.html' %}
+{% load static i18n qux %}
+{% lineless %}
+
+{% block application_name %}Qux{% endblock %}
+{% block apple_mobile_web_app_title %}Qux{% endblock %}
+{% block icon %}{% static '/logo/financialmachines_rect.svg' %}{% endblock %}
+
+{% block keywords %}{{ meta.keywords }}{% endblock %}
+
+{% block title_prefix %}Qux{% endblock %}
+
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
+{% block og_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
+{% block twitter_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
+
+{% block title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
+{% block og_title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
+
+{# Facebook Open Graph #}
+{% block og_url_prefix %}https://qux.dev{% endblock %}
+{% block og_site_name %}Qux{% endblock %}
+{% block og_title_prefix %}Qux{% endblock %}
+{% block og_image %}https://qux.dev/static/logo/logo.png{% endblock %}
+
+{# Twitter Card #}
+{% block twitter_site %}@quxdev{% endblock %}
+{% block twitter_site_id %}@quxdev{% endblock %}
+{% block twitter_title_prefix %}Qux{% endblock %}
+{% block twitter_creator %}@quxdev{% endblock %}"/>
+{% block twitter_creator_id %}@quxdev{% endblock %}"/>
+{% block twitter_image %}https://qux.dev/static/logo/logo.png{% endblock %}
+
+{% block canonical_prefix %}https://qux.dev{% endblock %}
+
+{% block og_url %}{{ meta.canonical }}{% endblock %}
+{% block canonical %}{{ meta.canonical }}{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/fontawesome.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/quxidget.css' %}">
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+{% endblock %}
+
+<style>
+#loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #fff;
+  z-index: 99;
+  opacity: 0.7;
+}
+#loading > div {
+  margin: auto;
+}
+</style>
+
+{% block customstyle %}
+{{ block.super }}
+{% endblock %}
+
+{% block widgets %}
+<div id="loading" class="d-none">
+  <div id="spinner" class="fa-5x">
+    <i class="fas fa-spinner fa-spin"></i>
+  </div>
+</div>
+{% endblock %}
+
+{% block navbar %}
+{% include '_navbar.html' %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.cookie.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/quxidget.js' %}"></script>
+{% endblock %}
+
+<script>
+$('document').ready(function () {
+  $('[data-toggle=tooltip]').tooltip();
+})
+</script>
+
+{% block customjs %}
+{% endblock %}
+{% endlineless %}

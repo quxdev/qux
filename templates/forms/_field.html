@@ -1,0 +1,44 @@
+{% load quxform %}
+{% for hidden in form.hidden_fields %} {{ hidden }} {% endfor %}
+
+{% for field in form.visible_fields %}
+  <!-- {{ field }} -->
+  <div class="form-group row">
+    <div class="col">
+    {% if field|is_checkbox %}
+
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <div class="input-group-text foo-border pl-3" style="width: 44px;">
+          {{ field }}
+        </div>
+      </div>
+      <input type="text" class="form-control foo-border" value="{{ field.label|upper }}" readonly>
+    </div>
+
+    {% else %}
+    {% if field.name == 'password' and changepassword %}
+      <div class="bg-warning">
+      <div class="d-inline-block float-right text-danger">
+        <a href="/password-reset/">Forgot password?</a>
+      </div>
+      </div>
+    {% endif %}
+    <label for="{{ field.id }}" class="form-label">
+      {{ field.label }}
+      {% if field.field.required %}
+        <span style="color: red;">*</span>
+      {% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+      <small class="input-tip-text text-muted">{{ field.help_text }}</small>
+    {% endif %}
+    {% for error in field.errors %}
+      <small class="input-err-text text-muted">{{ error }}</small>
+    {% endfor %}
+
+    {% endif %}
+    </div>
+  </div>
+{% endfor %}

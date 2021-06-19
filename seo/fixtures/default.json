@@ -1,0 +1,43 @@
+[
+  {
+    "model": "qux_seo.seosite",
+    "pk": 1,
+    "fields": {
+      "dtm_created": "2021-04-15T00:00:00Z",
+      "dtm_updated": "2021-04-15T00:00:00Z",
+      "site": 1,
+      "name": "qux.dev",
+      "title": "",
+      "domain": "qux.dev",
+      "twitter": "quxdev"
+    }
+  },
+  {
+    "model": "qux_seo.seopage",
+    "pk": 1,
+    "fields": {
+      "dtm_created": "2021-04-15T00:00:00Z",
+      "dtm_updated": "2021-04-15T00:00:00Z",
+      "site": 1,
+      "canonical": "/",
+      "page_name": "qux.dev",
+      "page_title": "",
+      "description": "",
+      "keywords": "quxdev django"
+    }
+  },
+  {
+    "model": "qux_seo.seopage",
+    "pk": 2,
+    "fields": {
+      "dtm_created": "2021-04-15T00:00:00Z",
+      "dtm_updated": "2021-04-15T00:00:00Z",
+      "site": 1,
+      "canonical": "/sitemap/",
+      "page_name": null,
+      "page_title": null,
+      "description": null,
+      "keywords": "quxdev sitemap"
+    }
+  }
+]

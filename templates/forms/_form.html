@@ -1,0 +1,61 @@
+{% extends '_blank.html' %}
+{% load static i18n %}
+
+{% if canonical %}
+{% block og_url %}{{ canonical }}{% endblock %}
+{% block canonical %}{{ canonical }}{% endblock %}
+{% endif %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "css/forms.css" %}">
+{% endblock stylesheets %}
+
+{% block customstyle %}
+  {{ block.super }}
+  <style>
+  body {
+      background: {% block body-md-background %}{% endblock body-md-background %} !important;
+  }
+  #form-container {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /*
+  @media screen and (min-width: 768px) and (max-width: 991px) {
+    #form-container { max-width: 736px; }
+  }
+  */
+  @media screen and (max-width: 767px) {
+    body { background: unset !important; }
+    #form-container { box-shadow: none !important; }
+  }
+  </style>
+{% endblock customstyle %}
+
+{% block rawcontent %}
+  {{ block.super }}
+
+  {# I do not remember what form_prefix intent is #}
+  <div class="my-md-4">
+  {% block form_prefix %}{% endblock form_prefix %}
+  </div>
+
+  {% block form_container %}
+  <div class="container-md my-4"><div id="form-container" class="px-md-4">
+
+  {# form_title is what is displayed #}
+  <h1 class="pb-4">{% block form_title %}{% endblock form_title %}</h1>
+
+  {# typically include '_form.html' #}
+  {% block form_body %}
+  {% endblock form_body %}
+  </div></div>
+  {% endblock form_container %}
+
+  <div class="container-md my-4"><div id="form-container" class="px-md-4">
+  {% block form_belowthefold %}
+  {% endblock form_belowthefold %}
+  </div></div>
+{% endblock %}
