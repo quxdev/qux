@@ -50,6 +50,54 @@ class CoreModel(models.Model):
         result = cls.objects.get(id=pk)
         return result.to_dict()
 
+    def settag(self, tag: str):
+        tags = []
+        if self.tags:
+            tags = [x.strip() for x in self.tags.split(',')]
+        tags.append(tag)
+        tags.sort()
+        self.tags = ",".join(tags)
+        self.save()
+
+    def deltag(self, tag: str):
+        tags = []
+        if self.tags:
+            tags = [x.strip() for x in self.tags.split(',')]
+        if tag in tags:
+            tags.remove(tag)
+        tags.sort()
+        self.tags = ",".join(tags)
+        self.save()
+
+    def hastag(self, tag: str):
+        tags = []
+        if self.tags and self.tags != '':
+            tags = [x.strip() for x in self.tags.split(',')]
+        if tag in tags:
+            return True
+        return False
+
+    def gettags(self):
+        tags = []
+        if self.tags and self.tags != '':
+            tags = [x.strip() for x in self.tags.split(',')]
+        if "" in tags:
+            tags.remove("")
+        return tags
+
+    @classmethod
+    def gettaglist(cls):
+        tags = cls.objects.all()\
+            .exclude(models.Q(tags__isnull=True) | models.Q(tags=''))\
+            .values_list('tags', flat=True)\
+            .distinct()
+        tags = ",".join(tags)
+        tags = [x.strip() for x in tags.split(',')]
+        tags = list(set(tags))
+        if "" in tags:
+            tags.remove("")
+        return tags
+
 
 class CoreModelAdmin(admin.ModelAdmin):
     list_display = ('dtm_created', 'dtm_updated',)

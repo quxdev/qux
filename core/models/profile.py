@@ -15,8 +15,19 @@ class Company(CoreModel):
     url = models.URLField(max_length=1024, **default_null_blank)
 
     class Meta:
+        db_table = 'qux_company'
         verbose_name = 'Company'
         verbose_name_plural = 'Companies'
+
+
+class CompanyUser(CoreModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'qux_company_users'
+        verbose_name = 'Company:User'
+        verbose_name_plural = 'Company:User'
 
 
 class Profile(CoreModel):
@@ -33,6 +44,7 @@ class Profile(CoreModel):
     title = models.CharField(max_length=255, **default_null_blank)
 
     class Meta:
+        db_table = 'qux_user_profile'
         verbose_name = 'User Profile'
 
 

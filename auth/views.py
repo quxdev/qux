@@ -13,7 +13,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
-from qux_seo.mixin import SEOMixin
+from qux.seo.mixin import SEOMixin
 from .forms import ChangePasswordForm
 from .forms import CustomAuthenticationForm
 from .forms import CustomPasswordResetForm
