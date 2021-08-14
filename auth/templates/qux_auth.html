@@ -1,0 +1,28 @@
+{% extends 'forms/_form.html' %}
+
+{% block customstyle %}
+  {{ block.super }}
+  <style>
+  body {
+      background: {% block body-md-background %}{% endblock body-md-background %} !important;
+  }
+  #form-container {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  @media screen and (max-width: 767px) {
+    body { background: unset !important; }
+    #form-container { box-shadow: none !important; }
+  }
+  .h1, h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 0.75em;
+  }
+  .h2, h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  </style>
+{% endblock customstyle %}

@@ -46,25 +46,40 @@
 {% block rawcontent %}
   {{ block.super }}
 
-  {# I do not remember what form_prefix intent is #}
-  <div class="my-md-4">
-  {% block form_prefix %}{% endblock form_prefix %}
-  </div>
-
   {% block form_container %}
-  <div class="container-md my-4"><div id="form-container" class="px-md-4">
+  <div class="container-md p-4">
+    <div id="form-container">
 
-  {# form_title is what is displayed #}
-  <h1>{% block form_title %}{% endblock form_title %}</h1>
+    {# form_title is what is displayed #}
+    <h1>{% block form_title %}{{ title }}{% endblock form_title %}</h1>
 
-  {# typically include '_form.html' #}
-  {% block form_body %}
-  {% endblock form_body %}
-  </div></div>
+    {# typically include '_form.html' #}
+    {% block form_body %}
+    <form method="post">
+      {% csrf_token %}
+
+      {% include 'forms/_field.html' %}
+
+      <!-- submit -->
+      <div class="row my-4">
+        <div class="col">
+          <button type="submit" class="btn btn-outline-primary btn-block py-2">
+            {% if submit_btn_text %}
+              {{ submit_btn_text }}
+            {% else %}
+              Submit
+            {% endif %}
+          </button>
+        </div>
+      </div>
+    </form>
+    {% endblock form_body %}
+    </div>
+  </div>
   {% endblock form_container %}
 
-  <div class="container-md my-4"><div id="form-container" class="px-md-4">
+  <section id="below-the-fold">
   {% block form_belowthefold %}
   {% endblock form_belowthefold %}
-  </div></div>
+  </section>
 {% endblock %}
