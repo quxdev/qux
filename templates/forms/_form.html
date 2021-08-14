@@ -31,6 +31,15 @@
     body { background: unset !important; }
     #form-container { box-shadow: none !important; }
   }
+  .h1, h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 0.75em;
+  }
+  .h2, h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
   </style>
 {% endblock customstyle %}
 
@@ -46,7 +55,7 @@
   <div class="container-md my-4"><div id="form-container" class="px-md-4">
 
   {# form_title is what is displayed #}
-  <h1 class="pb-4">{% block form_title %}{% endblock form_title %}</h1>
+  <h1>{% block form_title %}{% endblock form_title %}</h1>
 
   {# typically include '_form.html' #}
   {% block form_body %}
