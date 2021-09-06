@@ -73,6 +73,7 @@ class ChangePasswordForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        print(args, kwargs, "\n\n context printing")
         self.user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
 

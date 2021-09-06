@@ -13,19 +13,14 @@
           {{ field }}
         </div>
       </div>
-      <label for="{{ field.id }}" class="sr-only"></label>
-      <input type="text"
-             id="{{ field.id }}"
-             class="form-control foo-border"
-             value="{{ field.label|upper }}"
-             readonly>
+      <input type="text" class="form-control foo-border" value="{{ field.label|upper }}" readonly>
     </div>
 
     {% else %}
     {% if field.name == 'password' and changepassword %}
       <div class="bg-warning">
       <div class="d-inline-block float-right text-danger">
-        <a href="{% url 'qux_auth:password_reset' %}">Forgot password?</a>
+        <a href="/password-reset/">Forgot password?</a>
       </div>
       </div>
     {% endif %}

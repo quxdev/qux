@@ -1,0 +1,11 @@
+{% extends '_app.html' %}
+{% load static i18n %}
+
+{% block qux-content %}
+  {% block ralph_messages %}{% endblock %}
+
+  <div class="container-lg"><div class="{{ user }}">
+    {% block ralph_headings %}{% endblock %}
+    {% block ralph %}{% endblock %}
+  </div></div>
+{% endblock %}

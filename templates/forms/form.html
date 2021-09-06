@@ -2,6 +2,11 @@
 {% load static %}
 {% load quxform %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock stylesheets %}
+
 {% block form_title %}{{ form_title }}{% endblock %}
 
 <!-- form_body -->
@@ -12,16 +17,14 @@
   {% include 'forms/_field.html' %}
 
   <!-- submit -->
-  <div class="row my-4">
-    <div class="col">
-      <button type="submit" class="btn btn-outline-primary btn-block py-2">
-        {% if submit_btn_text %}
-          {{ submit_btn_text }}
-        {% else %}
-          Submit
-        {% endif %}
-      </button>
-    </div>
-  </div>
+  <div class="row mt-4"><div class="col">
+    <button type="submit" class="btn btn-outline-primary btn-block py-2">
+      {% if submit_btn_text %}
+      {{ submit_btn_text }}
+      {% else %}
+      Submit
+      {% endif %}
+    </button>
+  </div></div>
 </form>
 {% endblock form_body %}

@@ -31,55 +31,31 @@
     body { background: unset !important; }
     #form-container { box-shadow: none !important; }
   }
-  .h1, h1 {
-    font-size: 2rem;
-    font-weight: 900;
-    margin-bottom: 0.75em;
-  }
-  .h2, h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
   </style>
 {% endblock customstyle %}
 
 {% block rawcontent %}
   {{ block.super }}
 
-  {% block form_container %}
-  <div class="container-md p-4">
-    <div id="form-container">
-
-    {# form_title is what is displayed #}
-    <h1>{% block form_title %}{{ title }}{% endblock form_title %}</h1>
-
-    {# typically include '_form.html' #}
-    {% block form_body %}
-    <form method="post">
-      {% csrf_token %}
-
-      {% include 'forms/_field.html' %}
-
-      <!-- submit -->
-      <div class="row my-4">
-        <div class="col">
-          <button type="submit" class="btn btn-outline-primary btn-block py-2">
-            {% if submit_btn_text %}
-              {{ submit_btn_text }}
-            {% else %}
-              Submit
-            {% endif %}
-          </button>
-        </div>
-      </div>
-    </form>
-    {% endblock form_body %}
-    </div>
+  {# I do not remember what form_prefix intent is #}
+  <div class="my-md-4">
+  {% block form_prefix %}{% endblock form_prefix %}
   </div>
+
+  {% block form_container %}
+  <div class="container-md my-4"><div id="form-container" class="px-md-4">
+
+  {# form_title is what is displayed #}
+  <h1 class="pb-4">{% block form_title %}{% endblock form_title %}</h1>
+
+  {# typically include '_form.html' #}
+  {% block form_body %}
+  {% endblock form_body %}
+  </div></div>
   {% endblock form_container %}
 
-  <section id="below-the-fold">
+  <div class="container-md my-4"><div id="form-container" class="px-md-4">
   {% block form_belowthefold %}
   {% endblock form_belowthefold %}
-  </section>
+  </div></div>
 {% endblock %}

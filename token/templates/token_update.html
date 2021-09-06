@@ -1,0 +1,40 @@
+{% extends 'forms/form.html' %}
+{% comment %} {% extends 'app/_app_hform.html' %} {% endcomment %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock stylesheets %}
+
+{% block form_title %}Manage Key{% endblock %}
+
+{% block form_body %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="row">
+      {% for field in form.visible_fields %}
+        <div class="col-12 form-group">
+          <label for="{{ field.label }}" class="form-label">
+            {{ field.label }}
+            {% if field.field.required %}
+              <span style="color: red;">*</span>
+            {% endif %}
+          </label>
+          {{ field.errors }}
+          <div class="input-group">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row mt-4">
+      <div class="col">
+        <button type="submit" class="btn btn-primary btn-block py-2">
+          Rename
+        </button>
+      </div>
+    </div>
+  </form>
+{% endblock form_body %}
