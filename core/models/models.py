@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from rangefilter.filters import DateRangeFilter
 
 default_null_blank = dict(default=None, null=True, blank=True)
@@ -37,6 +38,10 @@ class CoreModel(models.Model):
             self.dtm_created = timezone.now()
         self.dtm_updated = timezone.now()
         return super(CoreModel, self).save(*args, **kwargs)
+
+    @staticmethod
+    def get_slug():
+        return get_random_string(16)
 
     @classmethod
     def initdata(cls):

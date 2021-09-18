@@ -1,4 +1,4 @@
-from core.models import CoreModelPlusAdmin
+from qux.core.models import CoreModelPlusAdmin
 from .models import *
 from django.contrib import admin
 

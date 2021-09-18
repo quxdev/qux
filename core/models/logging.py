@@ -2,18 +2,46 @@ import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django_mysql.models import EnumField
 
 from .models import CoreModel
-from .models import dnb
+from .models import default_null_blank
+
+
+class TaskLog(CoreModel):
+    STATUS = (
+        ('Processing', 'processing'),
+        ('Failed', 'failed'),
+        ('Successful', 'successful'),
+    )
+    slug = models.CharField(max_length=32, unique=True)
+    status = models.CharField(
+        max_length=32, choices=STATUS, default='processing')
+    user = models.ForeignKey(
+        User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
+    task = models.CharField(max_length=255)
+    # ContentTypes
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = 'task_' + self.get_slug()
+            while self.__class__.objects.filter(slug=self.slug).exists():
+                self.slug = 'task_' + self.get_slug()
+
+        super().save(*args, **kwargs)
 
 
 class DownloadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **dnb)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
     url = models.URLField(max_length=2048, verbose_name='URL')
-    original = models.CharField(max_length=128, **dnb, verbose_name='Original File Name')
-    filename = models.CharField(max_length=128, **dnb, verbose_name='Download File Name')
+    original = models.CharField(max_length=128, **default_null_blank, verbose_name='Original File Name')
+    filename = models.CharField(max_length=128, **default_null_blank, verbose_name='Download File Name')
 
     class Meta:
         db_table = 'qux_log_download'
@@ -21,7 +49,7 @@ class DownloadLog(CoreModel):
 
 
 class UploadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **dnb)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
     filename = models.CharField(max_length=128)
     filepath = models.CharField(max_length=256)
     filehash = models.CharField(max_length=16, editable=False)
@@ -84,18 +112,18 @@ class CoreCommLog(CoreModel):
     )
 
     comm_type = EnumField(choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **dnb)
-    provider = models.CharField(max_length=32, **dnb, verbose_name="Service Provider")
-    sent_at = models.DateTimeField(editable=False, **dnb, verbose_name='Sent At')
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
+    provider = models.CharField(max_length=32, **default_null_blank, verbose_name="Service Provider")
+    sent_at = models.DateTimeField(editable=False, **default_null_blank, verbose_name='Sent At')
     sender = models.CharField(max_length=128)
-    to = models.CharField(max_length=512, **dnb)
-    cc = models.CharField(max_length=512, **dnb)
-    bcc = models.CharField(max_length=512, **dnb)
-    subject = models.CharField(max_length=256, **dnb)
-    message = models.TextField(**dnb)
-    attrs = models.JSONField(**dnb, verbose_name='Attributes')
+    to = models.CharField(max_length=512, **default_null_blank)
+    cc = models.CharField(max_length=512, **default_null_blank)
+    bcc = models.CharField(max_length=512, **default_null_blank)
+    subject = models.CharField(max_length=256, **default_null_blank)
+    message = models.TextField(**default_null_blank)
+    attrs = models.JSONField(**default_null_blank, verbose_name='Attributes')
     status = models.BooleanField(default=False)
-    response = models.TextField(**dnb)
+    response = models.TextField(**default_null_blank)
 
     class Meta:
         db_table = 'qux_log_comm'

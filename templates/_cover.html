@@ -1,0 +1,57 @@
+{% extends '_blank.html' %}
+
+{% block customstyle %}
+<style>
+#cover {
+  height: 62.5vw;
+  max-height: 675px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  color: rgb(8, 16, 24);
+}
+#cover h1 {
+  font-weight: 700;
+  line-height: unset;
+  font-size: 6rem;
+}
+@media screen and (max-width: 991px) {
+  #cover h1 { font-size: 4rem; }
+}
+@media screen and (max-width: 767px) {
+  #cover h1 { font-size: 3rem; }
+}
+@media screen and (min-width: 576px) {
+  #cover br { display: none; }
+}
+@media screen and (max-width: 575px) and (orientation: portrait) {
+  #cover {
+    height: 100vh;
+    max-height: 1024px;
+    margin-top: -80px;
+    padding: 80px 1.5rem 1.5rem;
+  }
+  #cover h1 { font-size: 2.5rem; }
+}
+@media screen and (max-width: 399px) {
+  #cover h1 { font-size: 2rem; }
+}
+</style>
+{{ block.super }}
+{% endblock %}
+
+{% block cover %}
+<!-- qux._cover -->
+<div id="cover">
+  <div id="cover-content" class="my-4 my-sm-auto py-sm-4">
+    <div id="cover-container" class="container-lg">
+      {% block cover_content %}
+        <div class="d-flex align-items-center">
+        <h1>Qux</h1>
+        </div>
+      {% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
