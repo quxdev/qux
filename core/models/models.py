@@ -34,10 +34,16 @@ class CoreModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
-        if not self.dtm_created:
-            self.dtm_created = timezone.now()
-        self.dtm_updated = timezone.now()
-        return super(CoreModel, self).save(*args, **kwargs)
+        # slug = prefixed random string
+        if hasattr(self, 'slug') and not self.slug:
+            prefix = getattr(self.__class__, 'SLUG_PREFIX', None)
+            prefix = prefix + '_' if prefix else ''
+
+            self.slug = prefix + self.get_slug()
+            while self.__class__.objects.filter(slug=self.slug).exists():
+                self.slug = prefix + self.get_slug()
+
+        super().save(*args, **kwargs)
 
     @staticmethod
     def get_slug():

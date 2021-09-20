@@ -1,0 +1,48 @@
+{% load quxform %}
+{% for hidden in form.hidden_fields %} {{ hidden }} {% endfor %}
+
+{{ form.non_field_errors }}
+
+{% for field in form.visible_fields %}
+  {% if field.field.widget.attrs.group_label %}
+  <div class="form-group row">
+    <div class="col-12 col-sm-12 text-center">
+      <h5>{{ field.field.widget.attrs.group_label }}</h5>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="form-group row">
+    <label for="{{ field.id_for_label }}" class="col-12 col-sm-4 col-md-3 col-xl-2 col-form-label">
+      {{ field.label }}
+      {% if field.field.required %}
+        <span style="color: red;">*</span>
+      {% endif %}
+    </label>
+
+    <div class="col-12 col-sm-8 col-md-9 col-xl-10 align-self-center">
+      {% if 'custom-control-input' in field.field.widget.attrs.class %}
+      <div class="custom-control custom-switch">
+        {{ field }}
+        <label id="label_{{ field.auto_id }}" for="{{ field.id_for_label }}" class="custom-control-label"></label>
+      </div>
+      {% elif 'custom-range' in field.field.widget.attrs.class %}
+      <div class="row">
+        <div class="col-3 col-md-2 text-center">
+          <span id="value_{{ field.auto_id }}">{{ field.field.widget.attrs.value }}</span>
+        </div>
+        <div class="col-9 col-md-10">{{ field }}</div>
+      </div>
+      {% else %}
+      {{ field }}
+      {% endif %}
+
+      {% if field.help_text %}
+        <small class="input-tip-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+      {% for error in field.errors %}
+        <small class="input-err-text text-muted">{{ error }}</small>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
