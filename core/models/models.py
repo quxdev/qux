@@ -21,14 +21,8 @@ class CoreModel(models.Model):
     objects = CoreManager()
     all_objects = models.Manager()
 
-    dtm_created = models.DateTimeField(
-        verbose_name='DTM Created',
-        auto_now_add=True
-    )
-    dtm_updated = models.DateTimeField(
-        verbose_name='DTM Updated',
-        auto_now=True
-    )
+    dtm_created = models.DateTimeField(verbose_name='DTM Created', auto_now_add=True)
+    dtm_updated = models.DateTimeField(verbose_name='DTM Updated', auto_now=True)
 
     class Meta:
         abstract = True
