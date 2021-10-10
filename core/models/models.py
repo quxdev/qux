@@ -1,12 +1,40 @@
+from itertools import chain
+
 from django.contrib import admin
+from django.core.exceptions import FieldDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models.fields.related import ManyToManyField
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rangefilter.filters import DateRangeFilter
 
 default_null_blank = dict(default=None, null=True, blank=True)
+
+
+def qux_model_to_dict(instance, fields=None, exclude=None):
+    opts = instance._meta
+    data = {}
+    for f in chain(opts.concrete_fields, opts.many_to_many):
+        if fields is not None and f.name not in fields:
+            continue
+        if exclude and f.name in exclude:
+            continue
+
+        if isinstance(f, ManyToManyField):
+            if instance.pk is None:
+                data[f.name] = []
+            else:
+                try:
+                    data[f.name] = list(f.value_from_object(instance).values_list('pk', flat=True))
+                except AttributeError:
+                    data[f.name] = list(f.value_from_object(instance))
+                except FieldDoesNotExist:
+                    data[f.name] = []
+        else:
+            data[f.name] = f.value_from_object(instance)
+    return data
 
 
 class CoreManager(models.Manager):

@@ -68,6 +68,21 @@ def addstr(a, b):
     return '{}_{}'.format(a, b)
 
 
+@register.filter(name="userclass")
+def userclass(user: User):
+    if user is None or isinstance(user, str):
+        result = 'anonymous'
+    elif user.is_superuser:
+        result = 'superuser'
+    elif user.is_staff:
+        result = 'staff'
+    elif user.is_authenticated:
+        result = 'user'
+    else:
+        result = 'anonymous'
+    return result
+
+
 # https://stackoverflow.com/a/36288962/
 @register.simple_tag(takes_context=True)
 def url_replace(context, **kwargs):
