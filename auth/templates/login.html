@@ -14,7 +14,7 @@
 <form method="post">
   {% csrf_token %}
 
-  {% include 'forms/_field.html' with changepassword=True %}
+  {% include 'forms/_field.html' with changepassword=True needhelp=True %}
 
   <!-- submit -->
   <div class="row mt-4"><div class="col">

@@ -39,6 +39,7 @@ class Profile(CoreModel):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    initials = models.CharField(max_length=3, **default_null_blank)
     phone = models.CharField(max_length=16, validators=[regexp])
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, **default_null_blank)
     title = models.CharField(max_length=255, **default_null_blank)
@@ -51,7 +52,11 @@ class Profile(CoreModel):
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created and not hasattr(instance, 'Profile'):
-        Profile.objects.create(user=instance)
+        userprofile = Profile.objects.create(user=instance)
+        try:
+            userprofile.initials = instance.first_name[0].upper() + instance.last_name[0].upper()
+        except IndexError:
+            userprofile.initials = ''
 
 
 @receiver(post_save, sender=User)

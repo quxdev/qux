@@ -17,26 +17,40 @@
     </div>
 
     {% else %}
-    {% if field.name == 'password' and changepassword %}
-      <div class="bg-warning">
-      <div class="d-inline-block float-right text-danger">
-        <a href="/password-reset/">Forgot password?</a>
-      </div>
-      </div>
-    {% endif %}
-    <label for="{{ field.id }}" class="form-label">
-      {{ field.label }}
-      {% if field.field.required %}
-        <span style="color: red;">*</span>
+      {% if field.name == 'password' and changepassword %}
+        <div class="bg-warning">
+          <div class="d-inline-block float-right text-danger">
+            <a href="/password-reset/" tabindex="-1">Forgot password?</a>
+          </div>
+        </div>
       {% endif %}
-    </label>
-    {{ field }}
-    {% if field.help_text %}
-      <small class="input-tip-text text-muted">{{ field.help_text }}</small>
-    {% endif %}
-    {% for error in field.errors %}
-      <small class="input-err-text text-muted">{{ error }}</small>
-    {% endfor %}
+
+      {# Show Need Help? if the first attempt to login is unsuccessful #}
+      {% if field.name == "username" and needhelp and form.non_field_errors %}
+        <div class="bg-warning">
+          <div class="d-inline-block float-right text-info text-danger">
+            <a href="{% url 'qux_auth:support_request' %}">Need Help?</a>
+          </div>
+        </div>
+      {% endif %}
+
+      <label for="{{ field.id }}" class="form-label">
+        {{ field.label }}
+
+        {% if field.field.required %}
+        <span style="color: red;">*</span>
+        {% endif %}
+      </label>
+
+      {{ field }}
+
+      {% if field.help_text %}
+        <small class="input-tip-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+
+      {% for error in field.errors %}
+        <small class="input-err-text text-muted">{{ error }}</small>
+      {% endfor %}
 
     {% endif %}
     </div>

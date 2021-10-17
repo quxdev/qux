@@ -13,4 +13,5 @@ urlpatterns = [
     path(r'password-reset/done/', CorePasswordResetDoneView.as_view(), name='password_reset_done'),
     path(r'reset/<uidb64>/<token>/', CorePasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path(r'reset/done/', CorePasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path(r'needhelp/', TemplateView.as_view(template_name='login.html'), name='support_request'),
 ]
