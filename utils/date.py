@@ -11,7 +11,20 @@ def eomonth(dt, nummonths):
     result = datetime.date(eomyr, eommo + 1, 1) + datetime.timedelta(days=-1)
     return result
 
+<<<<<<< HEAD
 
 def fomonth(dt, nummonths):
     x = eomonth(dt, nummonths - 1)
     return x + datetime.timedelta(days=1)
+=======
+def fomonth(dt, nummonths):
+    x = eomonth(dt, nummonths - 1)
+    return x + datetime.timedelta(days=1)
+
+def daterange(start: datetime.date, end: datetime.date) -> datetime.date:
+    numberofdays = abs((end - start).days)
+    d = min(start, end)
+    for n in range(numberofdays + 1):
+        yield d + datetime.timedelta(days=n)
+
+>>>>>>> 188cda8 (modifications for use in racecar)
