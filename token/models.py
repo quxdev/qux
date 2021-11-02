@@ -15,7 +15,6 @@ class CustomToken(CoreModelPlus):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'core'
         verbose_name = "Custom Token"
         verbose_name_plural = "Custom Tokens"
 
