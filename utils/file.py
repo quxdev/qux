@@ -1,6 +1,7 @@
 import os
-import datetime
 import pathlib
+import datetime
+import hashlib
 
 from django.conf import settings
 
@@ -34,3 +35,4 @@ def uploadfile(source, target=None):
     print(f"file.py:uploadfile({source}, {filename}) => {result}")
 
     return result, filename
+

@@ -2,39 +2,11 @@ import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django_mysql.models import EnumField
 
 from .models import CoreModel
 from .models import default_null_blank
-
-
-class TaskLog(CoreModel):
-    STATUS = (
-        ('Processing', 'processing'),
-        ('Failed', 'failed'),
-        ('Successful', 'successful'),
-    )
-    slug = models.CharField(max_length=32, unique=True)
-    status = models.CharField(
-        max_length=32, choices=STATUS, default='processing')
-    user = models.ForeignKey(
-        User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
-    task = models.CharField(max_length=255)
-    # ContentTypes
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            slug = 'task_' + self.get_slug()
-            while self.__class__.objects.filter(slug=self.slug).exists():
-                self.slug = 'task_' + self.get_slug()
-
-        super().save(*args, **kwargs)
 
 
 class DownloadLog(CoreModel):
