@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.sites.models import Site
-from qux.core.models import CoreModel, default_null_blank
+from qux.models import CoreModel, default_null_blank
 
 
 class SEOModel(CoreModel):

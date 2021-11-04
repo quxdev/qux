@@ -1,10 +1,9 @@
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User, Group
-from django.urls import reverse
-from django.utils.html import format_html
-from django.utils.translation import gettext as _
+from rangefilter.filters import DateRangeFilter
 
 from .models import *
+from qux.models import CoreModelAdmin
 
 
 class CoreUserAdmin(UserAdmin):
@@ -21,36 +20,15 @@ class CoreUserAdmin(UserAdmin):
         'id', 'username', 'email', 'date_joined',
         'last_login', 'is_superuser', 'is_staff', 'is_active'
     )
-    # fieldsets = (
-    #     (None, {'fields': ('username', 'password')}),
-    #     (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
-    #     (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions')}),
-    #     (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-    # )
     ordering = ('-id',)
 
     def get_queryset(self, request):
         return super(CoreUserAdmin, self).get_queryset(request).prefetch_related('groups')
 
-    # def save_model(self, request, obj, form, change):
-    #     obj.save()
-    #     if 'is_staff' in form.changed_data:
-    #         staff_default = Group.objects.get(name='staff_default')
-    #         if obj.is_staff:
-    #             obj.groups.add(staff_default)
-    #         else:
-    #             obj.groups.remove(staff_default)
-    #         obj.save()
-
     @staticmethod
     def groups_name(obj):
-        try:
-            arr = []
-            for group in obj.groups.all():
-                arr.append(group.name)
-            return ', '.join(arr)
-        except:
-            return ""
+        arr = [group.name for group in obj.groups.all()]
+        return ', '.join(arr)
 
 
 admin.site.unregister(User)
