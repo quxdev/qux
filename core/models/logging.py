@@ -1,40 +1,15 @@
+import hashlib
 import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django_mysql.models import EnumField
 
-from .models import CoreModel
-from .models import default_null_blank
+from qux.models import CoreModel
+from qux.models import default_null_blank
 
 
-class TaskLog(CoreModel):
-    STATUS = (
-        ('Processing', 'processing'),
-        ('Failed', 'failed'),
-        ('Successful', 'successful'),
-    )
-    slug = models.CharField(max_length=32, unique=True)
-    status = models.CharField(
-        max_length=32, choices=STATUS, default='processing')
-    user = models.ForeignKey(
-        User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
-    task = models.CharField(max_length=255)
-    # ContentTypes
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            slug = 'task_' + self.get_slug()
-            while self.__class__.objects.filter(slug=self.slug).exists():
-                self.slug = 'task_' + self.get_slug()
-
-        super().save(*args, **kwargs)
+# from django_mysql.models import EnumField
 
 
 class DownloadLog(CoreModel):
@@ -111,7 +86,8 @@ class CoreCommLog(CoreModel):
         ('whatsapp', 'whatsapp'),
     )
 
-    comm_type = EnumField(choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
+    comm_type = models.CharField(
+        max_length=16, choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
     provider = models.CharField(max_length=32, **default_null_blank, verbose_name="Service Provider")
     sent_at = models.DateTimeField(editable=False, **default_null_blank, verbose_name='Sent At')

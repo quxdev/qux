@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.authentication import TokenAuthentication
 
-from qux.core.models import CoreModelPlus
+from qux.models import CoreModelPlus
 
 
 class CustomToken(CoreModelPlus):
@@ -15,7 +15,6 @@ class CustomToken(CoreModelPlus):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'core'
         verbose_name = "Custom Token"
         verbose_name_plural = "Custom Tokens"
 

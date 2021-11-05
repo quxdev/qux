@@ -2,9 +2,9 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db import transaction
 
-from .models import CoreModel
-from .models import qux_model_to_dict
 from qux.utils import stacktrace
+from qux.models import CoreModel
+from qux.models import qux_model_to_dict
 
 
 class QuxPermission(CoreModel):

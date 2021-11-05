@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from qux.core.models import CoreModelAdmin
+from qux.models import CoreModelAdmin
 from .models import SEOSite, SEOPage
 
 
