@@ -1,8 +1,8 @@
 from django.core.validators import RegexValidator
 from django.db import models
 
-from core.models import CoreModel
-from core.utilities.phone import phone_number
+from qux.models import CoreModel
+from qux.utils.phone import phone_number
 
 
 class AbstractCompany(CoreModel):
