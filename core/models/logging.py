@@ -1,12 +1,15 @@
+import hashlib
 import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django_mysql.models import EnumField
 
-from .models import CoreModel
-from .models import default_null_blank
+from qux.models import CoreModel
+from qux.models import default_null_blank
+
+
+# from django_mysql.models import EnumField
 
 
 class DownloadLog(CoreModel):
@@ -83,7 +86,8 @@ class CoreCommLog(CoreModel):
         ('whatsapp', 'whatsapp'),
     )
 
-    comm_type = EnumField(choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
+    comm_type = models.CharField(
+        max_length=16, choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
     provider = models.CharField(max_length=32, **default_null_blank, verbose_name="Service Provider")
     sent_at = models.DateTimeField(editable=False, **default_null_blank, verbose_name='Sent At')

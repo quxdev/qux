@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.authentication import TokenAuthentication
 
-from qux.core.models import CoreModelPlus
+from qux.models import CoreModelPlus
 
 
 class CustomToken(CoreModelPlus):

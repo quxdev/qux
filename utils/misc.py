@@ -4,7 +4,6 @@ import random
 import string
 import datetime
 import decimal
-import six
 import numpy as np
 
 
@@ -71,7 +70,7 @@ def todate(x, default=None, timestamp=False):
     elif type(x) is datetime.datetime:
         result = x if timestamp else x.date()
     # elif type(dt) == str or type(dt) == unicode:
-    elif isinstance(x, six.string_types):
+    elif isinstance(x, str):
         result = default
         for fmt in FMT_DTSTR:
             try:
