@@ -3,14 +3,14 @@
 {% comment %} {% load fubar %} {% endcomment %}
 
 {% block ralph_headings %}
-<h1>API Key</h1>
+<h1>Token Details</h1>
 {% endblock %}
 
 {% block ralph %}
-<div>
+<div class="my-4">
   <div class="row">
     <div class="col-12">
-      <p class="p-2 border border-danger rounded-lg">This key is only shown ONCE. Make note of it and store it in a safe, secure location.</p>
+      <p class="p-2 text-danger border border-danger rounded-lg">This key is only shown ONCE. Make note of it and store it in a safe, secure location.</p>
     </div>
 
     <div class="col-12 my-3">
@@ -26,7 +26,7 @@
       <div>
       <label>Key</label>
       </div>
-      <div class="p-2 border border-danger rounded-lg bg-danger text-white"
+      <div class="p-2 border border-danger rounded bg-danger text-white"
            style="font-family: 'Roboto Mono', monospace; font-size: 14px;">
         {{ object.key }}
       </div>

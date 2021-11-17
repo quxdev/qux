@@ -15,23 +15,28 @@
 {% endblock %}
 
 {% block ralph %}
-<div class="w-75 mt-5 ">
+<div class="">
   {% if object_list %}
   {% csrf_token %}
     {% for post in object_list %}
-    <div class="mt-4 row no-gutters p-3 row_{{post.id}}" style="background: rgba(0, 0, 0, 0.05);border-radius: 10px;box-shadow: 0px 0px 10px #ccc">
-      <div class="col-10">
-        <a href="{% url 'qux_token:edit' post.id %}" class="text-left text-nowrap text-truncate pr-3">
-          {{ post.name }}
-        </a>
-        <br>
-        <span style='font-size: 0.85rem;color: #999'>Created at {{post.created_at}}</span>
+    <div class="mt-4 row no-gutters p-3 row_{{post.id}} shadow bg-light rounded-lg">
+      <div class="col-8 col-md-10 pr-3">
+        <div>
+          <a href="{% url 'qux_token:edit' post.id %}" class="text-left text-nowrap text-truncate pr-3">
+            {{ post.name }}
+          </a>
+        </div>
+
+        <div class="small text-muted text-truncate">
+          Created at {{post.created_at}}
+        </div>
       </div>
-      <div class="col-2 text-right">
-          <button class="btn btn-sm py-2 btn-outline-danger">
-          <span onclick="deletecall('{% url 'qux_token:delete' post.id %}', {{post.id}})">
-            <i class="fas fa-fw fa-trash-alt"></i> Delete
-          </span>
+
+      <div class="col-4 col-md-2 text-right align-self-center">
+          <button class="btn btn-sm btn-danger text-right"
+                  onclick="deletecall('{% url 'qux_token:delete' post.id %}', {{post.id}})">
+            Delete
+          </button>
       </div>
     </div>
     <!-- <div class="d-flex align-items-center justify-content-between w-100 bg-light p-3 my-4">
@@ -55,7 +60,7 @@
   {% endif %}
 
   <div class="row my-4">
-    <div class="col-4 col-sm text-md-left">
+    <div class="col-12 col-md-6 text-sm-left text-nowrap">
       <a href="{% url 'qux_token:create' %}" class="btn btn-sm btn-primary text-white py-2">
         <span><i class='fa fa-plus'></i> Create New API KEY</span>
       </a>

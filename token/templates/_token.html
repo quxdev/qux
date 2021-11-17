@@ -1,10 +1,20 @@
 {% extends '_blank.html' %}
 {% load static i18n %}
 
-{% block qux-content %}
+{% block customstyle %}
+{{ block.super }}
+<style>
+.h1, h1 {
+  font-size: 2rem;
+  font-weight: 300;
+}
+</style>
+{% endblock %}
+
+{% block qux_content %}
   {% block ralph_messages %}{% endblock %}
 
-  <div class="container-lg"><div class="{{ user }}">
+  <div class="container-lg my-4"><div class="{{ user }}">
     {% block ralph_headings %}{% endblock %}
     {% block ralph %}{% endblock %}
   </div></div>
