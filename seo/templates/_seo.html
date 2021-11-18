@@ -57,14 +57,24 @@
 {% block cover %}{% endblock %}
 
 {% block basecontent %}
-  {% block breadcrumb %}{% endblock breadcrumb %}
+{% block breadcrumb %}{% endblock breadcrumb %}
 
-  {% block headerbar %}{% endblock headerbar %}
+{% block headerbar %}{% endblock headerbar %}
 
-  {% block header %}{% endblock header %}
+{% block header %}{% endblock header %}
 
-  {% block rawcontent %}{% endblock rawcontent %}
-{% endblock %}
+{% block sub_navbar %}{% endblock sub_navbar %}
+
+{% block rawcontent %}
+<!-- qux_content -->
+<main role="main">
+<div id="qux_content">
+{% block qux_content %}{% endblock qux_content %}
+</div>
+</main>
+{% endblock rawcontent %}
+
+{% endblock basecontent %}
 
 {% block footer %}{% endblock %}
 
