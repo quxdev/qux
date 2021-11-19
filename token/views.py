@@ -9,6 +9,8 @@ from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
+from django.conf import settings
+
 
 from qux.seo.mixin import SEOMixin
 
@@ -33,14 +35,13 @@ class CustomTokenListView(SEOMixin, LoginRequiredMixin, ListView):
     fields = ['name', ]
     extra_context = {
         'breadcrumbs': ['API KEY'],
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
     def get_queryset(self):
-        queryset = CustomToken.objects.all()  # should not use self.queryset directly as list doesn't updated
+        # should not use self.queryset directly as list doesn't updated
+        queryset = CustomToken.objects.all()
         queryset = queryset.filter(user=self.request.user)
-
-        # if not self.request.user.profile.is_paid_account():
-        #     return queryset.none()
 
         return queryset
 
@@ -50,6 +51,7 @@ class CustomTokenDetailView(SEOMixin, LoginRequiredMixin, DetailView):
     template_name = "token_detail.html"
     extra_context = {
         'breadcrumbs': ['API KEY', 'Detail'],
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
     def get_object(self, *args, **kwargs):
@@ -72,6 +74,7 @@ class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
     # fields = ['title', 'slug', 'body', 'citation', 'tags', 'is_draft', 'is_private', ]
     extra_context = {
         'breadcrumbs': ['API KEY', 'New'],
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
     def form_valid(self, form):
@@ -87,6 +90,9 @@ class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
     model = CustomToken
     form_class = CustomTokenForm
     template_name = "token_update.html"
+    extra_context = {
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
+    }
 
     @staticmethod
     def get_success_url(*args, **kwargs):
@@ -94,21 +100,11 @@ class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
 
 
 class CustomTokenDeleteView(SEOMixin, LoginRequiredMixin, DeleteView): 
-    # template_name = "token_delete.html"
     model = CustomToken
-    # slug_field = 'name'
-
-    # def delete(self, request, *args, **kwargs):
-    #     name = self.kwargs['name']
-    #
-    #     tokens = CustomToken.objects.filter(name=name, user=self.request.user)
-    #     if tokens:
-    #         tokens.delete()
-    #     else:
-    #         raise Http404
-    #
-    #     return HttpResponseRedirect(reverse("token:home"))
+    extra_context = {
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
+    }
 
     @staticmethod
-    def get_success_url():
+    def get_success_url(**kwargs):
         return reverse("qux_token:home")

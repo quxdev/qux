@@ -32,7 +32,8 @@ class CoreLoginView(SEOMixin, LoginView):
     template_name = 'login.html'
     canonical_url = '/login/'
     extra_context = {
-        'submit_btn_text': 'Login'
+        'submit_btn_text': 'Login',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
 
@@ -76,7 +77,8 @@ class ChangePasswordView(SEOMixin, TemplateView):
     form_class = ChangePasswordForm
     template_name = 'change-password.html'
     extra_context = {
-        'submit_btn_text': 'Change Password'
+        'submit_btn_text': 'Change Password',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
     def get_context_data(self, **kwargs):
@@ -106,14 +108,16 @@ class CorePasswordResetView(SEOMixin, PasswordResetView):
     success_url = reverse_lazy('qux_auth:password_reset_done')
     extra_context = {
         'title': 'Reset password',
-        'submit_btn_text': 'Password Reset'
+        'submit_btn_text': 'Password Reset',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
 
 class CorePasswordResetDoneView(SEOMixin, PasswordResetDoneView):
     template_name = 'password_reset_done.html'
     extra_context = {
-        'title': 'Reset password'
+        'title': 'Reset password',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
 
@@ -123,12 +127,14 @@ class CorePasswordResetConfirmView(PasswordResetConfirmView):
     success_url = reverse_lazy('qux_auth:password_reset_complete')
     extra_context = {
         'title': f'Change password',
-        'submit_btn_text': 'Change Password'
+        'submit_btn_text': 'Change Password',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }
 
 
 class CorePasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
     extra_context = {
-        'title': 'Password changed successfully'
+        'title': 'Password changed successfully',
+        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
     }

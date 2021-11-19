@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.fields.related import ManyToManyField
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from rangefilter.filters import DateRangeFilter
 
 default_null_blank = dict(default=None, null=True, blank=True)
@@ -47,23 +48,28 @@ class CoreModel(models.Model):
     objects = CoreManager()
     all_objects = models.Manager()
 
-    dtm_created = models.DateTimeField(
-        verbose_name='DTM Created',
-        auto_now_add=True
-    )
-    dtm_updated = models.DateTimeField(
-        verbose_name='DTM Updated',
-        auto_now=True
-    )
+    dtm_created = models.DateTimeField(verbose_name='DTM Created', auto_now_add=True)
+    dtm_updated = models.DateTimeField(verbose_name='DTM Updated', auto_now=True)
 
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
-        if not self.dtm_created:
-            self.dtm_created = timezone.now()
-        self.dtm_updated = timezone.now()
-        return super(CoreModel, self).save(*args, **kwargs)
+        # slug = prefixed random string
+        if hasattr(self, 'slug') and not self.slug:
+            prefix = getattr(self.__class__, 'SLUG_PREFIX', None)
+            prefix = prefix + '_' if prefix else ''
+
+            self.slug = prefix + self.get_slug()
+            while self.__class__.objects.filter(slug=self.slug).exists():
+                self.slug = prefix + self.get_slug()
+
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def get_slug():
+        return get_random_string(16)
+
 
     @classmethod
     def initdata(cls):
@@ -158,7 +164,7 @@ class CoreModelAdmin(admin.ModelAdmin):
 class CoreManagerPlus(CoreManager):
     def get(self, *args, **kwargs):
         # print("get is_deleted=False")
-        return self.get_queryset().get(*args, **kwargs)
+        return self.get_queryset().get()
 
     def filter(self, *args, **kwargs):
         # print("filter is_deleted=False")

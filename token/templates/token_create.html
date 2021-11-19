@@ -6,7 +6,18 @@
   <link rel="stylesheet" href="{% static 'css/forms.css' %}">
 {% endblock stylesheets %}
 
-{% block form_title %}Create Key{% endblock %}
+{% block customstyle %}
+{{ block.super }}
+<style>
+#form-container {
+  max-width: unset;
+  margin-right: 0;
+  margin-left: 0;
+}
+</style>
+{% endblock customstyle %}
+
+{% block form_title %}Create Token{% endblock %}
 
 {% block form_body %}
   <form method="post">

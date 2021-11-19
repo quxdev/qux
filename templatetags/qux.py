@@ -1,10 +1,8 @@
 import datetime
-
 from urllib.parse import urlencode
 
 from django import template
-from django.contrib.auth.models import User
-from django.template.defaultfilters import stringfilter
+from django.conf import settings
 
 register = template.Library()
 
@@ -75,6 +73,17 @@ def url_replace(context, **kwargs):
     [query.pop(kwarg) for kwarg in kwargs if kwarg in query]
     query.update(kwargs)
     return urlencode(query)
+
+
+@register.filter(name="getconfig")
+def getconfig(setting: str, default_value: str = None):
+    """
+    Usage: {{ 'SETTING'|getconfig }}
+    :param setting:
+    :param default_value:
+    :return:
+    """
+    return getattr(settings, setting, default_value)
 
 
 # https://stackoverflow.com/a/50630001/
