@@ -21,11 +21,25 @@
     </label>
 
     <div class="col-12 col-sm-8 col-md-9 col-xl-10 align-self-center">
-      {% if 'custom-control-input' in field.field.widget.attrs.class %}
+      {# getbootstrap.com/docs/4.6/components/forms/#custom-forms #}
+
+      {# getbootstrap.com/docs/4.6/components/input-group/#custom-file-input #}
+      {% if 'custom-file-input' in field.field.widget.attrs.class %}
+      <div class="custom-file">
+        {{ field }}
+        <label id="label_{{ field.auto_id }}" for="{{ field.id_for_label }}" class="custom-file-label">
+          Choose File
+        </label>
+      </div>
+
+      {# getbootstrap.com/docs/4.6/components/forms/#switches #}
+      {% elif 'custom-control-input' in field.field.widget.attrs.class %}
       <div class="custom-control custom-switch">
         {{ field }}
         <label id="label_{{ field.auto_id }}" for="{{ field.id_for_label }}" class="custom-control-label"></label>
       </div>
+
+      {# getbootstrap.com/docs/4.6/components/forms/#range #}
       {% elif 'custom-range' in field.field.widget.attrs.class %}
       <div class="row">
         <div class="col-3 col-md-2 text-center">

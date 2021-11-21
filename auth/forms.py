@@ -48,7 +48,6 @@ class CustomAuthenticationForm(AuthenticationForm):
         return username
 
 
-
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(
         widget=forms.PasswordInput(
