@@ -47,6 +47,32 @@ class Profile(CoreModel):
         db_table = 'qux_user_profile'
         verbose_name = 'User Profile'
 
+    def get_initials(self):
+        user = self.user
+        if user.first_name and user.last_name:
+            initials = user.first_name[0] + " " + user.last_name[0]
+        elif user.first_name:
+            initials = user.first_name[0]
+        elif user.last_name:
+            initials = user.last_name[0]
+        else:
+            initials = None
+
+        return initials
+
+    def get_fullname(self):
+        user = self.user
+        if user.first_name and user.last_name:
+            fullname = user.first_name + " " + user.last_name
+        elif user.first_name:
+            fullname = user.first_name
+        elif user.last_name:
+            fullname = user.last_name
+        else:
+            fullname = user.email
+
+        return fullname
+
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
