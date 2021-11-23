@@ -12,6 +12,12 @@
 
 {% block ralph_headings %}
 <h1>API Tokens</h1>
+
+<p class='text-secondary'>
+  <i class='fa fa-info-circle fa-sm'></i> API Tokens are required to identify you when you access our APIs. 
+  Do not share this key anywhere public and note it down somewhere safe after you generate it as for security reason
+  you will only be able to see the key once after you generate it. 
+</p>
 {% endblock %}
 
 {% block ralph %}
@@ -52,11 +58,6 @@
     {% endfor %}
   {% else %}
   <p class="lead">You have no API Keys yet.</p>
-  <p class='text-secondary'>
-    <i class='fa fa-info-circle fa-sm'></i> These API Keys are required to identify you when you access our APIs. 
-    Do not share this key anywhere public and note it down somewhere safe after you generate it as for security reason
-    you will only be able to see the key once after you generate it. 
-  </p>
   {% endif %}
 
   <div class="row my-4">

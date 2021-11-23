@@ -27,11 +27,38 @@
       <label>Key</label>
       </div>
       <div class="p-2 border border-danger rounded bg-danger text-white"
-           style="font-family: 'Roboto Mono', monospace; font-size: 14px;">
-        {{ object.key }}
+        style="font-family: 'Roboto Mono', monospace; font-size: 14px; overflow: scroll">
+        <span id='token-str'>{{ object.key }}</span> 
+        <i id='token-copy-icon' class='fa fa-copy' style='cursor: pointer'></i> 
+        <span id='token-copied-confirmation' style='display: none'>Copied to clipboard</span>
       </div>
       </div>
+    </div>
+
+    <div class='mt-5 d-flex justify-content-center align-items-center'>
+      <button class='btn btn-primary' onclick="location.href='{% url 'qux_token:home' %}'">Done</button>
     </div>
   </div>
 </div>
 {% endblock ralph %}
+
+{% block customjs %}
+{{ block.super }}
+<script>
+  $(document).ready(function() {
+    $('#token-copy-icon').on('click', function() {
+      navigator.clipboard.writeText($('#token-str').html());
+      $('#token-copy-icon').removeClass('fa-copy');
+      $('#token-copy-icon').addClass('fa-check');
+      $('#token-copied-confirmation').fadeIn('slow');
+
+      // Revert back to original state
+      setTimeout(function(){ 
+        $('#token-copy-icon').removeClass('fa-check');
+        $('#token-copy-icon').addClass('fa-copy');
+        $('#token-copied-confirmation').fadeOut('slow');
+      }, 3000);
+    })
+  })
+</script>
+{% endblock %}
