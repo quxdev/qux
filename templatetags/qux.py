@@ -51,12 +51,12 @@ def qux_max(value, maxvalue):
 
 @register.filter(name="qux_floatformat_in")
 def qux_floatformat_in(value, precision):
-    qux_floatformat(value, precision, 'in')
+    return qux_floatformat(value, precision, 'in')
 
 
 @register.filter(name="qux_floatformat_us")
 def qux_floatformat_us(value, precision):
-    qux_floatformat(value, precision, 'us')
+    return qux_floatformat(value, precision, 'us')
 
 
 def qux_floatformat(value, precision, locale):
