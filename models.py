@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.db import models
 from django.db.models.fields.related import ManyToManyField
-from django.forms.models import model_to_dict
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rangefilter.filters import DateRangeFilter
@@ -12,27 +11,31 @@ from rangefilter.filters import DateRangeFilter
 default_null_blank = dict(default=None, null=True, blank=True)
 
 
-def qux_model_to_dict(instance, fields=None, exclude=None):
+def qux_model_to_dict(instance, fields=None, exclude=['id', 'dtm_created', 'dtm_updated'],
+                      exclude_none=False, verbose_name=False):
     opts = instance._meta
     data = {}
+    if exclude_none:
+        exclude = []
+
     for f in chain(opts.concrete_fields, opts.many_to_many):
         if fields is not None and f.name not in fields:
             continue
         if exclude and f.name in exclude:
             continue
-
+        field_name = f.verbose_name if verbose_name else f.name
         if isinstance(f, ManyToManyField):
             if instance.pk is None:
-                data[f.name] = []
+                data[field_name] = []
             else:
                 try:
-                    data[f.name] = list(f.value_from_object(instance).values_list('pk', flat=True))
+                    data[field_name] = list(f.value_from_object(instance).values_list('pk', flat=True))
                 except AttributeError:
-                    data[f.name] = list(f.value_from_object(instance))
+                    data[field_name] = list(f.value_from_object(instance))
                 except FieldDoesNotExist:
-                    data[f.name] = []
+                    data[field_name] = []
         else:
-            data[f.name] = f.value_from_object(instance)
+            data[field_name] = f.value_from_object(instance)
     return data
 
 
@@ -70,13 +73,12 @@ class CoreModel(models.Model):
     def get_slug():
         return get_random_string(16)
 
-
     @classmethod
     def initdata(cls):
         print('{}.initdata()'.format(cls.__name__))
 
     def to_dict(self):
-        return model_to_dict(self, exclude=['id', 'dtm_created', 'dtm_updated'])
+        return qux_model_to_dict(self)
 
     @classmethod
     def get_dict(cls, pk):
@@ -120,9 +122,9 @@ class CoreModel(models.Model):
 
     @classmethod
     def gettaglist(cls):
-        tags = cls.objects.all()\
-            .exclude(models.Q(tags__isnull=True) | models.Q(tags=''))\
-            .values_list('tags', flat=True)\
+        tags = cls.objects.all() \
+            .exclude(models.Q(tags__isnull=True) | models.Q(tags='')) \
+            .values_list('tags', flat=True) \
             .distinct()
         tags = ",".join(tags)
         tags = [x.strip() for x in tags.split(',')]
