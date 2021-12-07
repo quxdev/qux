@@ -3,6 +3,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ValidationError
 from django.contrib.auth.models import User
@@ -43,9 +44,44 @@ class CustomAuthenticationForm(AuthenticationForm):
                 raise ValidationError(
                     self.error_messages['invalid_login'],
                     code='invalid_login',
-                    params={'username':self.username_field.verbose_name},
+                    params={'username': self.username_field.verbose_name},
                 )
         return username
+
+
+class SignupForm(UserCreationForm):
+    email = forms.EmailField(
+        label='Email address',
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                'class': 'form-control foo-border',
+                'placeholder': 'Enter valid email address',
+                'autocomplete': 'email'
+            }
+        ),
+        help_text='Required'
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super(SignupForm, self).__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control foo-border',
+            'placeholder': 'enter username or email address'
+        })
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control foo-border',
+            'placeholder': 'Enter password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control foo-border',
+            'placeholder': 'Enter same password again'
+        })
+
 
 
 class ChangePasswordForm(forms.Form):
