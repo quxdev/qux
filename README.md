@@ -5,7 +5,7 @@
 Qux is a django template with augmented models, 
 extra template tags, and useful utilities.
 
-- Core
+- [Core](auth/README.md)
 - Auth
 - SEO
 - Templates
