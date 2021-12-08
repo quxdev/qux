@@ -27,4 +27,11 @@
     </button>
   </div></div>
 </form>
+
+<div class="form-container text-muted mx-auto my-4">
+  <a href="{% url 'qux_auth:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+    New? Create an account
+  </a>
+</div>
+
 {% endblock form_body %}

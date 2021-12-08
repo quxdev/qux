@@ -49,7 +49,7 @@ class CustomAuthenticationForm(AuthenticationForm):
         return username
 
 
-class SignupForm(UserCreationForm):
+class BaseSignupForm(UserCreationForm):
     email = forms.EmailField(
         label='Email address',
         max_length=254,
@@ -65,14 +65,10 @@ class SignupForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('email', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
-        super(SignupForm, self).__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({
-            'class': 'form-control foo-border',
-            'placeholder': 'enter username or email address'
-        })
+        super(BaseSignupForm, self).__init__(*args, **kwargs)
         self.fields['password1'].widget.attrs.update({
             'class': 'form-control foo-border',
             'placeholder': 'Enter password'
@@ -80,6 +76,18 @@ class SignupForm(UserCreationForm):
         self.fields['password2'].widget.attrs.update({
             'class': 'form-control foo-border',
             'placeholder': 'Enter same password again'
+        })
+
+class SignupForm(BaseSignupForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super(SignupForm, self).__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control foo-border',
+            'placeholder': 'enter username or email address'
         })
 
 

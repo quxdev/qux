@@ -10,7 +10,7 @@ from django.contrib.auth.views import PasswordResetDoneView
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.contrib.sites.shortcuts import get_current_site
@@ -26,7 +26,7 @@ from .forms import ChangePasswordForm
 from .forms import CustomAuthenticationForm
 from .forms import CustomPasswordResetForm
 from .forms import CustomSetPasswordForm
-from .forms import SignupForm
+from .forms import SignupForm, BaseSignupForm
 
 
 # class HomeView(TemplateView):
@@ -36,28 +36,46 @@ from .forms import SignupForm
 #     }
 
 def signup(request):
+    form_class = SignupForm if settings.SHOW_USERNAME_SIGNUP else BaseSignupForm
     if request.method == 'POST':
-        form = SignupForm(request.POST)
+        form = form_class(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
+            if not settings.SHOW_USERNAME_SIGNUP:
+                user.username = user.email
             user.save()
-            current_site = get_current_site(request)
+            # current_site = get_current_site(request)
             mail_subject = 'Activate your account.'
-            message = render_to_string('acc_active_email.html', {
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = account_activation_token.make_token(user)
+            domain = request.build_absolute_uri('/')[:-1]
+            activate_url = reverse(
+                'qux_auth:activate',
+                kwargs={
+                    'uidb64': uid,
+                    'token': token
+                })
+            data = {
                 'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
+                # 'domain': current_site.domain,
+                'domain': domain,
+                'uid': uid,
+                'token': token,
+                'activate_url': domain+activate_url,
+            }
+            message = render_to_string('acc_active_email.html', data)
             to_email = form.cleaned_data.get('email')
             email = EmailMessage(
                 mail_subject, message, to=[to_email]
             )
+            email.content_subtype = 'html'
             email.send()
             return HttpResponse('Please confirm your email address to complete the registration')
     else:
-        form = SignupForm()
+        form = form_class()
+
     return render(request, 'signup.html', {'form': form})
 
 
@@ -154,6 +172,7 @@ class CorePasswordResetView(SEOMixin, PasswordResetView):
     form_class = CustomPasswordResetForm
     template_name = 'password_reset_form.html'
     email_template_name = 'password_reset_email.html'
+    html_email_template_name = 'password_reset_email.html'
     canonical_url = '/password-reset/'
     success_url = reverse_lazy('qux_auth:password_reset_done')
     extra_context = {
