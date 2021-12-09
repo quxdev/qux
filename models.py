@@ -77,8 +77,8 @@ class CoreModel(models.Model):
     def initdata(cls):
         print('{}.initdata()'.format(cls.__name__))
 
-    def to_dict(self):
-        return qux_model_to_dict(self)
+    def to_dict(self, fields=None, exclude=['id', 'dtm_created', 'dtm_updated'], exclude_none=False, verbose_name=False):
+        return qux_model_to_dict(self, fields=fields, exclude=exclude, exclude_none=exclude_none, verbose_name=verbose_name)
 
     @classmethod
     def get_dict(cls, pk):
