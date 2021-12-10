@@ -35,6 +35,10 @@ from .forms import SignupForm, BaseSignupForm
 #         "canonical": reverse('qux_auth:home')
 #     }
 
+
+User._meta.get_field('email')._unique = True
+
+
 def signup(request):
     form_class = SignupForm if settings.SHOW_USERNAME_SIGNUP else BaseSignupForm
     if request.method == 'POST':
@@ -44,6 +48,11 @@ def signup(request):
             user.is_active = False
             if not settings.SHOW_USERNAME_SIGNUP:
                 user.username = user.email
+                counter = 1
+                while User.objects.filter(username=user.username).exists():
+                    user.username = user.username + str(counter)
+                    counter += 1
+
             user.save()
             # current_site = get_current_site(request)
             mail_subject = 'Activate your account.'
@@ -74,9 +83,10 @@ def signup(request):
             email.send()
 
             data = {
-                'title':'Verify account',
-                'messages':[
-                    'We have sent an account verification email to <b>{}</b> to complete your registration.'.format(to_email),
+                'title': 'Verify account',
+                'messages': [
+                    'We have sent an account verification email to <b>{}</b> to complete your registration.'.format(
+                        to_email),
                     # 'Check the <b>spam</b> folder if you do not see the email within a few minutes of the request.'
                 ]
             }
@@ -98,16 +108,16 @@ def activate(request, uidb64, token):
         user.save()
         login(request, user)
         data = {
-            'title':'Account verified',
-            'messages':[
-                '<b><a href="/">Click here<a/></b> to continue to your account.'
+            'title': 'Account verified',
+            'messages': [
+                '<a style="color:red" href="/">Click here<a/> to continue to your account.'
             ]
         }
         return render(request, 'message.html', data)
     else:
         data = {
-            'title':'Invalid URL',
-            'messages':[
+            'title': 'Invalid URL',
+            'messages': [
                 'Activation link is invalid!',
             ]
         }
