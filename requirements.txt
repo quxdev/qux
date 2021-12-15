@@ -1,8 +1,11 @@
-Django>=3.2
+Django==3.2.9
 django-admin-rangefilter>=0.8.0
-django-extensions>=3.1.0
-djangorestframework>=3.12.4
+django-extensions>=3.1.5
+djangorestframework>=3.13
 numpy>=1.21.0
+phonenumbers>=8.12
 pip-autoremove>=0.10.0
-pipdeptree>=2.1.0
+pipdeptree>=2.2.0
 python-dotenv>=0.19
+six==1.16.0
+urllib3==1.26.7
