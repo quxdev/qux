@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Qux is a django template with augmented models, 
+Qux is a django template with augmented models,
 extra template tags, and useful utilities.
 
 - [Core](auth/README.md)
@@ -14,7 +14,7 @@ extra template tags, and useful utilities.
   - `mysql`
   - `date`
   - `phone`
-  
+
 ## Core [_qux_core_]
 
 ### Models
@@ -83,3 +83,14 @@ extra template tags, and useful utilities.
 ### Library: quxform
 
 - `is_checkbox` &rightarrow; `Boolean`
+
+Add these configuration in `project/project/settings.py` file after adding `qux` app in your project
+```sh
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+SHOW_USERNAME_SIGNUP = False
+
+ROOT_TEMPLATE = "_app.html"
+```
