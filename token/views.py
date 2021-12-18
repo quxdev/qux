@@ -16,17 +16,6 @@ from qux.seo.mixin import SEOMixin
 
 from .models import *
 
-# class CustomTokenAllowedMixin:
-#     def dispatch(self, request, *args, **kwargs):
-#         if request.user.is_superuser:
-#             return super().dispatch(request, *args, **kwargs)
-
-#         for confuser in request.user.ivruser_set.filter(ivr__config_type__api_allowed=True):
-#             if confuser.isallowed_reports or confuser.is_admin or confuser.is_owner:
-#                 return super().dispatch(request, *args, **kwargs)
-
-#         return redirect('/')
-
 
 class CustomTokenListView(SEOMixin, LoginRequiredMixin, ListView):
     model = CustomToken
@@ -99,7 +88,7 @@ class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
         return reverse("qux_token:home")
 
 
-class CustomTokenDeleteView(SEOMixin, LoginRequiredMixin, DeleteView): 
+class CustomTokenDeleteView(SEOMixin, LoginRequiredMixin, DeleteView):
     model = CustomToken
     extra_context = {
         'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
