@@ -1,56 +1,56 @@
 {% load static %}
 <nav id="nav" class="navbar navbar-expand-lg navbar-fixed-top navbar-light">
-  <div class="container-fluid p-0">
+  <div class="container-xl px-xl-0">
 
-  <a class="navbar-brand" href="/">
-    <img id="navbar-brand-image"
-         src="{%  static 'logo/qux.svg' %}"
-         height="2.5rem" style="max-width: 60vw;"
-         alt="{{ meta.name }}">
-  </a>
+    <a class="navbar-brand" href="/">
+      <img id="navbar-brand-image"
+           src="{% static 'logo/qux.svg' %}"
+           height="2.5rem" style="max-width: 60vw;"
+           alt="{{ meta.name }}">
+    </a>
 
-  <button type="button"
-          class="navbar-toggler"
-          data-toggle="collapse"
-          data-target="#navbar"
-          aria-expanded="false"
-          aria-controls="navbar">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+    <button type="button"
+            class="navbar-toggler"
+            data-toggle="collapse"
+            data-target="#navbar"
+            aria-expanded="false"
+            aria-controls="navbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div id="navbar" class="collapse navbar-collapse">
-    <ul class="nav navbar-default navbar-nav ml-auto">
-      <!-- Services -->
-      <li class="nav-item dropdown">
-        <a href="#" class="nav-link px-md-3" data-toggle="dropdown" role="button">
-          <span class="foo">Services</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-right">
-          <div class="dropdown-item">
-            <a href="#">Foo</a>
+    <div id="navbar" class="collapse navbar-collapse">
+      <ul class="nav navbar-default navbar-nav ml-auto">
+        <!-- Services -->
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link px-md-3" data-toggle="dropdown" role="button">
+            <span class="foo">Services</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <div class="dropdown-item">
+              <a href="#">Foo</a>
+            </div>
+            <div class="dropdown-item">
+              <a href="#">Bar</a>
+            </div>
+            <div class="dropdown-item">
+              <a href="#">Baz</a>
+            </div>
           </div>
-          <div class="dropdown-item">
-            <a href="#">Bar</a>
-          </div>
-          <div class="dropdown-item">
-            <a href="#">Baz</a>
-          </div>
-        </div>
-      </li>
+        </li>
 
-      <!-- Pricing -->
-      <li class="nav-item">
-        <a class="nav-link px-md-3" href="#">Pricing</a>
-      </li>
+        <!-- Pricing -->
+        <li class="nav-item">
+          <a class="nav-link px-md-3" href="#">Pricing</a>
+        </li>
 
-      <!-- About -->
-      <li class="nav-item">
-        <a href="#" class="nav-link px-md-3" data-toggle="dropdown" role="button">
-          <span class="foo">About Us</span>
-        </a>
-      </li>
+        <!-- About -->
+        <li class="nav-item">
+          <a href="#" class="nav-link px-md-3" data-toggle="dropdown" role="button">
+            <span class="foo">About Us</span>
+          </a>
+        </li>
 
-      {% comment %}
+        {% comment %}
       <!-- Contact -->
       <li class="nav-item">
         <a class="nav-link px-md-3" href="mailto:{{ meta.email }}" rel="nofollow">
@@ -58,7 +58,7 @@
         </a>
       </li>
       {% endcomment %}
-    </ul>
-  </div>
+      </ul>
+    </div>
   </div>
 </nav>
