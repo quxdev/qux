@@ -1,0 +1,79 @@
+/*
+ * ListView
+ */
+.rounded-table {
+  border-radius: 0.375rem;
+}
+.qux-table {
+  font-size: 0.875rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-bottom: 0;
+  border-color: transparent;
+}
+.qux-table thead {
+  background: #819ad5;
+}
+.qux-table tbody {
+  background: white;
+}
+.qux-table tbody tr {
+  cursor: pointer;
+}
+.qux-table tbody .dark-tr {
+  background: #343a40 !important;
+  color: white;
+  transition: all 0.2s ease-in-out;
+}
+.qux-table tbody .dark-tr:hover {
+  background: #111 !important;
+  color: white;
+}
+.qux-table th, .qux-table td {
+  padding: 0.5rem;
+  border-top: 0 !important;
+  border-bottom: 2px solid rgb(249, 246, 239) !important;
+  vertical-align: middle;
+}
+.qux-table.table-formview tbody {
+  background-color: transparent;
+}
+.qux-table.table-formview thead {
+  background-color: inherit !important;
+}
+.qux-table.table-formview th, .qux-table.table-formview td {
+  padding: 0.5rem 0;
+}
+.qux-table.table-formview th {
+  border-bottom: 1px solid #ced4da !important;
+}
+.qux-table.table-formview td {
+  padding: 0.5rem 0.5rem 0.5rem 0;
+}
+.qux-table.table-formview td:last-child {
+  padding: 0.5rem 0;
+}
+.qux-table.table-formview .form-control {
+  background-color: #ced4da;
+}
+
+/* max width = sm + sidebar width = 286px */
+@media screen and (max-width: 1053px) {
+  .qux-table.table-listview {
+    /* blended table-responsive-<size> and custom padding */
+    width: 100%;
+    overflow-x: auto;
+    display: table !important;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .qux-table.table-listview {
+    width: 100%;
+    overflow-x: auto;
+    display: table !important;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
