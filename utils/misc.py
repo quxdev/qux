@@ -8,47 +8,47 @@ import numpy as np
 
 
 FMT_DTSTR = [
-    '%Y-%m-%d',
-    '%b %Y',
-    '%b_%Y',
-    '%Y-%m-%d %H:%M',
-    '%Y%m%d',
-    '%Y%m%d %H:%M',
-    '%d%b%Y',
-    '%m/%d/%y',
-    '%d%b%Y %H:%M',
-    '%b-%d-%y',
-    '%b-%d-%y %H:%M',
-    '%d-%b-%Y',
-    '%d-%b-%Y %H:%M',
-    '%m/%d/%Y',
-    '%m/%d/%Y %H:%M',
-    '%d-%m-%Y',
-    '%d-%m-%Y %H:%M',
-    '%b-%y',
-    '%H:%M',
+    "%Y-%m-%d",
+    "%b %Y",
+    "%b_%Y",
+    "%Y-%m-%d %H:%M",
+    "%Y%m%d",
+    "%Y%m%d %H:%M",
+    "%d%b%Y",
+    "%m/%d/%y",
+    "%d%b%Y %H:%M",
+    "%b-%d-%y",
+    "%b-%d-%y %H:%M",
+    "%d-%b-%Y",
+    "%d-%b-%Y %H:%M",
+    "%m/%d/%Y",
+    "%m/%d/%Y %H:%M",
+    "%d-%m-%Y",
+    "%d-%m-%Y %H:%M",
+    "%b-%y",
+    "%H:%M",
 ]
 
 
 def get_random_string(length=8):
     letters = string.ascii_letters
-    result = ''.join(random.choice(letters) for _ in range(length))
+    result = "".join(random.choice(letters) for _ in range(length))
     return result
 
 
 def get_random_number(length=10):
     numbers = string.digits
-    result = ''.join(random.choice(numbers) for _ in range(length))
+    result = "".join(random.choice(numbers) for _ in range(length))
     return result
 
 
 class QuxComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         # date
-        if hasattr(obj, 'isoformat'):
+        if hasattr(obj, "isoformat"):
             return obj.isoformat()
         elif isinstance(obj, decimal.Decimal):
-            return '{0:f}'.format(obj)
+            return "{0:f}".format(obj)
         elif isinstance(obj, uuid.UUID):
             return obj.hex
         elif isinstance(obj, np.generic):
@@ -88,11 +88,11 @@ def tofloat(numstr, defaultvalue=None):
     if type(numstr) in [int, float]:
         return float(numstr)
 
-    if type(numstr) in [str, str] and numstr == '':
+    if type(numstr) in [str, str] and numstr == "":
         return float(0)
 
     try:
-        result = float(numstr.replace(', ', ''))
+        result = float(numstr.replace(", ", ""))
     except ValueError:
         result = defaultvalue
     except AttributeError:
@@ -105,11 +105,11 @@ def toint(numstr, default=None):
     if type(numstr) in [int, float]:
         result = int(numstr)
     elif type(numstr) in [str, str]:
-        if numstr == '':
+        if numstr == "":
             result = default
         else:
             try:
-                result = int(numstr.replace(', ', ''))
+                result = int(numstr.replace(", ", ""))
             except ValueError:
                 result = default
             except AttributeError:
@@ -122,10 +122,10 @@ def toint(numstr, default=None):
 def tostring(somevalue):
     numdecimalplaces = 2
     if type(somevalue) == float:
-        result = '{0:,.{1}f}'.format(somevalue, numdecimalplaces)
+        result = "{0:,.{1}f}".format(somevalue, numdecimalplaces)
         return result
     if type(somevalue) == int:
-        result = '{0:,d}'.format(somevalue)
+        result = "{0:,d}".format(somevalue)
         return result
     return somevalue
 
@@ -149,7 +149,7 @@ def tonumericlist(target):
 
 
 def tobool(x):
-    y = ['yes', 'y', 'true', '1']
+    y = ["yes", "y", "true", "1"]
     if any([v == x.lower() for v in y]):
         return True
     else:

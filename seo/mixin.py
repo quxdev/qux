@@ -18,13 +18,13 @@ class SEOMixin:
 
         seocontext = self.seocontext(site)
         if seocontext:
-            context['meta'] = seocontext
+            context["meta"] = seocontext
 
         return context
 
     def getsite(self):
-        if settings.SITE_ID == 1 and 'sitename' in self.kwargs:
-            sitename = self.kwargs['sitename']
+        if settings.SITE_ID == 1 and "sitename" in self.kwargs:
+            sitename = self.kwargs["sitename"]
             site = Site.objects.filter(name=sitename).first()
         else:
             site = get_current_site(self.request)
@@ -41,11 +41,11 @@ class SEOMixin:
             result = {}
             return result
 
-        if hasattr(self.__class__, 'canonical_url'):
+        if hasattr(self.__class__, "canonical_url"):
             url = self.__class__.canonical_url
         else:
             path = self.request.get_full_path()
-            url = path.split('?')[0]
+            url = path.split("?")[0]
 
         pageobj = SEOPage.objects.get_or_none(site=site, canonical=url)
         if pageobj:

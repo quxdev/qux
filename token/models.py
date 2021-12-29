@@ -33,6 +33,3 @@ class CustomToken(CoreModelPlus):
 
 class CustomTokenAuthentication(TokenAuthentication):
     model = CustomToken
-
-
-

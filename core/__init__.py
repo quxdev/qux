@@ -1,1 +1,1 @@
-default_app_config = 'qux.core.apps.CoreConfig'
+default_app_config = "qux.core.apps.CoreConfig"

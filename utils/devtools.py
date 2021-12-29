@@ -12,7 +12,7 @@ def stacktrace(depth=6):
             print(x)
 
     if len(stack) > depth:
-        print('  ...')
-        print('  ' + stack[-1])
+        print("  ...")
+        print("  " + stack[-1])
 
     print()

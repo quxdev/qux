@@ -11,8 +11,13 @@ from rangefilter.filters import DateRangeFilter
 default_null_blank = dict(default=None, null=True, blank=True)
 
 
-def qux_model_to_dict(instance, fields=None, exclude=['id', 'dtm_created', 'dtm_updated'],
-                      exclude_none=False, verbose_name=False):
+def qux_model_to_dict(
+    instance,
+    fields=None,
+    exclude=["id", "dtm_created", "dtm_updated"],
+    exclude_none=False,
+    verbose_name=False,
+):
     opts = instance._meta
     data = {}
     if exclude_none:
@@ -29,7 +34,9 @@ def qux_model_to_dict(instance, fields=None, exclude=['id', 'dtm_created', 'dtm_
                 data[field_name] = []
             else:
                 try:
-                    data[field_name] = list(f.value_from_object(instance).values_list('pk', flat=True))
+                    data[field_name] = list(
+                        f.value_from_object(instance).values_list("pk", flat=True)
+                    )
                 except AttributeError:
                     data[field_name] = list(f.value_from_object(instance))
                 except FieldDoesNotExist:
@@ -51,17 +58,17 @@ class CoreModel(models.Model):
     objects = CoreManager()
     all_objects = models.Manager()
 
-    dtm_created = models.DateTimeField(verbose_name='DTM Created', auto_now_add=True)
-    dtm_updated = models.DateTimeField(verbose_name='DTM Updated', auto_now=True)
+    dtm_created = models.DateTimeField(verbose_name="DTM Created", auto_now_add=True)
+    dtm_updated = models.DateTimeField(verbose_name="DTM Updated", auto_now=True)
 
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
         # slug = prefixed random string
-        if hasattr(self, 'slug') and not self.slug:
-            prefix = getattr(self.__class__, 'SLUG_PREFIX', None)
-            prefix = prefix + '_' if prefix else ''
+        if hasattr(self, "slug") and not self.slug:
+            prefix = getattr(self.__class__, "SLUG_PREFIX", None)
+            prefix = prefix + "_" if prefix else ""
 
             self.slug = prefix + self.get_slug()
             while self.__class__.objects.filter(slug=self.slug).exists():
@@ -75,10 +82,22 @@ class CoreModel(models.Model):
 
     @classmethod
     def initdata(cls):
-        print('{}.initdata()'.format(cls.__name__))
+        print("{}.initdata()".format(cls.__name__))
 
-    def to_dict(self, fields=None, exclude=['id', 'dtm_created', 'dtm_updated'], exclude_none=False, verbose_name=False):
-        return qux_model_to_dict(self, fields=fields, exclude=exclude, exclude_none=exclude_none, verbose_name=verbose_name)
+    def to_dict(
+        self,
+        fields=None,
+        exclude=["id", "dtm_created", "dtm_updated"],
+        exclude_none=False,
+        verbose_name=False,
+    ):
+        return qux_model_to_dict(
+            self,
+            fields=fields,
+            exclude=exclude,
+            exclude_none=exclude_none,
+            verbose_name=verbose_name,
+        )
 
     @classmethod
     def get_dict(cls, pk):
@@ -88,7 +107,7 @@ class CoreModel(models.Model):
     def settag(self, tag: str):
         tags = []
         if self.tags:
-            tags = [x.strip() for x in self.tags.split(',')]
+            tags = [x.strip() for x in self.tags.split(",")]
         tags.append(tag)
         tags.sort()
         self.tags = ",".join(tags)
@@ -97,7 +116,7 @@ class CoreModel(models.Model):
     def deltag(self, tag: str):
         tags = []
         if self.tags:
-            tags = [x.strip() for x in self.tags.split(',')]
+            tags = [x.strip() for x in self.tags.split(",")]
         if tag in tags:
             tags.remove(tag)
         tags.sort()
@@ -106,28 +125,30 @@ class CoreModel(models.Model):
 
     def hastag(self, tag: str):
         tags = []
-        if self.tags and self.tags != '':
-            tags = [x.strip() for x in self.tags.split(',')]
+        if self.tags and self.tags != "":
+            tags = [x.strip() for x in self.tags.split(",")]
         if tag in tags:
             return True
         return False
 
     def gettags(self):
         tags = []
-        if self.tags and self.tags != '':
-            tags = [x.strip() for x in self.tags.split(',')]
+        if self.tags and self.tags != "":
+            tags = [x.strip() for x in self.tags.split(",")]
         if "" in tags:
             tags.remove("")
         return tags
 
     @classmethod
     def gettaglist(cls):
-        tags = cls.objects.all() \
-            .exclude(models.Q(tags__isnull=True) | models.Q(tags='')) \
-            .values_list('tags', flat=True) \
+        tags = (
+            cls.objects.all()
+            .exclude(models.Q(tags__isnull=True) | models.Q(tags=""))
+            .values_list("tags", flat=True)
             .distinct()
+        )
         tags = ",".join(tags)
-        tags = [x.strip() for x in tags.split(',')]
+        tags = [x.strip() for x in tags.split(",")]
         tags = list(set(tags))
         if "" in tags:
             tags.remove("")
@@ -135,12 +156,15 @@ class CoreModel(models.Model):
 
 
 class CoreModelAdmin(admin.ModelAdmin):
-    list_display = ('dtm_created', 'dtm_updated',)
-    list_filter = (
-        ('dtm_created', DateRangeFilter),
-        ('dtm_updated', DateRangeFilter)
+    list_display = (
+        "dtm_created",
+        "dtm_updated",
     )
-    readonly_fields = ('dtm_created', 'dtm_updated',)
+    list_filter = (("dtm_created", DateRangeFilter), ("dtm_updated", DateRangeFilter))
+    readonly_fields = (
+        "dtm_created",
+        "dtm_updated",
+    )
 
     list_per_page = 50
     show_full_result_count = False
@@ -204,13 +228,20 @@ class CoreModelPlus(CoreModel):
 
 
 class CoreModelPlusAdmin(admin.ModelAdmin):
-    list_display = ('is_deleted', 'dtm_created', 'dtm_updated',)
-    list_filter = (
-        'is_deleted',
-        ('dtm_created', DateRangeFilter),
-        ('dtm_updated', DateRangeFilter)
+    list_display = (
+        "is_deleted",
+        "dtm_created",
+        "dtm_updated",
     )
-    readonly_fields = ('dtm_created', 'dtm_updated',)
+    list_filter = (
+        "is_deleted",
+        ("dtm_created", DateRangeFilter),
+        ("dtm_updated", DateRangeFilter),
+    )
+    readonly_fields = (
+        "dtm_created",
+        "dtm_updated",
+    )
 
     list_per_page = 50
     show_full_result_count = False

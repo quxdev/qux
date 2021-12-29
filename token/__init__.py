@@ -1,1 +1,1 @@
-default_app_config = 'qux.token.apps.TokenConfig'
+default_app_config = "qux.token.apps.TokenConfig"

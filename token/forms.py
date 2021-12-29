@@ -6,7 +6,9 @@ from .models import *
 class CustomTokenForm(forms.ModelForm):
     class Meta:
         model = CustomToken
-        fields = ['name', ]
+        fields = [
+            "name",
+        ]
 
     def save(self, user=None):
         newform = super(CustomTokenForm, self).save(commit=False)
@@ -16,9 +18,8 @@ class CustomTokenForm(forms.ModelForm):
         return newform
 
     name = forms.CharField(
-        label='Name',
-        widget=forms.TextInput(attrs={
-            'class': 'form-control foo-border',
-            'placeholder': 'Enter name'
-        })
+        label="Name",
+        widget=forms.TextInput(
+            attrs={"class": "form-control foo-border", "placeholder": "Enter name"}
+        ),
     )

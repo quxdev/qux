@@ -1,1 +1,1 @@
-default_app_config = 'qux.auth.apps.AuthConfig'
+default_app_config = "qux.auth.apps.AuthConfig"

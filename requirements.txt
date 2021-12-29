@@ -1,3 +1,4 @@
+beautifulsoup4==4.10.0
 Django==3.2.9
 django-admin-rangefilter>=0.8.0
 django-extensions>=3.1.5

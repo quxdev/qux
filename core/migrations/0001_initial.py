@@ -16,34 +16,99 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Company',
+            name="Company",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dtm_created', models.DateTimeField(auto_now_add=True, verbose_name='DTM Created')),
-                ('dtm_updated', models.DateTimeField(auto_now=True, verbose_name='DTM Updated')),
-                ('name', models.CharField(max_length=128)),
-                ('address', models.TextField(blank=True, default=None, null=True)),
-                ('domain', models.CharField(max_length=255)),
-                ('url', models.URLField(blank=True, default=None, max_length=1024, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "dtm_created",
+                    models.DateTimeField(auto_now_add=True, verbose_name="DTM Created"),
+                ),
+                (
+                    "dtm_updated",
+                    models.DateTimeField(auto_now=True, verbose_name="DTM Updated"),
+                ),
+                ("name", models.CharField(max_length=128)),
+                ("address", models.TextField(blank=True, default=None, null=True)),
+                ("domain", models.CharField(max_length=255)),
+                (
+                    "url",
+                    models.URLField(
+                        blank=True, default=None, max_length=1024, null=True
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Company',
-                'verbose_name_plural': 'Companies',
+                "verbose_name": "Company",
+                "verbose_name_plural": "Companies",
             },
         ),
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dtm_created', models.DateTimeField(auto_now_add=True, verbose_name='DTM Created')),
-                ('dtm_updated', models.DateTimeField(auto_now=True, verbose_name='DTM Updated')),
-                ('phone', models.CharField(max_length=16, validators=[django.core.validators.RegexValidator(message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.", regex='^\\+?[1-9]\\d{4,14}$')])),
-                ('title', models.CharField(blank=True, default=None, max_length=255, null=True)),
-                ('company', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='qux_core.company')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "dtm_created",
+                    models.DateTimeField(auto_now_add=True, verbose_name="DTM Created"),
+                ),
+                (
+                    "dtm_updated",
+                    models.DateTimeField(auto_now=True, verbose_name="DTM Updated"),
+                ),
+                (
+                    "phone",
+                    models.CharField(
+                        max_length=16,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
+                                regex="^\\+?[1-9]\\d{4,14}$",
+                            )
+                        ],
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(
+                        blank=True, default=None, max_length=255, null=True
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        blank=True,
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="qux_core.company",
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'User Profile',
+                "verbose_name": "User Profile",
             },
         ),
     ]
