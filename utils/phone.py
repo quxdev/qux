@@ -4,7 +4,7 @@ from phonenumbers.phonenumberutil import PhoneNumberFormat
 import random
 
 
-def phone_number(phone, country: str = 'IN'):
+def phone_number(phone, country: str = "IN"):
     if phone is None:
         return None
 
@@ -24,9 +24,9 @@ def phone_number(phone, country: str = 'IN'):
             result = phonenumbers.format_number(result, PhoneNumberFormat.E164)
 
         # Number is not a valid number as is. Does prefixing with a '+' help?
-        elif not phone.startswith('+'):
+        elif not phone.startswith("+"):
             try:
-                result = phonenumbers.parse('+' + phone, None)
+                result = phonenumbers.parse("+" + phone, None)
                 if phonenumbers.is_valid_number(result):
                     result = phonenumbers.format_number(result, PhoneNumberFormat.E164)
                 else:
@@ -51,13 +51,13 @@ def phone_number(phone, country: str = 'IN'):
 #     return result
 
 
-def fakephonenumber(countrycode: str = 'IN'):
-    if countrycode == 'IN':
+def fakephonenumber(countrycode: str = "IN"):
+    if countrycode == "IN":
         result = None
         while phone_number(result) is None:
-            result = ''.join(
-                [str(random.randint(6, 9))] +
-                [str(random.randint(0, 9)) for _ in range(9)]
+            result = "".join(
+                [str(random.randint(6, 9))]
+                + [str(random.randint(0, 9)) for _ in range(9)]
             )
 
         return phone_number(result)
@@ -71,7 +71,7 @@ def format_phone_number(phone, fmt="national"):
     except NumberParseException:
         return phone
 
-    if fmt == 'international':
+    if fmt == "international":
         result = phonenumbers.format_number(p, PhoneNumberFormat.INTERNATIONAL)
     elif p.country_code == 91:
         result = phonenumbers.format_number(p, PhoneNumberFormat.NATIONAL)

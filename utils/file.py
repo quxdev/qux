@@ -19,13 +19,13 @@ def uploadfile(source, target=None):
     print(f"file.py:uploadfile({source}, {target})")
 
     if target is None:
-        basepath = os.path.join(settings.BASE_DIR, 'data/upload')
+        basepath = os.path.join(settings.BASE_DIR, "data/upload")
         filename = os.path.join(basepath, source.name)
     else:
         filename = target
 
     try:
-        with open(filename, 'wb+') as fhandle:
+        with open(filename, "wb+") as fhandle:
             for chunk in source.chunks():
                 fhandle.write(chunk)
         result = True
@@ -35,4 +35,3 @@ def uploadfile(source, target=None):
     print(f"file.py:uploadfile({source}, {filename}) => {result}")
 
     return result, filename
-
