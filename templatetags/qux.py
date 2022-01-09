@@ -51,12 +51,12 @@ def qux_max(value, maxvalue):
 
 @register.filter(name="qux_floatformat_in")
 def qux_floatformat_in(value, precision):
-    return qux_floatformat(value, precision, 'in')
+    return qux_floatformat(value, precision, "in")
 
 
 @register.filter(name="qux_floatformat_us")
 def qux_floatformat_us(value, precision):
-    return qux_floatformat(value, precision, 'us')
+    return qux_floatformat(value, precision, "us")
 
 
 def qux_floatformat(value, precision, locale):
@@ -74,7 +74,7 @@ def qux_floatformat(value, precision, locale):
     result = ""
 
     for n, c in enumerate(reversed(str(left))):
-        if locale == 'in':
+        if locale == "in":
             result = f"{c},{result}" if (n > 1 and n % 2 == 1) else f"{c}{result}"
         else:
             result = f"{c},{result}" if (n > 1 and (n + 1) % 3 == 1) else f"{c}{result}"
@@ -101,13 +101,13 @@ def date_before(days):
 
 @register.filter(name="addstr")
 def addstr(a, b):
-    return '{}_{}'.format(a, b)
+    return "{}_{}".format(a, b)
 
 
 # https://stackoverflow.com/a/36288962/
 @register.simple_tag(takes_context=True)
 def url_replace(context, **kwargs):
-    query = context['request'].GET.copy()
+    query = context["request"].GET.copy()
     [query.pop(kwarg) for kwarg in kwargs if kwarg in query]
     query.update(kwargs)
     return urlencode(query)
@@ -127,7 +127,7 @@ def getconfig(setting: str, default_value: str = None):
 # https://stackoverflow.com/a/50630001/
 @register.tag
 def lineless(parser, token):
-    nodelist = parser.parse(('endlineless',))
+    nodelist = parser.parse(("endlineless",))
     parser.delete_first_token()
     return LinelessNode(nodelist)
 
@@ -138,8 +138,8 @@ class LinelessNode(template.Node):
 
     def render(self, context):
         input_str = self.nodelist.render(context)
-        output_str = ''
+        output_str = ""
         for line in input_str.splitlines():
             if line.strip():
-                output_str = '\n'.join((output_str, line))
+                output_str = "\n".join((output_str, line))
         return output_str

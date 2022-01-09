@@ -5,8 +5,7 @@ from django.core.validators import RegexValidator
 comma_separated_float_list_regexp = re.compile(r"^([-+]?\d*\.?\d+[,\s]*)+$")
 
 validate_comma_separated_float_list = RegexValidator(
-        comma_separated_float_list_regexp,
-        'Field must contain comma separated float values'
+    comma_separated_float_list_regexp, "Field must contain comma separated float values"
 )
 
 
