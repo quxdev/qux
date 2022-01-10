@@ -120,9 +120,12 @@ class MetaURL(object):
         #         if is_valid:
         #             description += text
 
-        description = re.sub("[\n\r\t]", " ", description)
-        description = re.sub(" +", " ", description)
-        ogdata["description"] = description.strip()[:255]
+        if description:
+            description = re.sub("[\n\r\t]", " ", description)
+            description = re.sub(" +", " ", description)
+            ogdata["description"] = description.strip()[:255]
+        else:
+            ogdata["description"] = None
 
         for x in ["type", "title", "description", "image"]:
             setattr(self, x, ogdata.get(x, None))
