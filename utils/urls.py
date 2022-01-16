@@ -120,14 +120,19 @@ class MetaURL(object):
         #         if is_valid:
         #             description += text
 
+        print(json.dumps(ogdata, indent=2))
+
         if description:
-            description = re.sub("[\n\r\t]", " ", description)
-            description = re.sub(" +", " ", description)
-            ogdata["description"] = description.strip()[:255]
+            pass
+            # description = description.split("\n", 1)[0]
+            # description = re.sub("[\r\t]", " ", description)
+            # description = re.sub(" +", " ", description)
+            # ogdata["description"] = description.strip()[:255]
         else:
             ogdata["description"] = None
 
-        for x in ["type", "title", "description", "image"]:
+        self.type = ogdata.get("type", "website")
+        for x in ["title", "description", "image"]:
             setattr(self, x, ogdata.get(x, None))
 
         self.domain = urlparse(self.url).netloc

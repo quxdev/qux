@@ -88,14 +88,12 @@ body {
 
 {% block javascript %}
 <script type="text/javascript" src="{% static 'js/qux/quxidget.js' %}"></script>
-{% endblock %}
-
 <script>
 $('document').ready(function () {
   $('[data-toggle=tooltip]').tooltip();
 })
 </script>
-
+{% endblock %}
 
 {% block customjs %}
 {% endblock %}
