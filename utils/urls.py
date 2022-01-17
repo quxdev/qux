@@ -101,26 +101,15 @@ class MetaURL(object):
         ogdata = soup.html.head.find_all(property=re.compile(r"^og"))
         ogdata = {og.get("property")[3:]: og.get("content") for og in ogdata}
 
-        # URL
-        if not ogdata.get("url"):
-            ogdata["url"] = self.url
-        else:
-            self.url = ogdata["url"]
+        # print(json.dumps(ogdata, indent=2))
 
-        # Title
+        if not ogdata.get("url"):
+            ogdata["url"] = response.url
+
         if not ogdata.get("title"):
             ogdata["title"] = soup.html.title.text
 
         description = ogdata.get("description")
-        # if not description:
-        #     description = ""
-        #     for text in soup.body.find_all(string=True):
-        #         is_valid = text.parent.name not in ['script', 'style']
-        #         is_valid = is_valid and not isinstance(text, bs4.Comment)
-        #         if is_valid:
-        #             description += text
-
-        print(json.dumps(ogdata, indent=2))
 
         if description:
             pass
@@ -130,11 +119,18 @@ class MetaURL(object):
             # ogdata["description"] = description.strip()[:255]
         else:
             ogdata["description"] = None
-
-        self.type = ogdata.get("type", "website")
-        for x in ["title", "description", "image"]:
-            setattr(self, x, ogdata.get(x, None))
+            # description = ""
+            # for text in soup.body.find_all(string=True):
+            #     is_valid = text.parent.name not in ['script', 'style']
+            #     is_valid = is_valid and not isinstance(text, bs4.Comment)
+            #     if is_valid:
+            #         description += text
 
         self.domain = urlparse(self.url).netloc
+
+        for x in ["url", "title", "description", "image"]:
+            setattr(self, x, ogdata.get(x, None))
+
+        self.type = ogdata.get("type", "website")
 
         return ogdata
