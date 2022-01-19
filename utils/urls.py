@@ -132,5 +132,6 @@ class MetaURL(object):
             setattr(self, x, ogdata.get(x, None))
 
         self.type = ogdata.get("type", "website")
+        self.type = self.type.rsplit(".", 1)[-1]
 
         return ogdata

@@ -11,3 +11,6 @@ class QuxForm(forms.ModelForm):
             # getbootstrap.com/docs/4.6/components/input-group/#custom-file-input
             if type(visible.field.widget) is forms.widgets.ClearableFileInput:
                 visible.field.widget.attrs["class"] += " custom-file-input"
+
+            if type(visible.field.widget) is forms.widgets.CheckboxInput:
+                visible.field.widget.attrs["class"] = "form-check-input"

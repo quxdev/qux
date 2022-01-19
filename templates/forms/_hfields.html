@@ -13,6 +13,20 @@
   {% endif %}
 
   <div class="form-group row">
+    {# checkbox #}
+    {# getbootstrap.com/docs/4.6/components/forms/#horizontal-form #}
+    {% if 'form-check-input' in field.field.widget.attrs.class %}
+    <div class="col-12 offset-sm-4 col-sm-8 offset-md-3 col-md-9 offset-xl-2 col-xl-10">
+      <div class="form-check">
+        {{ field }}
+        <label id="label_{{ field.auto_id }}" for="{{ field.id_for_label }}" class="form-check-label">
+          {{ field.label }}
+        </label>
+      </div>
+    </div>
+    {# END checkbox #}
+
+    {% else %}
     <label for="{{ field.id_for_label }}" class="col-12 col-sm-4 col-md-3 col-xl-2 col-form-label">
       {{ field.label }}
       {% if field.field.required %}
@@ -58,5 +72,6 @@
         <small class="input-err-text text-muted">{{ error }}</small>
       {% endfor %}
     </div>
+    {% endif %}
   </div>
 {% endfor %}
