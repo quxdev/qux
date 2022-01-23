@@ -3,6 +3,7 @@ import os
 import re
 from urllib.error import URLError
 from urllib.parse import urlparse
+from urllib.parse import urljoin
 from urllib.request import urlopen
 
 import bs4
@@ -53,17 +54,19 @@ def fetchurl_to_file(urlstr: str, target: str):
 
 class MetaURL(object):
     def __init__(self):
+        self.orig_url = None
         self.url = None
+        self.domain = None
         # https://ogp.me/#types
         # website, profile, book, article, music, video
         self.type = None
         self.title = None
         self.description = None
         self.image = None
-        self.domain = None
 
     def to_dict(self):
         result = {
+            "domain": self.domain,
             "url": self.url,
             "type": self.type,
             "title": self.title,
@@ -79,6 +82,8 @@ class MetaURL(object):
         """
         Inspired by github.com/vitorfs/bootcamp/blob/master/bootcamp/helpers.py
         """
+        self.orig_url = self.url
+
         parsed_url = urlparse(self.url)
         if not parsed_url.scheme:
             self.url = f"https://{parsed_url.path}"
@@ -98,40 +103,43 @@ class MetaURL(object):
             return JsonResponse({"message": "Error connecting to site"})
 
         soup = bs4.BeautifulSoup(response.content, features="html.parser")
-        ogdata = soup.html.head.find_all(property=re.compile(r"^og"))
-        ogdata = {og.get("property")[3:]: og.get("content") for og in ogdata}
+        try:
+            ogdata = soup.html.head.find_all(property=re.compile(r"^og"))
+            ogdata = {og.get("property")[3:]: og.get("content") for og in ogdata}
+            found = True
+        except AttributeError:
+            ogdata = {}
+            found = False
 
-        # print(json.dumps(ogdata, indent=2))
-
-        if not ogdata.get("url"):
-            ogdata["url"] = response.url
-
-        if not ogdata.get("title"):
-            ogdata["title"] = soup.html.title.text
-
-        description = ogdata.get("description")
-
-        if description:
-            pass
-            # description = description.split("\n", 1)[0]
-            # description = re.sub("[\r\t]", " ", description)
-            # description = re.sub(" +", " ", description)
-            # ogdata["description"] = description.strip()[:255]
+        if found:
+            if not ogdata.get("url"):
+                ogdata["url"] = response.url
+            if not ogdata.get("title"):
+                ogdata["title"] = soup.html.title.text
+            description = ogdata.get("description", None)
+            if description is None:
+                ogdata["description"] = None
+            self.type = ogdata.get("type", "website")
+            self.type = self.type.rsplit(".", 1)[-1]
         else:
-            ogdata["description"] = None
-            # description = ""
-            # for text in soup.body.find_all(string=True):
-            #     is_valid = text.parent.name not in ['script', 'style']
-            #     is_valid = is_valid and not isinstance(text, bs4.Comment)
-            #     if is_valid:
-            #         description += text
+            filepath = urlparse(response.url).path
+            extension = os.path.splitext(filepath)[1].split(".")[-1]
+            extension = extension[:3].lower()
+            ogdata = {
+                "url": urljoin(response.url, filepath),
+                "title": filepath,
+                "description": None if self.url == response.url else self.url,
+            }
+            self.type = {
+                "pdf": "file.pdf",
+                "xls": "file.xls",
+                "doc": "file.doc",
+                "ppt": "file.ppt",
+            }.get(str(extension), "file.unknown")
 
         self.domain = urlparse(self.url).netloc
 
         for x in ["url", "title", "description", "image"]:
             setattr(self, x, ogdata.get(x, None))
-
-        self.type = ogdata.get("type", "website")
-        self.type = self.type.rsplit(".", 1)[-1]
 
         return ogdata
