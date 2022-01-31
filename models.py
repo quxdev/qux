@@ -14,10 +14,12 @@ default_null_blank = dict(default=None, null=True, blank=True)
 def qux_model_to_dict(
     instance,
     fields=None,
-    exclude=["id", "dtm_created", "dtm_updated"],
+    exclude=None,
     exclude_none=False,
     verbose_name=False,
 ):
+    if exclude is None:
+        exclude = ["id", "dtm_created", "dtm_updated"]
     opts = instance._meta
     data = {}
     if exclude_none:
@@ -70,15 +72,16 @@ class CoreModel(models.Model):
             prefix = getattr(self.__class__, "SLUG_PREFIX", None)
             prefix = prefix + "_" if prefix else ""
 
-            self.slug = prefix + self.get_slug()
+            slug_length = self._meta.get_field("slug").max_length
+            self.slug = prefix + self.get_slug(slug_length)
             while self.__class__.objects.filter(slug=self.slug).exists():
                 self.slug = prefix + self.get_slug()
 
         super().save(*args, **kwargs)
 
     @staticmethod
-    def get_slug():
-        return get_random_string(16)
+    def get_slug(slug_length: int = 16):
+        return get_random_string(slug_length).lower()
 
     @classmethod
     def initdata(cls):
@@ -87,10 +90,12 @@ class CoreModel(models.Model):
     def to_dict(
         self,
         fields=None,
-        exclude=["id", "dtm_created", "dtm_updated"],
+        exclude=None,
         exclude_none=False,
         verbose_name=False,
     ):
+        if exclude is None:
+            exclude = ["id", "dtm_created", "dtm_updated"]
         return qux_model_to_dict(
             self,
             fields=fields,
@@ -190,7 +195,7 @@ class CoreModelAdmin(admin.ModelAdmin):
 class CoreManagerPlus(CoreManager):
     def get(self, *args, **kwargs):
         # print("get is_deleted=False")
-        return self.get_queryset().get()
+        return self.get_queryset().get(*args, **kwargs)
 
     def filter(self, *args, **kwargs):
         # print("filter is_deleted=False")
