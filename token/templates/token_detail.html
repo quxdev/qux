@@ -1,6 +1,5 @@
 {% extends '_token.html' %}
 {% load static %}
-{% comment %} {% load fubar %} {% endcomment %}
 
 {% block ralph_headings %}
 <h1>Token Details</h1>
@@ -10,12 +9,13 @@
 <div class="my-4">
   <div class="row">
     <div class="col-12">
-      <p class="p-2 text-danger border border-danger rounded-lg">This key is only shown ONCE. Make note of it and store it in a safe, secure location.</p>
+      <p class="p-2 text-danger border border-danger rounded-lg">This key is only shown ONCE. Make note of it and
+        store it in a safe, secure location.</p>
     </div>
 
     <div class="col-12 my-3">
       <div>
-      <label>Name</label>
+        <label>Name</label>
       </div>
       <div class="p-2 border border-secondary rounded-lg">
         {{ object.name }}
@@ -24,14 +24,50 @@
 
     <div class="col-12 my-3">
       <div>
-      <label>Key</label>
+        <label>Key</label>
       </div>
       <div class="p-2 border border-danger rounded bg-danger text-white"
-           style="font-family: 'Roboto Mono', monospace; font-size: 14px;">
-        {{ object.key }}
-      </div>
+           style="font-family: 'Roboto Mono', monospace; font-size: 14px; overflow: scroll">
+        <span id='token-str'>{{ object.key }}</span>
+        <i id='token-copy-icon'
+           class='fa fa-copy'
+           style='cursor: pointer'></i>
+        <span id='token-copied-confirmation' style='display: none'>
+          Copied to clipboard
+        </span>
       </div>
     </div>
   </div>
+
+  <div class='mt-5 d-flex justify-content-center align-items-center'>
+    <button class='btn btn-primary'
+            onclick="location.href='{% url 'qux_token:home' %}'">
+      Done
+    </button>
+  </div>
 </div>
 {% endblock ralph %}
+
+{% block customjs %}
+{{ block.super }}
+<script>
+  $(document).ready(function() {
+    let tokenIcon = $('#token-copy-icon');
+    let tokenCopiedConfirmation = $('#token-copied-confirmation');
+
+    tokenIcon.on('click', function() {
+      navigator.clipboard.writeText($('#token-str').html());
+
+      tokenIcon.removeClass('fa-copy').addClass('fa-check');
+      tokenCopiedConfirmation.fadeIn('slow');
+
+      // Revert back to original state
+      setTimeout(function(){ 
+        tokenIcon.removeClass('fa-check');
+        tokenIcon.addClass('fa-copy');
+        tokenCopiedConfirmation.fadeOut('slow');
+      }, 3000);
+    })
+  })
+</script>
+{% endblock %}

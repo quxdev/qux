@@ -1,16 +1,6 @@
 {% extends base_template %}
 {% load static i18n %}
 
-{% block customstyle %}
-{{ block.super }}
-<style>
-.h1, h1 {
-  font-size: 2rem;
-  font-weight: 300;
-}
-</style>
-{% endblock %}
-
 {% block qux_content %}
   {% block ralph_messages %}{% endblock %}
 

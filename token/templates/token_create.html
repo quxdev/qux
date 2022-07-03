@@ -1,4 +1,4 @@
-{% extends 'forms/form.html' %}
+{% extends '_token.html' %}
 {% load static %}
 
 {% block stylesheets %}
@@ -10,17 +10,19 @@
 {{ block.super }}
 <style>
 #form-container {
-  max-width: unset;
-  margin-right: 0;
-  margin-left: 0;
+  max-width: 480px !important;
+  margin: 0px auto;
 }
 </style>
 {% endblock customstyle %}
 
-{% block form_title %}Create Token{% endblock %}
+{% block ralph_headings %}
+<h1>Create API Token</h1>
+{% endblock %}
 
-{% block form_body %}
-  <form method="post">
+{% block ralph %}
+  {% block form_body %}
+  <form method="post" id='form-container'>
     {% csrf_token %}
     <div class="row">
       {% for field in form.visible_fields %}
@@ -47,4 +49,5 @@
       </div>
     </div>
   </form>
-{% endblock form_body %}
+  {% endblock form_body %}
+{% endblock ralph %}
