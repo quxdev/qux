@@ -1,18 +1,16 @@
-import json
-from .models import SEOSite, SEOPage
-from django.contrib.sites.models import Site
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
+from django.views.generic.base import ContextMixin
+
+from .models import SEOSite, SEOPage
 
 
-class SEOMixin:
+class SEOMixin(ContextMixin):
     def get_context_data(self, **kwargs):
-        print("SEOMixin.get_context_data()")
-
         context = super().get_context_data(**kwargs)
 
         site = self.getsite()
-        print(f"SEOMixin.Site = {site.id}:{site}")
         if not site:
             return context
 
@@ -37,7 +35,8 @@ class SEOMixin:
             prnstr = f"SEOMixin.seocontext(SEOSite={siteobj.id}"
             result = siteobj.to_dict()
         else:
-            print(f"SEOMixin.seocontext(SEOSite=None)")
+            if settings.DEBUG:
+                print(f"SEOMixin.seocontext(SEOSite=None)")
             result = {}
             return result
 
@@ -49,10 +48,13 @@ class SEOMixin:
 
         pageobj = SEOPage.objects.get_or_none(site=site, canonical=url)
         if pageobj:
-            print(f"{prnstr}, SEOPage={pageobj.id})")
             result = {**result, **pageobj.to_dict()}
-        else:
-            print(f"{prnstr}, SEOPage=None)")
+
+        if settings.DEBUG:
+            if pageobj:
+                print(f"{prnstr}, SEOPage={pageobj.id})")
+            else:
+                print(f"{prnstr}, SEOPage=None)")
 
         if not result:
             result = None
