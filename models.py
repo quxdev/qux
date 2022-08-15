@@ -7,6 +7,7 @@ from django.db.models.fields.related import ManyToManyField
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rangefilter.filters import DateRangeFilter
+from django.core.exceptions import FieldError
 
 default_null_blank = dict(default=None, null=True, blank=True)
 
@@ -110,6 +111,9 @@ class CoreModel(models.Model):
         return result.to_dict()
 
     def settag(self, tag: str):
+        if not hasattr(self, "tags"):
+            return
+
         tags = []
         if self.tags:
             tags = [x.strip() for x in self.tags.split(",")]
@@ -119,6 +123,9 @@ class CoreModel(models.Model):
         self.save()
 
     def deltag(self, tag: str):
+        if not hasattr(self, "tags"):
+            return
+
         tags = []
         if self.tags:
             tags = [x.strip() for x in self.tags.split(",")]
@@ -129,6 +136,9 @@ class CoreModel(models.Model):
         self.save()
 
     def hastag(self, tag: str):
+        if not hasattr(self, "tags"):
+            return
+
         tags = []
         if self.tags and self.tags != "":
             tags = [x.strip() for x in self.tags.split(",")]
@@ -137,6 +147,9 @@ class CoreModel(models.Model):
         return False
 
     def gettags(self):
+        if not hasattr(self, "tags"):
+            return
+
         tags = []
         if self.tags and self.tags != "":
             tags = [x.strip() for x in self.tags.split(",")]
@@ -146,12 +159,16 @@ class CoreModel(models.Model):
 
     @classmethod
     def gettaglist(cls):
-        tags = (
-            cls.objects.all()
-            .exclude(models.Q(tags__isnull=True) | models.Q(tags=""))
-            .values_list("tags", flat=True)
-            .distinct()
-        )
+        try:
+            tags = (
+                cls.objects.all()
+                .exclude(models.Q(tags__isnull=True) | models.Q(tags=""))
+                .values_list("tags", flat=True)
+                .distinct()
+            )
+        except FieldError:
+            return
+
         tags = ",".join(tags)
         tags = [x.strip() for x in tags.split(",")]
         tags = list(set(tags))
