@@ -2,11 +2,6 @@
 {% load static %}
 {% load quxform %}
 
-{% block stylesheets %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
-{% endblock stylesheets %}
-
 {% block form_title %}{{ form_title }}{% endblock %}
 
 <!-- form_body -->

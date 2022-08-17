@@ -1,20 +1,19 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.views import PasswordResetView
-from django.contrib.auth.views import PasswordResetDoneView
-from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.views import PasswordResetCompleteView
+from django.contrib.auth.views import PasswordResetConfirmView
+from django.contrib.auth.views import PasswordResetDoneView
+from django.contrib.auth.views import PasswordResetView
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView
-from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
+from django.views.generic import TemplateView
 
 try:
     from django.utils.encoding import force_text
@@ -45,13 +44,14 @@ User._meta.get_field("email")._unique = True
 
 
 def signup(request):
-    form_class = SignupForm if settings.SHOW_USERNAME_SIGNUP else BaseSignupForm
+    show_username_signup = getattr(settings, "SHOW_USERNAME_SIGNUP", None)
+    form_class = SignupForm if show_username_signup else BaseSignupForm
     if request.method == "POST":
         form = form_class(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
-            if not settings.SHOW_USERNAME_SIGNUP:
+            if not show_username_signup:
                 user.username = user.email
                 counter = 1
                 while User.objects.filter(username=user.username).exists():
@@ -133,6 +133,7 @@ class CoreLoginView(SEOMixin, LoginView):
         "submit_btn_text": "Login",
         "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
+
     # show a generic message on login failure
     def form_invalid(self, form) -> HttpResponse:
         messages.error(self.request, "Could not login, invalid credentials!!")
