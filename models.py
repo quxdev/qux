@@ -73,7 +73,7 @@ class CoreModel(models.Model):
             prefix = getattr(self.__class__, "SLUG_PREFIX", None)
             prefix = prefix + "_" if prefix else ""
 
-            slug_length = self._meta.get_field("slug").max_length
+            slug_length = self._meta.get_field("slug").max_length - len(prefix)
             self.slug = prefix + self.get_slug(slug_length)
             while self.__class__.objects.filter(slug=self.slug).exists():
                 self.slug = prefix + self.get_slug()
