@@ -27,12 +27,6 @@ class CustomToken(CoreModelPlus):
     def generate_key(cls):
         return hexlify(os.urandom(20)).decode()
 
-    def __str__(self):
-        return self.key
-
 
 class CustomTokenAuthentication(TokenAuthentication):
     model = CustomToken
-
-
-

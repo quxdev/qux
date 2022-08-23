@@ -1,4 +1,5 @@
 from .forms import *
+
 # from core.mixin import DjangoViewTrackingMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
@@ -20,11 +21,13 @@ from .models import *
 class CustomTokenListView(SEOMixin, LoginRequiredMixin, ListView):
     model = CustomToken
     queryset = CustomToken.objects.all()
-    template_name = 'token_list.html'
-    fields = ['name', ]
+    template_name = "token_list.html"
+    fields = [
+        "name",
+    ]
     extra_context = {
-        'breadcrumbs': ['API KEY'],
-        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
+        "breadcrumbs": ["API KEY"],
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
 
     def get_queryset(self):
@@ -39,12 +42,12 @@ class CustomTokenDetailView(SEOMixin, LoginRequiredMixin, DetailView):
     model = CustomToken
     template_name = "token_detail.html"
     extra_context = {
-        'breadcrumbs': ['API KEY', 'Detail'],
-        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
+        "breadcrumbs": ["API KEY", "Detail"],
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
 
     def get_object(self, *args, **kwargs):
-        key = self.kwargs.get('key', None)
+        key = self.kwargs.get("key", None)
 
         obj = None
         if key:
@@ -59,11 +62,11 @@ class CustomTokenDetailView(SEOMixin, LoginRequiredMixin, DetailView):
 class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
     model = CustomToken
     form_class = CustomTokenForm
-    template_name = 'token_create.html'
+    template_name = "token_create.html"
     # fields = ['title', 'slug', 'body', 'citation', 'tags', 'is_draft', 'is_private', ]
     extra_context = {
-        'breadcrumbs': ['API KEY', 'New'],
-        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
+        "breadcrumbs": ["API KEY", "New"],
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
 
     def form_valid(self, form):
@@ -72,16 +75,14 @@ class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
 
     def get_success_url(self, *args, **kwargs):
         # return HttpResponseRedirect(reverse('token:home', kwargs={'key': self.object.key}))
-        return reverse('qux_token:key', kwargs={'key': self.object.key})
+        return reverse("qux_token:key", kwargs={"key": self.object.key})
 
 
 class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
     model = CustomToken
     form_class = CustomTokenForm
     template_name = "token_update.html"
-    extra_context = {
-        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
-    }
+    extra_context = {"base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html")}
 
     @staticmethod
     def get_success_url(*args, **kwargs):
@@ -90,9 +91,7 @@ class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
 
 class CustomTokenDeleteView(SEOMixin, LoginRequiredMixin, DeleteView):
     model = CustomToken
-    extra_context = {
-        'base_template': getattr(settings, "ROOT_TEMPLATE", "_blank.html")
-    }
+    extra_context = {"base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html")}
 
     @staticmethod
     def get_success_url(**kwargs):

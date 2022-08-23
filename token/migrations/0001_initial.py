@@ -15,20 +15,40 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='CustomToken',
+            name="CustomToken",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dtm_created', models.DateTimeField(auto_now_add=True, verbose_name='DTM Created')),
-                ('dtm_updated', models.DateTimeField(auto_now=True, verbose_name='DTM Updated')),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('key', models.CharField(max_length=40, unique=True)),
-                ('name', models.CharField(max_length=128)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "dtm_created",
+                    models.DateTimeField(auto_now_add=True, verbose_name="DTM Created"),
+                ),
+                (
+                    "dtm_updated",
+                    models.DateTimeField(auto_now=True, verbose_name="DTM Updated"),
+                ),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("key", models.CharField(max_length=40, unique=True)),
+                ("name", models.CharField(max_length=128)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Custom Token',
-                'verbose_name_plural': 'Custom Tokens',
+                "verbose_name": "Custom Token",
+                "verbose_name_plural": "Custom Tokens",
             },
         ),
     ]
