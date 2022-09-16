@@ -2,7 +2,6 @@ import ast
 import ipaddress
 import logging
 import traceback
-
 from django.db import connection
 from django.utils.timezone import now
 
@@ -59,11 +58,12 @@ class BaseLoggingMixin(object):
         )
 
         # Ensure backward compatibility for those using _should_log hook
-        should_log = (
-            self._should_log if hasattr(self, "_should_log") else self.should_log
-        )
+        if hasattr(self, "_should_log"):
+            should_log = self._should_log(request, response)
+        else:
+            should_log = self.should_log(request, response)
 
-        if should_log(request, response):
+        if should_log:
             if (
                 connection.settings_dict.get("ATOMIC_REQUESTS")
                 and getattr(response, "exception", None)

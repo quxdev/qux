@@ -33,5 +33,9 @@ class AppSettings(object):
         """Field to identify user in User model"""
         return self._setting("LOOKUP_FIELD", "email")
 
+    @property
+    def MAX_SIZE(self):
+        """Maximum size of field to log"""
+        return self._setting("MAX_SIZE", 4096)
 
 app_settings = AppSettings("DRF_TRACKING_")
