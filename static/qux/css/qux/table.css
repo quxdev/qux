@@ -1,0 +1,20 @@
+/* max width = sm + sidebar width = 286px */
+@media screen and (max-width: 1053px) {
+  .qux-table.table-listview {
+    /* blended table-responsive-<size> and custom padding */
+    width: 100%;
+    overflow-x: auto;
+    display: table !important;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .qux-table.table-listview {
+    width: 100%;
+    overflow-x: auto;
+    display: table !important;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

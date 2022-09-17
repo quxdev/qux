@@ -6,7 +6,6 @@ from django.db import models
 from django.db.models.fields.related import ManyToManyField
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from rangefilter.filters import DateRangeFilter
 from django.core.exceptions import FieldError
 
 default_null_blank = dict(default=None, null=True, blank=True)
@@ -182,7 +181,7 @@ class CoreModelAdmin(admin.ModelAdmin):
         "dtm_created",
         "dtm_updated",
     )
-    list_filter = (("dtm_created", DateRangeFilter), ("dtm_updated", DateRangeFilter))
+    # list_filter = ()
     readonly_fields = (
         "dtm_created",
         "dtm_updated",
@@ -257,8 +256,6 @@ class CoreModelPlusAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "is_deleted",
-        ("dtm_created", DateRangeFilter),
-        ("dtm_updated", DateRangeFilter),
     )
     readonly_fields = (
         "dtm_created",

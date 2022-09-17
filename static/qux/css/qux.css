@@ -1,0 +1,51 @@
+@import "qux/list.css";
+@import "qux/table.css";
+@import "qux/hero.css";
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css");
+
+
+.text-underline {
+  text-decoration: underline !important;
+}
+
+.navbar-toggler {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2rem;
+  border: 1px solid transparent !important;
+}
+.navbar-toggler:focus {
+  background-color: rgba(0, 0, 0, 0.20);
+  border: 1px solid transparent !important;
+  box-shadow: none;
+}
+
+.qux-card-with-icon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: inherit;
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  font-size: 1rem;
+}
+
+
+/* Subnav */
+ul.qux-subnav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li.qux-subnav {
+  display: inline-block;
+}
+li.qux-subnav:not(:first-child) {
+  padding-left: 1rem;
+}
+@media screen and (max-width: 575px) {
+  li.qux-subnav {
+    display: list-item !important;
+    padding-left: 0 !important;
+  }
+}

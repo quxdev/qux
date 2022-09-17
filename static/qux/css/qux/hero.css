@@ -1,0 +1,31 @@
+.qux-jumbotron {
+  display: flex;
+  font-size: 1.5rem;
+}
+.qux-jumbotron-content {
+  display: flex;
+  justify-content: center;
+  /*margin: auto;*/
+  padding: 5vmin;
+}
+.qux-jumbotron h1 {
+  font-family: "Inter", sans-serif;
+  font-size: 3em;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+.qux-jumbotron h2 {
+  font-size: 1.5em;
+  font-weight: 300;
+  letter-spacing: -2px;
+}
+@media screen and (max-width: 768px) {
+  .qux-jumbotron {
+    font-size: 1.25rem;
+  }
+}
+@media screen and (max-width: 575px) {
+  .qux-jumbotron {
+    font-size: 1rem;
+  }
+}

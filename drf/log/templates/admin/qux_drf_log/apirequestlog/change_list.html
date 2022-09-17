@@ -4,13 +4,9 @@
 <!-- Override extrahead to add Chart.js -->
 {% block extrahead %}
 {{ block.super }}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" />
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-<style>
-    .ranges li {
-        list-style: none !important;
-    }
-</style>
+<link rel="stylesheet" href="{% static "qux/css/qux.css" %}" />
+<link rel="stylesheet" href="{% static "qux_api_log/css/qux_api_log.css" %}" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -113,7 +109,7 @@
 <!-- Render The Date Range Picker -->
 <div id="daterangepicker"
     style="margin-bottom: 10px; background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: -moz-fit-content; width: fit-content;">
-    <i class="fa fa-calendar"></i>&nbsp;
+    <i class="bi bi-calendar"></i>&nbsp;
     <span></span> <i class="fa fa-caret-down"></i>
 </div>
 <!-- Render the chart -->

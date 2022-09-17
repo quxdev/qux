@@ -15,7 +15,7 @@ def fetchurl(urlstr: str):
     """
 
     :param urlstr: url of content to download
-    :return:
+    :return: (contents, response_status_code)
     """
     try:
         response = requests.get(urlstr)

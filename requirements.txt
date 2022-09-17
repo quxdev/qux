@@ -1,6 +1,5 @@
 beautifulsoup4==4.10.0
-Django==3.2.10
-django-admin-rangefilter>=0.8.0
+Django==3.2.15
 django-extensions>=3.1.5
 djangorestframework>=3.13
 numpy>=1.21.0

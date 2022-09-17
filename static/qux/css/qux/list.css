@@ -1,5 +1,3 @@
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css");
-
 /*
  * ListView
  */
@@ -57,61 +55,4 @@
 }
 .qux-table.table-formview .form-control {
   background-color: #ced4da;
-}
-
-/* max width = sm + sidebar width = 286px */
-@media screen and (max-width: 1053px) {
-  .qux-table.table-listview {
-    /* blended table-responsive-<size> and custom padding */
-    width: 100%;
-    overflow-x: auto;
-    display: table !important;
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-@media screen and (max-width: 767px) {
-  .qux-table.table-listview {
-    width: 100%;
-    overflow-x: auto;
-    display: table !important;
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-
-/* Subnav */
-ul.qux-subnav {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-li.qux-subnav {
-  display: inline-block;
-}
-li.qux-subnav:not(:first-child) {
-  padding-left: 1rem;
-}
-@media screen and (max-width: 575px) {
-  li.qux-subnav {
-    display: list-item !important;
-    padding-left: 0 !important;
-  }
-}
-
-.h1, h1 {
-  font-size: 2em;
-  font-weight: 700;
-}
-.h2, h2 {
-  font-size: 1.75em;
-  font-weight: 700;
-}
-.h3, h3 {
-  font-size: 1.5em;
-  font-weight: 700;
-}
-.h4, h4 {
-  font-size: 1.25em;
-  font-weight: 700;
 }
