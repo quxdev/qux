@@ -16,7 +16,7 @@ class Webhook(CoreModel):
     is_validated = models.DateTimeField(**default_null_blank)
 
     class Meta:
-        unique_together = (('user', 'app', 'action'),)
+        unique_together = (("user", "app", "action"),)
         verbose_name = "Webhook"
         verbose_name_plural = "Webhooks"
 
@@ -37,19 +37,21 @@ class Webhook(CoreModel):
             return False, "ERR_SSL_PROTOCOL_ERROR"
         except Exception as e:
             trace_error = traceback.format_exc()
-            message = "validate()<br><br>" \
-                      f"IVRWebhook ID = {self.id}<br><br>" \
-                      f"URL = {self.url}<br><br>" \
-                      f"Exception e = {e}<br><br>" \
-                      f"trace_error = {trace_error}"
+            message = (
+                "validate()<br><br>"
+                f"IVRWebhook ID = {self.id}<br><br>"
+                f"URL = {self.url}<br><br>"
+                f"Exception e = {e}<br><br>"
+                f"trace_error = {trace_error}"
+            )
             jsond = {
-                'subject': f'IVR({self.ivr.id}) | IVRWebhook({self.id}).validate(): Exception',
-                'message': message,
+                "subject": f"IVR({self.ivr.id}) | IVRWebhook({self.id}).validate(): Exception",
+                "message": message,
             }
-            create_async_task('core.comm.tasks.send_async_bug_email', jsond)
+            create_async_task("core.comm.tasks.send_async_bug_email", jsond)
             return False, None
 
-        response_text = response.text.strip('\"')
+        response_text = response.text.strip('"')
         print("IVRWebhook get response =", response)
         print("IVRWebhook get response_text =", str(response_text))
         print("IVRWebhook get self.secret =", str(self.secret))
@@ -64,9 +66,9 @@ class Webhook(CoreModel):
         url = self.url
         secret = self.secret
         data = {
-            'app': app,
-            'action': action,
-            'secret': secret,
+            "app": app,
+            "action": action,
+            "secret": secret,
         }
         response = requests.post(url, data=data)
         print("IVRWebhook test_webhook response =", response)

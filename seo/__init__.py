@@ -1,1 +1,1 @@
-default_app_config = 'qux.seo.apps.SEOConfig'
+default_app_config = "qux.seo.apps.SEOConfig"

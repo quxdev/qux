@@ -254,9 +254,7 @@ class CoreModelPlusAdmin(admin.ModelAdmin):
         "dtm_created",
         "dtm_updated",
     )
-    list_filter = (
-        "is_deleted",
-    )
+    list_filter = ("is_deleted",)
     readonly_fields = (
         "dtm_created",
         "dtm_updated",

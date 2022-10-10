@@ -14,13 +14,17 @@ from qux.models import default_null_blank
 
 class DownloadLog(CoreModel):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
-    url = models.URLField(max_length=2048, verbose_name='URL')
-    original = models.CharField(max_length=128, **default_null_blank, verbose_name='Original File Name')
-    filename = models.CharField(max_length=128, **default_null_blank, verbose_name='Download File Name')
+    url = models.URLField(max_length=2048, verbose_name="URL")
+    original = models.CharField(
+        max_length=128, **default_null_blank, verbose_name="Original File Name"
+    )
+    filename = models.CharField(
+        max_length=128, **default_null_blank, verbose_name="Download File Name"
+    )
 
     class Meta:
-        db_table = 'qux_log_download'
-        verbose_name = 'Download Log'
+        db_table = "qux_log_download"
+        verbose_name = "Download Log"
 
 
 class UploadLog(CoreModel):
@@ -31,8 +35,8 @@ class UploadLog(CoreModel):
     filedate = models.DateTimeField()
 
     class Meta:
-        db_table = 'qux_log_upload'
-        verbose_name = 'Upload Log'
+        db_table = "qux_log_upload"
+        verbose_name = "Upload Log"
 
     def save(self, *args, **kwargs):
         # https://stackoverflow.com/a/3431838/
@@ -49,10 +53,8 @@ class UploadLog(CoreModel):
 
 class CoreURLLog(CoreModel):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='authlog_user')
+        User, on_delete=models.CASCADE, null=True, related_name="authlog_user"
+    )
     username = models.CharField(max_length=100, null=True, blank=True)
     accesstoken = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -63,45 +65,50 @@ class CoreURLLog(CoreModel):
     status = models.BooleanField(default=False)
     csrf = models.CharField(max_length=255, null=True, blank=True)
     responsetype = models.CharField(
-        max_length=128,
-        default='application/json',
-        null=True,
-        blank=True
+        max_length=128, default="application/json", null=True, blank=True
     )
     response = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = 'qux_log_url'
-        verbose_name = 'URL Log'
-        verbose_name_plural = 'URL Log'
+        db_table = "qux_log_url"
+        verbose_name = "URL Log"
+        verbose_name_plural = "URL Log"
 
     def __str__(self):
-        return '{:d}'.format(self.id if self.id else id(self))
+        return "{:d}".format(self.id if self.id else id(self))
 
 
 class CoreCommLog(CoreModel):
     NOTIFICATION_TYPE = (
-        ('sms', 'sms'),
-        ('email', 'email'),
-        ('whatsapp', 'whatsapp'),
+        ("sms", "sms"),
+        ("email", "email"),
+        ("whatsapp", "whatsapp"),
     )
 
     comm_type = models.CharField(
-        max_length=16, choices=NOTIFICATION_TYPE, default='email', verbose_name='Comm Type')
+        max_length=16,
+        choices=NOTIFICATION_TYPE,
+        default="email",
+        verbose_name="Comm Type",
+    )
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
-    provider = models.CharField(max_length=32, **default_null_blank, verbose_name="Service Provider")
-    sent_at = models.DateTimeField(editable=False, **default_null_blank, verbose_name='Sent At')
+    provider = models.CharField(
+        max_length=32, **default_null_blank, verbose_name="Service Provider"
+    )
+    sent_at = models.DateTimeField(
+        editable=False, **default_null_blank, verbose_name="Sent At"
+    )
     sender = models.CharField(max_length=128)
     to = models.CharField(max_length=512, **default_null_blank)
     cc = models.CharField(max_length=512, **default_null_blank)
     bcc = models.CharField(max_length=512, **default_null_blank)
     subject = models.CharField(max_length=256, **default_null_blank)
     message = models.TextField(**default_null_blank)
-    attrs = models.JSONField(**default_null_blank, verbose_name='Attributes')
+    attrs = models.JSONField(**default_null_blank, verbose_name="Attributes")
     status = models.BooleanField(default=False)
     response = models.TextField(**default_null_blank)
 
     class Meta:
-        db_table = 'qux_log_comm'
-        verbose_name = 'Communication Log'
-        verbose_name_plural = 'Communication Log'
+        db_table = "qux_log_comm"
+        verbose_name = "Communication Log"
+        verbose_name_plural = "Communication Log"

@@ -30,13 +30,13 @@ FMT_DTSTR = [
 ]
 
 
-def get_random_string(length=8):
+def random_string(length=8):
     letters = string.ascii_letters
     result = "".join(random.choice(letters) for _ in range(length))
     return result
 
 
-def get_random_number(length=10):
+def random_number(length=10):
     numbers = string.digits
     result = "".join(random.choice(numbers) for _ in range(length))
     return result
@@ -59,10 +59,11 @@ class QuxComplexEncoder(json.JSONEncoder):
 
 def todate(x, default=None, timestamp=False):
     """
+    Convert given value to a date
 
-    :param x: value to convert
-    :param default: default value to return if cannot convert
-    :param timestamp: return date if False and with time if True
+    :param x: input value for conversion
+    :param default: default return value if conversion is not possible
+    :param timestamp: return date if False and datetime if True
     :return:
     """
     if type(x) is datetime.date:

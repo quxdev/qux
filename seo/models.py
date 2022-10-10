@@ -16,9 +16,9 @@ class SEOSite(SEOModel):
     twitter = models.CharField(max_length=16, **default_null_blank)
 
     class Meta:
-        db_table = 'qux_seo_site'
-        verbose_name = 'Site Data'
-        verbose_name_plural = 'Site Data'
+        db_table = "qux_seo_site"
+        verbose_name = "Site Data"
+        verbose_name_plural = "Site Data"
 
 
 class SEOPage(SEOModel):
@@ -30,6 +30,6 @@ class SEOPage(SEOModel):
     keywords = models.CharField(max_length=512, **default_null_blank)
 
     class Meta:
-        db_table = 'qux_seo_page'
-        verbose_name = 'Page Data'
-        verbose_name_plural = 'Page Data'
+        db_table = "qux_seo_page"
+        verbose_name = "Page Data"
+        verbose_name_plural = "Page Data"

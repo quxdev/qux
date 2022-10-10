@@ -16,27 +16,19 @@ class AbstractCompany(CoreModel):
 
 class AbstractContact(CoreModel):
     regexp = RegexValidator(
-        regex=r'^\+?[1-9]\d{4,14}$',
-        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+        regex=r"^\+?[1-9]\d{4,14}$",
+        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
     )
 
-    first_name = models.CharField(
-        max_length=128, default=None, null=True, blank=True
-    )
-    last_name = models.CharField(
-        max_length=128, default=None, null=True, blank=True
-    )
-    display_name = models.CharField(
-        max_length=256, default=None, null=True, blank=True
-    )
+    first_name = models.CharField(max_length=128, default=None, null=True, blank=True)
+    last_name = models.CharField(max_length=128, default=None, null=True, blank=True)
+    display_name = models.CharField(max_length=256, default=None, null=True, blank=True)
     is_favorite = models.BooleanField(default=False)
     is_private = models.BooleanField(default=True)
     phone = models.CharField(
         max_length=16, validators=[regexp], default=None, null=True, blank=True
     )
-    email = models.EmailField(
-        max_length=256, default=None, null=True, blank=True
-    )
+    email = models.EmailField(max_length=256, default=None, null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -53,7 +45,7 @@ class AbstractContact(CoreModel):
             return self.display_name
         elif self.first_name:
             if self.last_name:
-                return self.first_name + ' ' + self.last_name
+                return self.first_name + " " + self.last_name
             else:
                 return self.first_name
         else:
@@ -61,16 +53,16 @@ class AbstractContact(CoreModel):
 
     def asdict(self):
         result = {
-            'id': self.id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'display': self.displayname(),
-            'is_favorite': self.is_favorite,
-            'is_private': self.is_private,
-            'phone': self.phone,
-            'phones': [x.asdict() for x in self.phones.all().order_by('-is_primary')],
-            'email': self.email,
-            'emails': [x.asdict() for x in self.emails.all().order_by('-is_primary')],
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "display": self.displayname(),
+            "is_favorite": self.is_favorite,
+            "is_private": self.is_private,
+            "phone": self.phone,
+            "phones": [x.asdict() for x in self.phones.all().order_by("-is_primary")],
+            "email": self.email,
+            "emails": [x.asdict() for x in self.emails.all().order_by("-is_primary")],
         }
         return result
 
@@ -99,11 +91,11 @@ class AbstractContact(CoreModel):
 
 class AbstractContactPhone(CoreModel):
     regexp = RegexValidator(
-        regex=r'^\+?[1-9]\d{4,14}$',
-        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+        regex=r"^\+?[1-9]\d{4,14}$",
+        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
     )
     contact = models.ForeignKey(
-        AbstractContact, on_delete=models.CASCADE, related_name='phones'
+        AbstractContact, on_delete=models.CASCADE, related_name="phones"
     )
     phone = models.CharField(max_length=16, validators=[regexp], blank=False)
     label = models.CharField(max_length=100, default=None, null=True, blank=True)
@@ -126,17 +118,17 @@ class AbstractContactPhone(CoreModel):
 
     def asdict(self):
         result = {
-            'id': self.id,
-            'phone': self.phone,
-            'label': self.label,
-            'is_primary': self.is_primary
+            "id": self.id,
+            "phone": self.phone,
+            "label": self.label,
+            "is_primary": self.is_primary,
         }
         return result
 
 
 class AbstractContactEmail(CoreModel):
     contact = models.ForeignKey(
-        AbstractContact, on_delete=models.CASCADE, related_name='emails'
+        AbstractContact, on_delete=models.CASCADE, related_name="emails"
     )
     email = models.EmailField(max_length=256, blank=False)
     label = models.CharField(max_length=100, default=None, null=True, blank=True)
@@ -151,9 +143,9 @@ class AbstractContactEmail(CoreModel):
 
     def asdict(self):
         result = {
-            'id': self.id,
-            'email': self.email,
-            'label': self.label,
-            'is_primary': self.is_primary
+            "id": self.id,
+            "email": self.email,
+            "label": self.label,
+            "is_primary": self.is_primary,
         }
         return result

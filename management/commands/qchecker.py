@@ -1,4 +1,3 @@
-
 import os
 from os import path
 from django.conf import settings
@@ -7,9 +6,8 @@ from collections.abc import MutableMapping
 from django.core.management.base import BaseCommand
 
 
-
 # ------------------ COLORED MESSAGES ------------------
-class bcolors:
+class BColors:
     INFO = "\033[94m"
     SUCCESS = "\033[92m"
     WARNING = "\033[93m"
@@ -27,8 +25,6 @@ class Command(BaseCommand):
     def handle(self, *app_labels, **options):
         self.checkall()
 
-
-
     # ----------------- Configuration -----------------
 
     # files and directories to check
@@ -37,7 +33,7 @@ class Command(BaseCommand):
         "project",
         "apps",
         "common",
-        "config",
+        "server",
         "qux",
         "templates",
         "data",
@@ -45,41 +41,58 @@ class Command(BaseCommand):
     ]
 
     string_dict = {
-        "project/urls.py": "qux.auth.urls",
-        "project/urls.py": 'path("account/tokens/", include("qux.token.urls"))',
-        "project/settings.py": 'os.path.join(BASE_DIR, "templates")',
-        "project/settings.py": "LOGIN_URL",
-        "project/settings.py": "LOGOUT_URL",
-        "project/settings.py": "LOGIN_REDIRECT_URL",
-        "project/settings.py": "LOGOUT_REDIRECT_URL",
-        "project/settings.py": "SHOW_USERNAME_SIGNUP",
-        "project/settings.py": 'DB_MYSQL if os.getenv("DB_TYPE", "sqlite") == "mysql" else DB_SQLITE',
-        "project/settings.py": '"athena": DB_ATHENA',
-        "project/routers/__init__.py": "from .authrouter import AuthRouter",
+        "project/urls.py": [
+            "qux.auth.urls",
+            'path("account/tokens/", include("qux.token.urls"))',
+        ],
+        "project/settings/__init__.py": [
+            "from .settings import *",
+            "from .db_settings import DATABASES",
+        ],
+        "project/settings/settings.py": [
+            'os.path.join(BASE_DIR, "templates")',
+            "LOGIN_URL",
+            "LOGOUT_URL",
+            "LOGIN_REDIRECT_URL",
+            "LOGOUT_REDIRECT_URL",
+            "SHOW_USERNAME_SIGNUP",
+        ],
+        "project/routers/__init__.py": [
+            "from .authrouter import AuthRouter",
+        ],
     }
+
+    files = {
+        "project/settings/db_settings.py": "db_settings.py",
+        "project/routers/authrouter.py": "authrouter.py",
+    }
+
     file_list = [
+        "requirements.txt",
         "project/celery.py",
         "project/urls.py",
+        "project/routers/authrouter.py",
         "templates/_blank.html",
         "templates/_footer.html",
         "templates/_navbar.html",
-        "requirements.txt",
-        "project/routers/authrouter.py",
     ]
 
-    apps_dirs = ["urls", "views"]
-    apps_files = [
-        "urls/apiurls.py",
-        "urls/appurls.py",
-        "views/apiviews.py",
-        "views/appviews.py",
-        "views/shared.py",
-    ]
+    apps = {
+        "urls": [
+            "apiurls.py",
+            "appurls.py",
+        ],
+        "views": [
+            "apiviews.py",
+            "appviews.py",
+            "shared.py",
+        ],
+    }
 
-    config_dict = [
-        "config/etc/apache2/conf-available/fqdn.conf",
-        "config/etc/apache2/sites-available/fmapp.conf",
-        "config/etc/supervisor/conf.d/celery.conf",
+    config_files = [
+        "server/etc/apache2/conf-available/fqdn.conf",
+        "server/etc/apache2/sites-available/fmapp.conf",
+        "server/etc/supervisor/conf.d/celery.conf",
     ]
 
     # environment variables to check
@@ -177,60 +190,59 @@ class Command(BaseCommand):
         self.check_settings()
 
         print(
-            f"{bcolors.SUCCESS}\n---------- QJANGO/QUX/ATHENA Compliance Checker Completed ----------\n"
+            f"{BColors.SUCCESS}\n---------- QJANGO/QUX/ATHENA Compliance Checker Completed ----------\n"
         )
 
     def check_structure(self):
-        print(f"{bcolors.INFO}\nChecking project structure...\n")
-        for dir in self.dir_list:
-            self.checkdir(dir)
+        print(f"{BColors.INFO}\nChecking project structure...\n")
+        for dirpath in self.dir_list:
+            self.checkdir(dirpath)
 
         for file in self.file_list:
             self.checkfile(file)
 
-        for key, value in self.string_dict.items():
-            self.checkStringInFile(key, value)
+        for key, items in self.string_dict.items():
+            for item in items:
+                self.checkstringinfile(key, item)
 
         if path.exists("apps") and path.isdir("apps"):
             dlist = os.listdir("apps")
             for d in dlist:
                 if path.exists(d) and path.isdir(d):
-                    for dir in self.apps_dirs.items():
-                        self.checkdir(f"apps/{d}/{dir}")
-                    for file in self.apps_files:
-                        self.checkfile(f"apps/{d}/{file}")
+                    for dirpath in self.apps:
+                        self.checkdir(f"apps/{d}/{dirpath}")
+                        for file in self.apps[dirpath]:
+                            self.checkfile(f"apps/{d}/{file}")
 
-        print(f"{bcolors.INFO}\nChecking config files ... \n")
-        for file in self.config_dict:
-            self.checkfile(file)
+        print(f"{BColors.INFO}\nChecking config files ... \n")
+        for config_file in self.config_files:
+            self.checkfile(config_file)
 
         print(
-            f"{bcolors.INFO}\nPlease check your wsgi.py file and match with the standard qjango wsgi.py file \n"
+            f"{BColors.INFO}\nPlease check your wsgi.py file and match with the standard qjango wsgi.py file \n"
         )
 
-
     def check_env_variables(self):
-        print(f"{bcolors.INFO}\nChecking environment variables...\n")
+        print(f"{BColors.INFO}\nChecking environment variables...\n")
         for key, value in self.env_dict.items():
             self.checkenv(key, value)
 
-
     def check_settings(self):
         # check installed apps
-        print(f"{bcolors.INFO}\nChecking settings...installed apps...\n")
+        print(f"{BColors.INFO}\nChecking settings...installed apps...\n")
         iapps = getattr(settings, "INSTALLED_APPS")
         for app in self.installed_apps:
             if app in iapps:
-                print(f"{bcolors.SUCCESS}Installed App: {app} ==> OK")
+                print(f"{BColors.SUCCESS}Installed App: {app} => OK")
             else:
-                print(f"{bcolors.ERROR}Installed App: {app} ==> NOT FOUND")
+                print(f"{BColors.ERROR}Installed App: {app} => NOT FOUND")
 
-        print(f"{bcolors.INFO}\nChecking settings...\n")
+        print(f"{BColors.INFO}\nChecking settings...\n")
         for key, value in self.settings_dict.items():
-            self.checkSettings(key, value)
+            self.checksettings(key, value)
 
         # check database settings entries using db_dict
-        print(f"{bcolors.INFO}\nChecking settings...database settings...\n")
+        print(f"{BColors.INFO}\nChecking settings...database settings...\n")
 
         dbkeys = self.db_dict.keys()
         for key in dbkeys:
@@ -241,14 +253,14 @@ class Command(BaseCommand):
                 settings_db_flat = self.flatten_dict(settings_db_dict)
                 for k in db_flat:
                     if k in settings_db_flat:
-                        print(f"{bcolors.SUCCESS}Database settings: {k} ==> OK")
+                        print(f"{BColors.SUCCESS}Database settings: {k} => OK")
                     else:
-                        print(f"{bcolors.ERROR}Database settings: {k} ==> NOT FOUND")
+                        print(f"{BColors.ERROR}Database settings: {k} => NOT FOUND")
             else:
-                print(f"{bcolors.ERROR}Database settings: {key} ==> NOT FOUND")
+                print(f"{BColors.ERROR}Database settings: {key} => NOT FOUND")
 
         # check drf settings entries using drf_dict
-        print(f"{bcolors.INFO}\nChecking settings...drf settings...\n")
+        print(f"{BColors.INFO}\nChecking settings...drf settings...\n")
         drfkeys = self.drf_dict.keys()
         for key in drfkeys:
             settings_drf_dict = getattr(settings, key, None)
@@ -257,82 +269,82 @@ class Command(BaseCommand):
                 settings_drf_flat = self.flatten_dict(settings_drf_dict)
                 for k in drf_flat:
                     if k in settings_drf_flat:
-                        print(f"{bcolors.SUCCESS}DRF settings: {k} ==> OK")
+                        print(f"{BColors.SUCCESS}DRF settings: {k} => OK")
                     else:
-                        print(f"{bcolors.ERROR}DRF settings: {k} ==> NOT FOUND")
+                        print(f"{BColors.ERROR}DRF settings: {k} => NOT FOUND")
             else:
-                print(f"{bcolors.ERROR}DRF settings: {key} ==> NOT FOUND")
+                print(f"{BColors.ERROR}DRF settings: {key} => NOT FOUND")
 
         # display static files settings for verification
-        print(f"{bcolors.INFO}\nPlease validate your static files settings below...\n")
+        print(f"{BColors.INFO}\nPlease validate your static files settings below...\n")
         staticfiles_dict = getattr(settings, "STATICFILES_DIRS", None)
         static_files_root = getattr(settings, "STATIC_ROOT", None)
         static_url = getattr(settings, "STATIC_URL", None)
-        print(f"{bcolors.INFO}STATIC_URL: {static_url}")
-        print(f"{bcolors.INFO}STATIC_ROOT: {static_files_root}")
-        print(f"{bcolors.INFO}STATICFILES_DIRS: {staticfiles_dict}")
-
+        print(f"{BColors.INFO}STATIC_URL: {static_url}")
+        print(f"{BColors.INFO}STATIC_ROOT: {static_files_root}")
+        print(f"{BColors.INFO}STATICFILES_DIRS: {staticfiles_dict}")
 
     # ------------util functions below this line ------------
 
-
-    def checkStringInFile(self, filepath, string):
+    @staticmethod
+    def checkstringinfile(filepath, string):
         if path.exists(filepath):
             with open(filepath, "r") as f:
                 if string in f.read():
-                    print(f"{bcolors.SUCCESS}String: {filepath}-{string} ==> OK")
+                    print(f"{BColors.SUCCESS}String: {filepath}={string} => OK")
                     return True
                 else:
-                    print(f"{bcolors.ERROR}String: {filepath}-{string} ==> NOT FOUND")
+                    print(f"{BColors.ERROR}String: {filepath}={string} => NOT FOUND")
         else:
-            print(f"{bcolors.ERROR}File: {filepath} ==> NOT FOUND")
+            print(f"{BColors.ERROR}File: {filepath} => NOT FOUND")
         return False
 
-
-    def checkenv(self, key, value):
+    @staticmethod
+    def checkenv(key, value):
         if key in environ:
             if value is not None:
                 if environ[key] == value:
-                    print(f"{bcolors.SUCCESS}Env: {key}-{value} ==> OK")
+                    print(f"{BColors.SUCCESS}Env: {key}={value} => OK")
             elif environ[key] > "":
-                print(f"{bcolors.SUCCESS}Env: {key} ==> OK")
+                print(f"{BColors.SUCCESS}Env: {key} => OK")
             return True
 
-        print(f"{bcolors.ERROR}Env: {key}-{value} ==> NOT FOUND")
+        print(f"{BColors.ERROR}Env: {key}={value} => NOT FOUND")
         return False
 
-
-    def checkdir(self, dirname):
+    @staticmethod
+    def checkdir(dirname):
         if path.exists(dirname) and path.isdir(dirname):
-            print(f"{bcolors.SUCCESS}Dir: {dirname} ==> OK")
+            print(f"{BColors.SUCCESS}Dir: {dirname} => OK")
             return True
 
-        print(f"{bcolors.ERROR}Dir: {dirname} ==> NOT FOUND")
+        print(f"{BColors.ERROR}Dir: {dirname} => NOT FOUND")
         return False
 
-
-    def checkfile(self, filepath):
+    @staticmethod
+    def checkfile(filepath):
         if path.exists(filepath) and path.isfile(filepath):
-            print(f"{bcolors.SUCCESS}File: {filepath} ==> OK")
+            print(f"{BColors.SUCCESS}File: {filepath} => OK")
             return True
 
-        print(f"{bcolors.ERROR}File: {filepath} ==> NOT FOUND")
+        print(f"{BColors.ERROR}File: {filepath} => NOT FOUND")
         return False
 
-
-    def checkSettings(self, key, value):
+    @staticmethod
+    def checksettings(key, value):
         if hasattr(settings, key):
             settings_value = getattr(settings, key)
             if value is not None:
                 if settings_value == value:
-                    print(f"{bcolors.SUCCESS}Settings: {key}-{value} ==> OK")
+                    print(f"{BColors.SUCCESS}Settings: {key}={value} => OK")
             else:
-                print(f"{bcolors.WARNING}Settings: {key}-{settings_value} ==> CHECK VALUES")
+                print(
+                    f"{BColors.WARNING}Settings: {key}={settings_value} => CHECK VALUES"
+                )
             return True
 
-        print(f"{bcolors.ERROR}Settings: {key}-{value} ==> NOT FOUND")
+        print(f"{BColors.ERROR}Settings: {key}={value} => NOT FOUND")
         return False
-
 
     def _flatten_dict_gen(self, d, parent_key, sep):
         for k, v in d.items():
@@ -342,8 +354,5 @@ class Command(BaseCommand):
             else:
                 yield new_key, v
 
-
     def flatten_dict(self, d: MutableMapping, parent_key: str = "", sep: str = "."):
         return dict(self._flatten_dict_gen(d, parent_key, sep))
-
-

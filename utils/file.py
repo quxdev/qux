@@ -35,3 +35,25 @@ def uploadfile(source, target=None):
     print(f"file.py:uploadfile({source}, {filename}) => {result}")
 
     return result, filename
+
+
+def filehash(filename, block_size=2**14):
+    """
+    Generate a unique key from the contents of a file with md5 hashing
+    :param filename:
+    :param block_size:
+    :result:
+    """
+    try:
+        md5 = hashlib.md5()
+        f = open(filename, "rb")
+        while True:
+            data = f.read(block_size)
+            if not data:
+                break
+            md5.update(data)
+        f.close()
+    except:
+        return
+
+    return md5.hexdigest()

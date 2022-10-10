@@ -38,4 +38,5 @@ class AppSettings(object):
         """Maximum size of field to log"""
         return self._setting("MAX_SIZE", 4096)
 
+
 app_settings = AppSettings("DRF_TRACKING_")

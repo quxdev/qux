@@ -14,8 +14,8 @@ class QuxPermission(CoreModel):
     description = models.CharField(max_length=128, null=True)
 
     class Meta:
-        db_table = 'qux_permissions'
-        unique_together = ('app_name', 'name')
+        db_table = "qux_permissions"
+        unique_together = ("app_name", "name")
 
     def __str__(self):
         return "{:s}".format(self.name)
@@ -40,28 +40,38 @@ class QuxEntityPermission(CoreModel):
     entity_name = models.CharField(max_length=128)
     entity_id = models.IntegerField()
     actor = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    authorized = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='can_access')
+    authorized = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, related_name="can_access"
+    )
     perm = models.ForeignKey(QuxPermission, on_delete=models.DO_NOTHING)
 
     class Meta:
-        db_table = 'qux_entity_permission'
+        db_table = "qux_entity_permission"
 
     @classmethod
     @transaction.atomic
-    def get_or_create(cls, app_name, entity_name, entity_id, actor, authorized, perm,):
+    def get_or_create(
+        cls,
+        app_name,
+        entity_name,
+        entity_id,
+        actor,
+        authorized,
+        perm,
+    ):
         permdata = dict(
             app_name=app_name,
             entity_name=entity_name,
             entity_id=entity_id,
-            authorized=authorized
+            authorized=authorized,
         )
 
         result = cls.objects.filter(**permdata)
         if not result:
-            permdata['actor'] = actor
-            permdata['perm'] = perm
+            permdata["actor"] = actor
+            permdata["perm"] = perm
             result = cls.objects.create(**permdata)
-            QuxEntityPermissionLog.objects.create(**perm, action='granted')
+            QuxEntityPermissionLog.objects.create(**perm, action="granted")
 
         return result
 
@@ -74,7 +84,7 @@ class QuxEntityPermission(CoreModel):
             actor=actor,
             authorized=self.authorized,
             perm=self.perm,
-            action='revoked'
+            action="revoked",
         )
         QuxEntityPermissionLog.objects.create(**permlog)
         self.delete()
@@ -84,6 +94,7 @@ class QuxEntity(CoreModel):
     """
     Abstract class to be inherited by shareable entities
     """
+
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     deleted = models.IntegerField(default=0)
     is_shared = models.BooleanField(default=False)
@@ -92,30 +103,33 @@ class QuxEntity(CoreModel):
         abstract = True
 
     def __str__(self):
-        return '<{}:{:d}'.format(self.__class__.__name__, self.id)
+        return "<{}:{:d}".format(self.__class__.__name__, self.id)
 
     @property
     def all_current_grants(self):
-        app_name = 'app_' + self.__class__._meta.app_label
+        app_name = "app_" + self.__class__._meta.app_label
         entity_name = self.__class__.__name__
         entity_id = self.id
-        current_grants = QuxPermission.objects.filter(app_name=app_name, entity_name=entity_name, entity_id=entity_id)
+        current_grants = QuxPermission.objects.filter(
+            app_name=app_name, entity_name=entity_name, entity_id=entity_id
+        )
         return current_grants
 
     @property
     def sharedwithinfo(self):
         result = []
         for cg in self.all_current_grants:
-            g = {'actor': cg.actor,
-                 'authorized': cg.authorized,
-                 'perm': cg.perm,
-                 }
+            g = {
+                "actor": cg.actor,
+                "authorized": cg.authorized,
+                "perm": cg.perm,
+            }
             result.append(g)
         return result
 
     @classmethod
     def contents(cls):
-        items = cls.objects.filter(deleted=0).order_by('id')
+        items = cls.objects.filter(deleted=0).order_by("id")
         return [item for item in items]
 
     @classmethod
@@ -126,7 +140,7 @@ class QuxEntity(CoreModel):
             return
 
         try:
-            items = cls.objects.filter(owner=user, deleted=0).order_by('id')
+            items = cls.objects.filter(owner=user, deleted=0).order_by("id")
             result = [item for item in items]
         except TypeError:
             # TypeError: 'AnonymousUser' object is not iterable
@@ -164,26 +178,28 @@ class QuxEntity(CoreModel):
 
     def custom_to_dict(self, user):
         result = qux_model_to_dict(self)
-        result['name'] = self.name
-        result['owner_initials'] = self.owner.profile.initials
+        result["name"] = self.name
+        result["owner_initials"] = self.owner.profile.initials
 
         sharedwith = []
         for grant in self.all_current_grants:
             sw = {
-                'userid': grant.authorized.id,
-                'user_initials': grant.authorized.profile.initials,
-                'perm': grant.perm.name
+                "userid": grant.authorized.id,
+                "user_initials": grant.authorized.profile.initials,
+                "perm": grant.perm.name,
             }
             sharedwith.append(sw)
 
-        result['sharedwith'] = sharedwith
-        result['myperm'] = [sw['perm'] for sw in sharedwith if sw['userid'] == user.id]
-        result['myperm'] = result['myperm'][0] if result['myperm'] else None
+        result["sharedwith"] = sharedwith
+        result["myperm"] = [sw["perm"] for sw in sharedwith if sw["userid"] == user.id]
+        result["myperm"] = result["myperm"][0] if result["myperm"] else None
 
         return result
 
     def get_current_grantforuser(self, user):
-        current_usergrants = [g for g in self.all_current_grants if g.authorized == user]
+        current_usergrants = [
+            g for g in self.all_current_grants if g.authorized == user
+        ]
         current_grantforuser = current_usergrants[0] if current_usergrants else None
         return current_grantforuser
 
@@ -191,7 +207,7 @@ class QuxEntity(CoreModel):
         if self.owner == user:
             return True
         grant = self.get_current_grantforuser(user)
-        if grant and grant.perm.name in ('ro', 'rw', 'rw-admin'):
+        if grant and grant.perm.name in ("ro", "rw", "rw-admin"):
             return True
         else:
             return False
@@ -200,7 +216,7 @@ class QuxEntity(CoreModel):
         if self.owner == user:
             return True
         grant = self.get_current_grantforuser(user)
-        if grant and grant.perm.name in ('rw', 'rw-admin'):
+        if grant and grant.perm.name in ("rw", "rw-admin"):
             return True
         else:
             return False
@@ -209,7 +225,7 @@ class QuxEntity(CoreModel):
         if self.owner == user:
             return True
         grant = self.get_current_grantforuser(user)
-        if grant and grant.perm.name == 'rw-admin':
+        if grant and grant.perm.name == "rw-admin":
             return True
         else:
             return False
@@ -218,7 +234,7 @@ class QuxEntity(CoreModel):
         if self.owner == user:
             return True
         grant = self.get_current_grantforuser(user)
-        if grant and grant.perm.name in ('ro', 'rw', 'rw-admin'):
+        if grant and grant.perm.name in ("ro", "rw", "rw-admin"):
             return True
         else:
             return False
@@ -232,7 +248,7 @@ class QuxEntity(CoreModel):
             stacktrace()
             result = False
 
-        return {'deleted': result}
+        return {"deleted": result}
 
     def rename(self, newname):
         dtmupdated = None
@@ -244,10 +260,10 @@ class QuxEntity(CoreModel):
         except:
             stacktrace()
             result = False
-        return {'updated': result, 'dtmupdated': dtmupdated}
+        return {"updated": result, "dtmupdated": dtmupdated}
 
     @transaction.atomic
-    def sharewith(self, userid, actor, app_name, permname='ro'):
+    def sharewith(self, userid, actor, app_name, permname="ro"):
         """
         Share this object with other user. Default perm is 'ro'
         """
@@ -255,25 +271,32 @@ class QuxEntity(CoreModel):
         entity_id = self.id
         user = User.objects.filter(id=userid).first()
         if user is None or user == self.owner:
-            return False, 'Sharing with the specified user is not possible.'
+            return False, "Sharing with the specified user is not possible."
         perm = QuxPermission.objects.filter(app_name=app_name, name=permname).first()
         if perm is None:
-            return False, 'Sharing with the specified permission is not possible.'
+            return False, "Sharing with the specified permission is not possible."
 
         try:
             current_grant = self.get_current_grantforuser(user)
             if current_grant:
                 if current_grant.perm == perm:
-                    return True, ''
+                    return True, ""
                 else:
                     current_grant.revoke(actor=actor)
-            QuxEntityPermission.get_or_create(app_name, entity_name, entity_id, actor, user, perm,)
+            QuxEntityPermission.get_or_create(
+                app_name,
+                entity_name,
+                entity_id,
+                actor,
+                user,
+                perm,
+            )
             self.is_shared = True
             self.save()
-            result = True, ''
+            result = True, ""
         except:
             stacktrace()
-            result = False, 'Error while sharing.'
+            result = False, "Error while sharing."
         return result
 
     @transaction.atomic
@@ -283,7 +306,7 @@ class QuxEntity(CoreModel):
         """
         user = User.objects.filter(id=userid).first()
         if user is None or user == self.owner:
-            return False, 'Revoking from specified user is not possible.'
+            return False, "Revoking from specified user is not possible."
 
         try:
             current_grant = self.get_current_grantforuser(user)
@@ -292,12 +315,15 @@ class QuxEntity(CoreModel):
                 if self.all_current_grants.count() == 0:
                     self.is_shared = False
                     self.save()
-                result = True, ''
+                result = True, ""
             else:
-                result = False, 'No current grant present for the specified user. Can not be revoked.'
+                result = (
+                    False,
+                    "No current grant present for the specified user. Can not be revoked.",
+                )
         except:
             stacktrace()
-            result = False, 'Error while revoking.'
+            result = False, "Error while revoking."
         return result
 
 
@@ -306,9 +332,11 @@ class QuxEntityPermissionLog(CoreModel):
     entity_name = models.CharField(max_length=128)
     entity_id = models.IntegerField()
     actor = models.ForeignKey(User, on_delete=models.CASCADE)
-    authorized = models.ForeignKey(User, on_delete=models.CASCADE, related_name='has_access_to')
+    authorized = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="has_access_to"
+    )
     perm = models.ForeignKey(QuxPermission, on_delete=models.CASCADE)
     action = models.CharField(max_length=128)
 
     class Meta:
-        db_table = 'qux_entity_permission_log'
+        db_table = "qux_entity_permission_log"
