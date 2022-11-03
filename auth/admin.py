@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import *
 from qux.models import CoreModelAdmin
+from .models import *
 
 
 class CoreUserAdmin(UserAdmin):
@@ -71,3 +71,29 @@ class ProfileAdmin(CoreModelAdmin):
 
 
 admin.site.register(Profile, ProfileAdmin)
+
+
+class ServiceAdmin(admin.ModelAdmin):
+    model_fields = (
+        "id",
+        "slug",
+        "name",
+        "description",
+    )
+    list_display = model_fields
+    search_fields = model_fields
+    list_per_page = 25
+
+
+admin.site.register(Service, ServiceAdmin)
+
+
+class PreferenceAdmin(admin.ModelAdmin):
+    model_fields = ("id", "user", "service", "category", "name", "value")
+    list_display = model_fields
+    search_fields = ("id", "user__email", "service__name", "value")
+    raw_id_fields = ("user", "service")
+    list_per_page = 25
+
+
+admin.site.register(Preference, PreferenceAdmin)

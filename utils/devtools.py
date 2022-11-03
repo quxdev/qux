@@ -1,6 +1,38 @@
 import traceback
 
 
+def cast(valtype, value, default=None):
+    """
+    TODO: does not consider datetime.date, datetime.time, or datetime.datetime
+    """
+    valtype = valtype.lower()
+    if value.lower() in ["none", "null"]:
+        return None
+
+    elif valtype == "int":
+        try:
+            return int(value)
+        except TypeError:
+            return default
+
+    elif valtype == "float":
+        try:
+            return float(value)
+        except TypeError:
+            return default
+
+    elif valtype == "bool":
+        if value.lower() in ["true", "1"]:
+            return True
+        elif value.lower() in ["false", "0"]:
+            return False
+        else:
+            return default
+
+    # else string
+    return value
+
+
 def stacktrace(depth=6):
     # exc_type, exc_value, exc_traceback = sys.exc_info()
 
