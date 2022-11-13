@@ -5,8 +5,10 @@
 .qux-jumbotron-content {
   display: flex;
   justify-content: center;
-  /*margin: auto;*/
-  padding: 5vmin;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: min(2.5rem, 40px);
+  padding-bottom: min(2.5rem, 40px);
 }
 .qux-jumbotron h1 {
   font-family: "Inter", sans-serif;
