@@ -1,5 +1,8 @@
-from qux.token.models import CustomTokenAuthentication
+from django.conf import settings
 from django.http import JsonResponse
+from rest_framework.exceptions import AuthenticationFailed
+
+from qux.token.models import CustomTokenAuthentication
 
 
 def authenticate_user(request):
@@ -8,12 +11,20 @@ def authenticate_user(request):
     based authentication
     """
     auth_obj = CustomTokenAuthentication()
+
     try:
-        user, token = auth_obj.authenticate(request)
+        user_token = auth_obj.authenticate(request)
+        if user_token is None:
+            raise AuthenticationFailed
+        user, token = user_token[0], user_token[1].name
+    except AuthenticationFailed:
+        user = request.user
+        token = None
+
+    if settings.DEBUG:
         print(f"User: {user}, Token: {token}")
-        return user
-    except:
-        return request.user
+
+    return user
 
 
 class TokenAccessMixin(object):
@@ -27,8 +38,6 @@ class TokenAccessMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         user = authenticate_user(request)
-
-        print(self.access_required)
 
         if not user.is_authenticated:
             return JsonResponse(
