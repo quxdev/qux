@@ -8,11 +8,13 @@ class AppSettings(object):
     def _setting(self, name, default):
         return getattr(settings, self.prefix + name, default)
 
+    # noinspection PyPep8Naming
     @property
     def ADMIN_LOG_READONLY(self):
         """Prevent log entries from being modified from Django admin."""
         return self._setting("ADMIN_LOG_READONLY", False)
 
+    # noinspection PyPep8Naming
     @property
     def DECODE_REQUEST_BODY(self):
         """
@@ -23,16 +25,19 @@ class AppSettings(object):
         """
         return self._setting("DECODE_REQUEST_BODY", True)
 
+    # noinspection PyPep8Naming
     @property
     def PATH_LENGTH(self):
         """Maximum length of request path to log"""
         return self._setting("PATH_LENGTH", 256)
 
+    # noinspection PyPep8Naming
     @property
     def LOOKUP_FIELD(self):
         """Field to identify user in User model"""
         return self._setting("LOOKUP_FIELD", "email")
 
+    # noinspection PyPep8Naming
     @property
     def MAX_SIZE(self):
         """Maximum size of field to log"""
