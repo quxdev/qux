@@ -95,7 +95,14 @@ def signup(request):
     else:
         form = form_class()
 
-    return render(request, "signup.html", {"form": form})
+    print(settings.BOOTSTRAP)
+
+    if settings.BOOTSTRAP == "bs4":
+        return render(request, "signup.html", {"form": form})
+    elif settings.BOOTSTRAP == "bs5":
+        return render(request, "bs5/signup.html", {"form": form})
+    else:
+        return render(request, "signup.html", {"form": form})
 
 
 def activate(request, uidb64, token):
@@ -127,7 +134,7 @@ def activate(request, uidb64, token):
 
 class CoreLoginView(SEOMixin, LoginView):
     form_class = CustomAuthenticationForm
-    template_name = "login.html"
+    template_name = "bs5/login.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "login.html"
     canonical_url = "/login/"
     extra_context = {
         "submit_btn_text": "Login",
@@ -178,7 +185,7 @@ def login_request(request):
 
 class ChangePasswordView(SEOMixin, TemplateView):
     form_class = ChangePasswordForm
-    template_name = "change-password.html"
+    template_name = "bs5/change-password.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "change-password.html"
     extra_context = {
         "submit_btn_text": "Change Password",
         "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
@@ -206,7 +213,7 @@ class ChangePasswordView(SEOMixin, TemplateView):
 
 class CorePasswordResetView(SEOMixin, PasswordResetView):
     form_class = CustomPasswordResetForm
-    template_name = "password_reset_form.html"
+    template_name = "bs5/password_reset_form.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "password_reset_form.html"
     email_template_name = "password_reset_email.html"
     html_email_template_name = "password_reset_email.html"
     canonical_url = "/password-reset/"
@@ -228,7 +235,7 @@ class CorePasswordResetDoneView(SEOMixin, PasswordResetDoneView):
 
 class CorePasswordResetConfirmView(PasswordResetConfirmView):
     form_class = CustomSetPasswordForm
-    template_name = "password_reset_form.html"
+    template_name = "bs5/password_reset_form.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "password_reset_form.html"
     success_url = reverse_lazy("qux_auth:password_reset_complete")
     extra_context = {
         "title": f"Change password",

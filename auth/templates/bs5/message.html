@@ -1,0 +1,10 @@
+{% extends 'forms/bs5/form.html' %}
+{% load static %}
+
+{% block form_title %}{{ title }}{% endblock %}
+
+{% block form_body %}
+  {% for m in messages %}
+    <p>{{ m | safe }}</p>
+  {% endfor %}
+{% endblock %}

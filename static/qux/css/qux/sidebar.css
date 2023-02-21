@@ -1,0 +1,208 @@
+:root {
+  --qux-navbar-height: 4rem;
+  --qux-sidebar-width: 16rem;
+}
+
+/* Sidebar */
+#nav {
+  /* This has to be min-height and not height
+   * otherwise menus don't drop down in responsive mode
+   */
+  min-height: var(--qux-navbar-height) !important;
+}
+.qux-nav {
+  padding: 0.5rem !important;
+}
+
+/*
+ * Use it for the subnav
+ */
+#qux-toc-nav {
+  background-color: #ffffff;
+}
+@media screen and (min-width: 768px) {
+    #qux-toc-nav {
+        padding: 0.5rem 0;
+    }
+}
+
+.qux-navbar {
+    color: #242830 !important;
+}
+@media screen and (max-width: 767px) {
+    .qux-navbar {
+        flex-direction: column;
+        text-transform: capitalize;
+        padding: 0.5rem 0;
+    }
+}
+
+#nav-top-left {
+}
+@media screen and (min-width: 768px) {
+  #nav-top-left {
+    width: var(--qux-sidebar-width);
+    height: var(--qux-navbar-height);
+    display: inline-block;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-right: 1px solid #c8c8c8;
+  }
+}
+
+#nav .navbar-toggler, #nav .navbar-toggler-icon {
+  color: #242830 !important;
+  border: 1px solid transparent;
+}
+#nav .navbar-toggler:focus {
+  outline: none;
+}
+
+#nav .nav-item {
+  color: white !important;
+}
+.nav-link a, #qux-sidebar a {
+  color: #f8f8f8;
+}
+.nav-link:hover {
+  background-color: inherit !important;
+  /*color: yellow !important;*/
+}
+
+#qux-content {
+  margin: 0;
+}
+.qux-sidebar {
+  display: none;
+  order: 0;
+  -webkit-box-ordinal-group: 1;
+  padding-top: 0.5rem;
+  /* min-height: 4.5rem; */
+  border-width: 0 0 1px 0;
+  border-color: #c8c8c8;
+  border-style: solid;
+}
+#qux-sidebar .fa-ul {
+  margin-left: 2.25em;
+  color: #f0f0f0 !important;
+}
+@media screen and (min-width: 768px) {
+  .qux-sidebar {
+    display: block;
+
+    position: -webkit-sticky;
+    position: sticky;
+    /* width */
+    min-width: calc(var(--qux-sidebar-width));
+    max-width: calc(var(--qux-sidebar-width));
+    /* 1px is for the border-width of the bottom border belove navbar-brand */
+    top: calc(var(--qux-navbar-height) + 1px);
+    height: calc(100vh - var(--qux-navbar-height) - 1px);
+    z-index: 1000;
+    border-width: 0 1px 0 0;
+  }
+}
+
+.qux-links {
+}
+.qux-search {
+  position: relative;
+  padding: 1rem 15px;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.qux-toc-item {
+}
+.qux-toc-link {
+  display: block;
+  padding: 0.25rem 1rem;
+}
+.qux-toc-item > .qux-sidenav {
+  display: none;
+}
+.qux-toc-item > .fa-ul {
+  padding-left: 0.5em;
+}
+.qux-sidenav li {
+  display: block;
+  padding: 0.25rem 1.5rem;
+  font-size: 90%;
+}
+.qux-sidenav li:before {
+  content: "\f054";
+  font-family: "Font Awesome 6";
+  font-weight: 900;
+  padding-right: 0.5rem;
+}
+.qux-content {
+  /* height: calc(100vh - 9.5rem); */
+  /*min-height: 100vh;*/
+}
+@media screen and (min-width: 768px) {
+  #nav-top-left {
+    width: var(--qux-sidebar-width);
+    height: var(--qux-navbar-height);
+    display: inline-block;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 1.25rem;
+    font-weight: bold;
+    min-height: unset;
+  }
+  #content {
+    padding: 2rem 3rem;
+  }
+  .qux-navbar-brand {
+    width: 100%;
+  }
+  #qux-sidebar .fa-ul {
+    margin-left: 2.75em;
+  }
+  .qux-links {
+    display: block !important;
+  }
+  .qux-search {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  .qux-toc-item:not(:first-child) {
+    margin-top: 0.5rem;
+  }
+  .qux-toc-link {
+    padding: 0.25rem 1.5rem;
+  }
+  .qux-toc-item {
+    margin-bottom: 0.5rem;
+  }
+  .qux-toc-item > .qux-sidenav {
+    display: block;
+  }
+  .qux-content {
+    max-width: calc(100vw - var(--qux-sidebar-width));
+    min-height: calc(100vh - var(--qux-navbar-height));
+    margin-top: var(--qux-navbar-height);
+  }
+}
+
+.btn-toggle {
+  width: 100%;
+  padding: .25rem .5rem;
+  font-weight: 600;
+  background-color: transparent;
+  border-radius: 0.25rem;
+}
+.btn-toggle:hover,
+.btn-toggle:focus {
+  background-color: #e8e8e8;
+  color: rgb(23, 31, 42) !important;
+}
+.btn-toggle-nav a {
+  padding: .375rem .5rem .375rem 2.25rem;
+  width: 100%;
+}
+.btn-toggle-nav a:hover,
+.btn-toggle-nav a:focus {
+  background-color: #e8e8e8;
+  color: rgb(23, 31, 42);
+}

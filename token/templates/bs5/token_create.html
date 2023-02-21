@@ -1,0 +1,51 @@
+{% extends '_token.html' %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock stylesheets %}
+
+{% block customstyle %}
+{{ block.super }}
+<style>
+#form-container {
+  max-width: 480px !important;
+  margin: 0px auto;
+}
+</style>
+{% endblock customstyle %}
+
+{% block ralph_headings %}
+<h1>Create API Token</h1>
+{% endblock %}
+
+{% block ralph %}
+  {% block form_body %}
+  <form method="post" id='form-container'>
+    {% csrf_token %}
+    <div class="row">
+      {% for field in form.visible_fields %}
+        <div class="col-12 form-group">
+          <label for="{{ field.label }}" class="form-label">
+            {{ field.label }}
+            {% if field.field.required %}
+              <span style="color: red;">*</span>
+            {% endif %}
+          </label>
+          {{ field.errors }}
+          <div class="input-group">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-outline-primary py-2">
+        Create
+      </button>
+    </div>
+  </form>
+  {% endblock form_body %}
+{% endblock ralph %}

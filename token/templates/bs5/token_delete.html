@@ -1,0 +1,30 @@
+{% extends 'app/_app_hform.html' %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock stylesheets %}
+
+{% block form_title %}Manage Key{% endblock %}
+
+{% block form_body %}
+<form method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="col-12 form-group">
+      <label for="key_name" class="form-label">
+        Name <span style="color: red;">*</span>
+      </label>
+      <input type="text" class="form-control foo-border"
+             id="key_name" name="key_name" value="{{ object.name }}">
+    </div>
+  </div>
+
+  <div class="d-grid gap-2">
+    <button type="submit" class="btn btn-outline-primary py-2">
+      Rename
+    </button>
+  </div>
+</form>
+{% endblock form_body %}

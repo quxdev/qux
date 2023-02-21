@@ -19,7 +19,7 @@
     {% else %}
       {% if field.name == 'password' and changepassword %}
         <div class="bg-warning">
-          <div class="d-inline-block float-right text-danger">
+          <div class="d-inline-block float-end text-danger">
             <a href="/password-reset/" tabindex="-1">Forgot password?</a>
           </div>
         </div>
@@ -28,7 +28,7 @@
       {# Show Need Help? if the first attempt to login is unsuccessful #}
       {% if field.name == "username" and needhelp and form.non_field_errors %}
         <div class="bg-warning">
-          <div class="d-inline-block float-right text-info text-danger">
+          <div class="d-inline-block float-end text-info text-danger">
             <a href="{% url 'qux_auth:support_request' %}">Need Help?</a>
           </div>
         </div>

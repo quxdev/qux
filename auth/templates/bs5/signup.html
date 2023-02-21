@@ -1,0 +1,30 @@
+{% extends 'forms/_form.html' %}
+{% load static %}
+{% load quxform %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock stylesheets %}
+
+{% block form_title %}{{ form_title }}{% endblock %}
+
+<!-- form_body -->
+{% block form_body %}
+<form method="post">
+  {% csrf_token %}
+
+  {% include 'forms/bs5/_field.html' %}
+
+  <!-- submit -->
+  <div class="d-grid gap-2">
+    <button type="submit" class="btn btn-outline-primary py-2">
+      {% if submit_btn_text %}
+      {{ submit_btn_text }}
+      {% else %}
+      Submit
+      {% endif %}
+    </button>
+  </div>
+</form>
+{% endblock form_body %}

@@ -1,19 +1,69 @@
+/*
+ * ListView
+ */
+.rounded-table {
+  border-radius: 0.25rem;
+}
+.table-listview {
+  font-size: 0.875rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-bottom: 0;
+}
+.table-listview thead {
+  background: yellow;
+}
+.table-listview thead tr:first-of-type {
+  border-radius: 1rem;
+  border-width: 0 0 2px;
+  border-color: #ffffff;
+}
+.table-listview tbody {
+  background: white;
+}
+.table-listview tbody tr{
+  border-top: 1px solid rgb(229, 231, 233);
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+.table-listview tbody tr:last-of-type {
+  border-bottom: 1px solid rgb(229, 231, 233);
+}
+.table-listview tbody td {
+  padding: 0.5rem 0.25rem;
+  vertical-align: middle;
+}
+.table-listview tbody .dark-tr{
+  background: #343a40 !important;
+  color: white;
+  transition: all 0.2s ease-in-out;
+}
+.table-listview tbody .dark-tr:hover{
+  background: #111 !important;
+  color: white;
+}
+
+/* .table-listview th, */
+.table-listview tbody tr {
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
 /* max width = sm + sidebar width = 286px */
-@media screen and (max-width: 1053px) {
-  .qux-table.table-listview {
+@media screen and (max-width: calc(767px + var(--qux-sidebar-width))) {
+  .qux-content .table-listview {
     /* blended table-responsive-<size> and custom padding */
     width: 100%;
     overflow-x: auto;
-    display: table !important;
+    display: block !important;
     padding-left: 0;
     padding-right: 0;
   }
 }
 @media screen and (max-width: 767px) {
-  .qux-table.table-listview {
+  .table-listview {
     width: 100%;
     overflow-x: auto;
-    display: table !important;
+    display: block !important;
     padding-left: 0;
     padding-right: 0;
   }

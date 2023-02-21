@@ -62,7 +62,7 @@ class CustomTokenDetailView(SEOMixin, LoginRequiredMixin, DetailView):
 class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
     model = CustomToken
     form_class = CustomTokenForm
-    template_name = "token_create.html"
+    template_name = "bs5/token_create.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "token_create.html"
     # fields = ['title', 'slug', 'body', 'citation', 'tags', 'is_draft', 'is_private', ]
     extra_context = {
         "breadcrumbs": ["API KEY", "New"],
@@ -81,7 +81,7 @@ class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
 class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
     model = CustomToken
     form_class = CustomTokenForm
-    template_name = "token_update.html"
+    template_name = "bs5/token_update.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "token_update.html"
     extra_context = {"base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html")}
 
     @staticmethod

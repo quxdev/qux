@@ -1,14 +1,14 @@
 .qux-jumbotron {
   display: flex;
   font-size: 1.5rem;
+  min-height: 400px;
 }
 .qux-jumbotron-content {
   display: flex;
   justify-content: center;
   margin-top: auto;
   margin-bottom: auto;
-  padding-top: min(2.5rem, 40px);
-  padding-bottom: min(2.5rem, 40px);
+  padding: min(2.5rem, 40px);
 }
 .qux-jumbotron h1 {
   font-family: "Inter", sans-serif;
