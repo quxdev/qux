@@ -1,12 +1,13 @@
 from itertools import chain
 
 from django.contrib import admin
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.fields.related import ManyToManyField
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from django.core.exceptions import FieldError
 
 default_null_blank = dict(default=None, null=True, blank=True)
 
@@ -279,3 +280,93 @@ class CoreModelPlusAdmin(admin.ModelAdmin):
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
+
+
+class AbstractLead(CoreModel):
+    regexp = RegexValidator(
+        regex=r"^\+?[1-9]\d{4,14}$",
+        message=(
+            "Phone number must be entered in the format: '+999999999'. "
+            "Up to 15 digits allowed.",
+        ),
+    )
+
+    # Lead
+    firstname = models.CharField(
+        "First Name", max_length=128, **default_null_blank)
+    lastname = models.CharField(
+        "Last Name", max_length=128, **default_null_blank)
+    email = models.EmailField(max_length=240, **default_null_blank)
+    phone = models.CharField(max_length=16, **default_null_blank, validators=[regexp])
+
+    # request.META
+    http_accept_language = models.CharField(
+        "HTTP Language", max_length=256, **default_null_blank
+    )
+    http_user_agent = models.CharField(
+        "HTTP UserAgent", max_length=512, **default_null_blank
+    )
+    remote_addr = models.CharField(
+        "Remote Address", max_length=256, **default_null_blank
+    )
+
+    # UTM
+    utm_source = models.CharField(
+        "UTM Source", max_length=256, **default_null_blank)
+    utm_medium = models.CharField(
+        "UTM Medium", max_length=256, **default_null_blank)
+    utm_campaign = models.CharField(
+        "UTM Campaign", max_length=256, **default_null_blank
+    )
+    utm_term = models.CharField(
+        "UTM Term", max_length=256, **default_null_blank)
+    utm_content = models.CharField(
+        "UTM Content", max_length=256, **default_null_blank)
+
+    get_params = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def update_or_create_from_request(cls, request, additional_fields=None):
+        """
+        Create or update lead from request
+        additional_fields in facebook context might include:
+        [
+            'fbclid', 'ad_id', 'adset_id', 'campaign_id', 'ad_name',
+            'adset_name', 'campaign_name', 'placement', 'site_source_name', 'ref'
+        ]
+
+        """
+        reqdata = request.GET.dict()
+        clsobj = cls()
+
+        metadata = ["HTTP_ACCEPT_LANGUAGE", "HTTP_USER_AGENT", "REMOTE_ADDR"]
+        [setattr(clsobj, f.lower(), request.META.get(f, None)) for f in metadata]
+
+        urlfields = [
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "utm_term",
+            "utm_content",
+        ]
+
+        if additional_fields and isinstance(additional_fields, list):
+            urlfields += additional_fields
+
+        datadict = {k.lower().replace(" ", "_"): v for k, v in reqdata.items()}
+
+        if "ad_set" in datadict and datadict["ad_set"]:
+            datadict["adset_name"] = datadict["ad_set"]
+
+        islink = any([f for f in urlfields if f in datadict.keys()])
+        if islink:
+            fields = [f for f in urlfields if f in datadict]
+            [setattr(clsobj, f, datadict[f]) for f in fields]
+
+        clsobj.get_params = datadict
+        clsobj.save()
+
+        return clsobj
