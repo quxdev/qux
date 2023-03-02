@@ -80,9 +80,10 @@ class CoreModel(models.Model):
 
         super().save(*args, **kwargs)
 
-    @staticmethod
-    def get_slug(slug_length: int = 16):
-        return get_random_string(slug_length).lower()
+    def get_slug(self, slug_length: int = 8):
+        allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        allowed_chars = getattr(self.__class__, "SLUG_ALLOWED_CHARS", allowed_chars)
+        return get_random_string(slug_length, allowed_chars)
 
     @classmethod
     def initdata(cls):
