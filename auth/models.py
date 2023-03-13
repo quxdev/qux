@@ -1,6 +1,5 @@
 import json
 import os
-from pydoc import locate
 
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
@@ -15,26 +14,38 @@ from qux.utils import cast
 class Company(CoreModel):
     SLUG_PREFIX = "company"
 
-    slug = models.CharField(max_length=14, unique=True)
+    slug = models.CharField(max_length=16, unique=True)
     name = models.CharField(max_length=128)
     address = models.TextField(**default_null_blank)
-    domain = models.CharField(max_length=255)
-    url = models.URLField(max_length=1024, **default_null_blank)
+    domain = models.CharField(max_length=255, unique=True)
+    url = models.URLField("URL", max_length=1024, **default_null_blank)
 
     class Meta:
         db_table = "qux_auth_company"
         verbose_name = "Company"
         verbose_name_plural = "Companies"
 
+    def __str__(self):
+        return self.name if self.name else self.slug
+
 
 class CompanyUser(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="companies")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="users")
+    is_admin = models.BooleanField(default=False)
 
     class Meta:
         db_table = "qux_auth_company_users"
         verbose_name = "User at Company"
         verbose_name_plural = "Users at Companies"
+
+    def __str__(self):
+        if self.user and self.company:
+            return f"{self.user}@{self.company}"
+        elif self.company:
+            return self.company
+        else:
+            return self.id
 
 
 class Profile(CoreModel):
@@ -51,7 +62,7 @@ class Profile(CoreModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField(max_length=16, validators=[regexp])
     company = models.ForeignKey(
-        Company, on_delete=models.DO_NOTHING, **default_null_blank
+        Company, on_delete=models.DO_NOTHING, **default_null_blank, related_name="profiles"
     )
     title = models.CharField(max_length=255, **default_null_blank)
 

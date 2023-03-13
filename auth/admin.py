@@ -52,18 +52,39 @@ admin.site.register(User, CoreUserAdmin)
 
 
 class CompanyAdmin(CoreModelAdmin):
-    model_fields = ("id", "name", "domain")
-    list_display = model_fields + CoreModelAdmin.list_display
-    search_fields = model_fields
+    fields = (
+        "name",
+        "domain",
+    )
+    list_display = (
+        "id",
+        "slug",
+    ) + fields
+    list_editable = (
+        "slug",
+        "name",
+        "domain",
+    )
 
 
 admin.site.register(Company, CompanyAdmin)
 
 
 class ProfileAdmin(CoreModelAdmin):
-    model_fields = ("id", "user", "phone", "company", "title")
-    list_display = model_fields + CoreModelAdmin.list_display
-    search_fields = ("id", "user__email", "phone", "company__name", "title")
+    fields = (
+        "user",
+        "phone",
+        "company",
+        "title",
+    )
+    list_display = fields
+    search_fields = (
+        "id",
+        "user__email",
+        "phone",
+        "company__name",
+        "title",
+    )
     raw_id_fields = (
         "user",
         "company",
@@ -89,9 +110,19 @@ admin.site.register(Service, ServiceAdmin)
 
 
 class PreferenceAdmin(admin.ModelAdmin):
-    model_fields = ("id", "user", "service", "category", "name", "value")
-    list_display = model_fields
-    search_fields = ("id", "user__email", "service__name", "value")
+    fields = (
+        "user",
+        "service",
+        "category",
+        "name",
+        "value",
+    )
+    list_display = fields
+    search_fields = (
+        "user__email",
+        "service__name",
+        "value",
+    )
     raw_id_fields = ("user", "service")
     list_per_page = 25
 
