@@ -6,7 +6,8 @@ def cast(valtype, value, default=None):
     TODO: does not consider datetime.date, datetime.time, or datetime.datetime
     """
     valtype = valtype.lower()
-    if value.lower() in ["none", "null"]:
+
+    if hasattr(value, "lower") and value.lower() in ["none", "null"]:
         return None
 
     elif valtype == "int":
@@ -21,7 +22,7 @@ def cast(valtype, value, default=None):
         except TypeError:
             return default
 
-    elif valtype == "bool":
+    elif valtype == "bool" and hasattr(value, "lower"):
         if value.lower() in ["true", "1"]:
             return True
         elif value.lower() in ["false", "0"]:
@@ -29,7 +30,7 @@ def cast(valtype, value, default=None):
         else:
             return default
 
-    # else string
+    # else ???
     return value
 
 

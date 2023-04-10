@@ -2,7 +2,7 @@
  * ListView
  */
 .rounded-table {
-  border-radius: 0.25rem;
+  border-radius: 0.375rem;
 }
 .table-listview {
   font-size: 0.875rem;
@@ -27,7 +27,7 @@
   cursor: pointer;
 }
 .table-listview tbody tr:last-of-type {
-  border-bottom: 1px solid rgb(229, 231, 233);
+  border-bottom: 1px solid transparent;
 }
 .table-listview tbody td {
   padding: 0.5rem 0.25rem;
