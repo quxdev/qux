@@ -21,10 +21,9 @@
 .table-listview tbody {
   background: white;
 }
-.table-listview tbody tr{
+.table-listview tbody tr {
   border-top: 1px solid rgb(229, 231, 233);
   background-color: #f8f8f8;
-  cursor: pointer;
 }
 .table-listview tbody tr:last-of-type {
   border-bottom: 1px solid transparent;
@@ -32,6 +31,9 @@
 .table-listview tbody td {
   padding: 0.5rem 0.25rem;
   vertical-align: middle;
+}
+.table-listview tbody td.clickable {
+  cursor: pointer;
 }
 .table-listview tbody .dark-tr{
   background: #343a40 !important;
