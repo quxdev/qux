@@ -62,7 +62,10 @@ class Profile(CoreModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField(max_length=16, validators=[regexp])
     company = models.ForeignKey(
-        Company, on_delete=models.DO_NOTHING, **default_null_blank, related_name="profiles"
+        Company,
+        on_delete=models.DO_NOTHING,
+        **default_null_blank,
+        related_name="profiles",
     )
     title = models.CharField(max_length=255, **default_null_blank)
 
@@ -99,6 +102,14 @@ class Profile(CoreModel):
             fullname = user.email
 
         return fullname
+
+    @property
+    def company_users(self):
+        """
+        Return a list of ['user_slug', 'user_slug', ...]
+        """
+        results = list(self.company.profiles.all().values_list("slug", flat=True))
+        return results
 
 
 @receiver(post_save, sender=User)
