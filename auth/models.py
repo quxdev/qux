@@ -13,6 +13,7 @@ from qux.utils import cast
 
 class Company(CoreModel):
     SLUG_PREFIX = "company"
+    SLUG_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz"
 
     slug = models.CharField(max_length=16, unique=True)
     name = models.CharField(max_length=128)
@@ -48,8 +49,23 @@ class CompanyUser(CoreModel):
             return self.id
 
 
+class ServiceMode(CoreModel):
+    slug = models.CharField(max_length=8, unique=True)
+    name = models.CharField(max_length=32, unique=True)
+    description = models.TextField(**default_null_blank)
+
+    class Meta:
+        db_table = "qux_auth_service_mode"
+        verbose_name = "Service Mode"
+        verbose_name_plural = "Service Modes"
+
+    def __str__(self):
+        return self.slug
+
+
 class Profile(CoreModel):
     SLUG_PREFIX = "user"
+    SLUG_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz"
 
     # https://en.wikipedia.org/wiki/E.164
     regexp = RegexValidator(
@@ -68,6 +84,7 @@ class Profile(CoreModel):
         related_name="profiles",
     )
     title = models.CharField(max_length=255, **default_null_blank)
+    is_live = models.BooleanField(default=False)
 
     class Meta:
         db_table = "qux_auth_profile"
@@ -115,7 +132,8 @@ class Profile(CoreModel):
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created and not hasattr(instance, "Profile"):
-        Profile.objects.create(user=instance)
+        profile_object = Profile.objects.create(user=instance, id=instance.id)
+        profile_object.save()
 
 
 @receiver(post_save, sender=User)

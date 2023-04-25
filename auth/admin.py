@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
@@ -51,6 +52,11 @@ admin.site.unregister(User)
 admin.site.register(User, CoreUserAdmin)
 
 
+class CompanyField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj.slug}: {obj.name}" if obj.name else obj.slug
+
+
 class CompanyAdmin(CoreModelAdmin):
     fields = (
         "name",
@@ -70,16 +76,35 @@ class CompanyAdmin(CoreModelAdmin):
 admin.site.register(Company, CompanyAdmin)
 
 
+class ServiceModeAdmin(admin.ModelAdmin):
+    fields = (
+        "slug",
+        "name",
+        "description",
+    )
+    readonly_fields = (
+        "slug",
+    )
+    list_display = ("id", ) + fields
+    list_editable = ("slug", "name",)
+
+
+admin.site.register(ServiceMode, ServiceModeAdmin)
+
+
 class ProfileAdmin(CoreModelAdmin):
     fields = (
+        "id",
+        "slug",
         "user",
         "phone",
         "company",
         "title",
+        "is_live",
     )
+    readonly_fields = ("id", "slug",)
     list_display = fields
     search_fields = (
-        "id",
         "user__email",
         "phone",
         "company__name",
@@ -88,6 +113,9 @@ class ProfileAdmin(CoreModelAdmin):
     raw_id_fields = (
         "user",
         "company",
+    )
+    list_editable = (
+        "is_live",
     )
 
 

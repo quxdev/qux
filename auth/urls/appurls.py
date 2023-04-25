@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from .views import *
+from ..views.appviews import *
 
 app_name = "qux_auth"
 

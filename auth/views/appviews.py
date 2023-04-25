@@ -21,16 +21,19 @@ except ImportError:
     from django.utils.encoding import force_str as force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from .tokens import account_activation_token
+from ..tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
 
 from qux.seo.mixin import SEOMixin
-from .forms import ChangePasswordForm
-from .forms import CustomAuthenticationForm
-from .forms import CustomPasswordResetForm
-from .forms import CustomSetPasswordForm
-from .forms import SignupForm, BaseSignupForm
+from ..forms import (
+    ChangePasswordForm,
+    CustomAuthenticationForm,
+    CustomPasswordResetForm,
+    CustomSetPasswordForm,
+    SignupForm,
+    BaseSignupForm,
+)
 
 
 # class HomeView(TemplateView):
@@ -134,7 +137,11 @@ def activate(request, uidb64, token):
 
 class CoreLoginView(SEOMixin, LoginView):
     form_class = CustomAuthenticationForm
-    template_name = "bs5/login.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "login.html"
+    template_name = (
+        "bs5/login.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "login.html"
+    )
     canonical_url = "/login/"
     extra_context = {
         "submit_btn_text": "Login",
@@ -185,7 +192,11 @@ def login_request(request):
 
 class ChangePasswordView(SEOMixin, TemplateView):
     form_class = ChangePasswordForm
-    template_name = "bs5/change-password.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "change-password.html"
+    template_name = (
+        "bs5/change-password.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "change-password.html"
+    )
     extra_context = {
         "submit_btn_text": "Change Password",
         "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
@@ -213,7 +224,11 @@ class ChangePasswordView(SEOMixin, TemplateView):
 
 class CorePasswordResetView(SEOMixin, PasswordResetView):
     form_class = CustomPasswordResetForm
-    template_name = "bs5/password_reset_form.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "password_reset_form.html"
+    template_name = (
+        "bs5/password_reset_form.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "password_reset_form.html"
+    )
     email_template_name = "password_reset_email.html"
     html_email_template_name = "password_reset_email.html"
     canonical_url = "/password-reset/"
@@ -235,7 +250,11 @@ class CorePasswordResetDoneView(SEOMixin, PasswordResetDoneView):
 
 class CorePasswordResetConfirmView(PasswordResetConfirmView):
     form_class = CustomSetPasswordForm
-    template_name = "bs5/password_reset_form.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "password_reset_form.html"
+    template_name = (
+        "bs5/password_reset_form.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "password_reset_form.html"
+    )
     success_url = reverse_lazy("qux_auth:password_reset_complete")
     extra_context = {
         "title": f"Change password",
