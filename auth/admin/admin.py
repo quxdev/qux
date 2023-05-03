@@ -1,9 +1,8 @@
-from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from qux.models import CoreModelAdmin
-from .models import *
+from ..models import *
 
 
 class CoreUserAdmin(UserAdmin):
@@ -50,30 +49,6 @@ class CoreUserAdmin(UserAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, CoreUserAdmin)
-
-
-class CompanyField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        return f"{obj.slug}: {obj.name}" if obj.name else obj.slug
-
-
-class CompanyAdmin(CoreModelAdmin):
-    fields = (
-        "name",
-        "domain",
-    )
-    list_display = (
-        "id",
-        "slug",
-    ) + fields
-    list_editable = (
-        "slug",
-        "name",
-        "domain",
-    )
-
-
-admin.site.register(Company, CompanyAdmin)
 
 
 class ServiceModeAdmin(admin.ModelAdmin):

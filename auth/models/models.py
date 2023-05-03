@@ -76,7 +76,7 @@ class Profile(CoreModel):
 
     slug = models.CharField(max_length=11, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    phone = models.CharField(max_length=16, validators=[regexp])
+    phone = models.CharField(max_length=16, validators=[regexp], **default_null_blank)
     company = models.ForeignKey(
         Company,
         on_delete=models.DO_NOTHING,
