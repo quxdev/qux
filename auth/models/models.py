@@ -30,39 +30,6 @@ class Company(CoreModel):
         return self.name if self.name else self.slug
 
 
-class CompanyUser(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="companies")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="users")
-    is_admin = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = "qux_auth_company_users"
-        verbose_name = "User at Company"
-        verbose_name_plural = "Users at Companies"
-
-    def __str__(self):
-        if self.user and self.company:
-            return f"{self.user}@{self.company}"
-        elif self.company:
-            return self.company
-        else:
-            return self.id
-
-
-class ServiceMode(CoreModel):
-    slug = models.CharField(max_length=8, unique=True)
-    name = models.CharField(max_length=32, unique=True)
-    description = models.TextField(**default_null_blank)
-
-    class Meta:
-        db_table = "qux_auth_service_mode"
-        verbose_name = "Service Mode"
-        verbose_name_plural = "Service Modes"
-
-    def __str__(self):
-        return self.slug
-
-
 class Profile(CoreModel):
     SLUG_PREFIX = "user"
     SLUG_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz"
