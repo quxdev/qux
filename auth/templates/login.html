@@ -1,5 +1,6 @@
 {% extends 'forms/_form.html' %}
 {% load static %}
+{% load qux %}
 {% load quxform %}
 
 {% block form_title %}{{ form_title }}{% endblock %}
@@ -23,10 +24,12 @@
   </div></div>
 </form>
 
+{% if "SHOW_USERNAME_SIGNUP"|getconfig:False %}
 <div class="form-container text-muted mx-auto my-4">
   <a href="{% url 'qux_auth:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
     New? Create an account
   </a>
 </div>
+{% endif %}
 
 {% endblock form_body %}

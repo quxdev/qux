@@ -1,6 +1,6 @@
 {% extends 'forms/_form.html' %}
 {% load static %}
-{% load quxform %}
+{% load qux quxform %}
 
 {% block form_title %}{{ form_title }}{% endblock %}
 
@@ -13,7 +13,7 @@
 
   <!-- submit -->
   <div class="d-grid gap-2">
-    <button type="submit" class="btn btn-outline-primary py-2">
+    <button type="submit" class="btn btn-outline-primary my-3">
       {% if submit_btn_text %}
       {{ submit_btn_text }}
       {% else %}
@@ -23,10 +23,12 @@
   </div>
 </form>
 
+{% if "SHOW_USERNAME_SIGNUP"|getconfig:False %}
 <div class="form-container text-muted mx-auto my-4">
   <a href="{% url 'qux_auth:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
     New? Create an account
   </a>
 </div>
+{% endif %}
 
 {% endblock form_body %}
