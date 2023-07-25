@@ -1,11 +1,11 @@
-import uuid
+import datetime
+import decimal
 import json
 import random
 import string
-import datetime
-import decimal
-import numpy as np
+import uuid
 
+import numpy as np
 
 FMT_DTSTR = [
     "%Y-%m-%d",

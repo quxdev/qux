@@ -6,11 +6,6 @@
 {% block canonical %}{{ canonical }}{% endblock %}
 {% endif %}
 
-{% block stylesheets %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static "css/forms.css" %}">
-{% endblock stylesheets %}
-
 {% block customstyle %}
   {{ block.super }}
   <style>

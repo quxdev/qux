@@ -1,7 +1,8 @@
-@import "qux/list.css";
-@import "qux/table.css";
-@import "qux/hero.css";
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css");
+@import url("../../bootstrap/5.2.3/css/bootstrap.min.css");
+@import url("fonts.css");
+@import url("qux/list.css");
+@import url("qux/table.css");
+@import url("qux/hero.css");
 
 body {
   display: flex;

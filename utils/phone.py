@@ -1,7 +1,8 @@
+import random
+
 import phonenumbers
 from phonenumbers.phonenumberutil import NumberParseException
 from phonenumbers.phonenumberutil import PhoneNumberFormat
-import random
 
 
 def phone_number(phone, country: str = "IN"):

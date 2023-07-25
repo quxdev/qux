@@ -1,0 +1,10 @@
+@import url('fonts/inter.css');
+@import url('fonts/roboto.css');
+@import url('fonts/bootstrap-icons.min.css');
+
+.font-inter {
+    font-family: "Inter", sans-serif;
+}
+.font-roboto {
+    font-family: "Roboto", sans-serif;
+}
