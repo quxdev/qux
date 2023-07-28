@@ -1,5 +1,6 @@
 @import url('fonts/inter.css');
 @import url('fonts/roboto.css');
+@import url('fonts/metropolis.css');
 @import url('fonts/bootstrap-icons.min.css');
 
 .font-inter {
@@ -7,4 +8,7 @@
 }
 .font-roboto {
     font-family: "Roboto", sans-serif;
+}
+.font-metropolis {
+    font-family: "Metropolis", sans-serif;
 }
