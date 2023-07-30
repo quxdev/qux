@@ -43,7 +43,9 @@
 
 {% block extra_head %} {% endblock %}
 
-{% block stylesheets %} {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{% static 'qux/css/qux.css' %}">
+{% endblock %}
 
 {% block customstyle %} {% endblock %}
 
@@ -81,7 +83,25 @@
 
 {% block footer %}{% endblock %}
 
-{% block javascript %} {% endblock %}
+{% block javascript %}
+{# Bootstrap #}
+<script src="{% static 'qux/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script>
+// Bootstrap 4.6
+document.addEventListener("DOMContentLoaded", function() {
+    let tooltipList = document.querySelectorAll("[data-toggle=tooltip]");
+    tooltipList.forEach(function(element) {
+        element.tooltip();
+    });
+});
+
+// Bootstrap 5.2.3
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+const tooltipList = [...tooltipTriggerList].map(
+  tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {})
+);
+</script>
+{% endblock %}
 
 {% block customjs %}
 {% endblock %}

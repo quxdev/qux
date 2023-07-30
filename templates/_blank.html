@@ -4,7 +4,7 @@
 
 {% block application_name %}Qux{% endblock %}
 {% block apple_mobile_web_app_title %}Qux{% endblock %}
-{% block icon %}{% static 'logo/qux/qux.svg' %}{% endblock %}
+{% block icon %}{% static 'qux/logo/qux/qux.svg' %}{% endblock %}
 
 {% block keywords %}{{ meta.keywords }}{% endblock %}
 
@@ -37,8 +37,7 @@
 {% block canonical %}{{ meta.canonical }}{% endblock %}
 
 {% block stylesheets %}
-<link rel="stylesheet" href="{% static 'css/qux/qux.css' %}">
-<link rel="stylesheet" href="{% static 'css/qux/quxidget.css' %}">
+{{ block.super }}
 {% endblock %}
 
 {% block style %}
@@ -87,15 +86,9 @@ body {
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript" src="{% static 'js/qux/qux.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/qux/quxidget.js' %}"></script>
-<script>
-$('document').ready(function () {
-  $('[data-toggle=tooltip]').tooltip();
-})
-</script>
 {% endblock %}
 
 {% block customjs %}
+{{ block.super }}
 {% endblock %}
 {% endlineless %}
