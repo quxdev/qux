@@ -1,11 +1,20 @@
+import random
 from itertools import chain
 
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.fields import DateField, DateTimeField
+from django.db.models.fields.files import FileField
 from django.db.models.fields.related import ManyToManyField
+from django.db.models.signals import pre_save, post_init, post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
@@ -67,23 +76,21 @@ class CoreModel(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
-        # slug = prefixed random string
-        if hasattr(self, "slug") and not self.slug:
-            prefix = getattr(self.__class__, "SLUG_PREFIX", None)
-            prefix = prefix + "_" if prefix else ""
-
-            slug_length = self._meta.get_field("slug").max_length - len(prefix)
-            self.slug = prefix + self.get_slug(slug_length)
-            while self.__class__.objects.filter(slug=self.slug).exists():
-                self.slug = prefix + self.get_slug()
-
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.full_clean()
+    #     super().save(*args, **kwargs)
 
     def get_slug(self, slug_length: int = 8):
         allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         allowed_chars = getattr(self.__class__, "SLUG_ALLOWED_CHARS", allowed_chars)
-        return get_random_string(slug_length, allowed_chars)
+
+        # First char should be alpha only
+        first_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        first_chars = [x for x in allowed_chars if x in first_chars]
+
+        slug = random.choice(first_chars)
+        slug = slug + get_random_string(slug_length - 1, allowed_chars)
+        return slug
 
     @classmethod
     def initdata(cls):
@@ -116,7 +123,7 @@ class CoreModel(models.Model):
             return
 
         tags = []
-        if self.tags:
+        if self.tags and hasattr("strip", self.tags):
             tags = [x.strip() for x in self.tags.split(",")]
         tags.append(tag)
         tags.sort()
@@ -178,17 +185,85 @@ class CoreModel(models.Model):
         return tags
 
 
-class CoreModelAdmin(admin.ModelAdmin):
-    list_display = (
-        "dtm_created",
-        "dtm_updated",
-    )
-    # list_filter = ()
-    readonly_fields = (
-        "dtm_created",
-        "dtm_updated",
-    )
+@receiver(pre_save)
+def pre_save_coremodel(sender, instance, **kwargs):
+    if not isinstance(instance, CoreModel):
+        return
 
+    if settings.DEBUG:
+        print(f"pre_save_coremodel({sender.__name__}, {instance})")
+
+    if getattr(instance, "slug", None):
+        return
+
+    # Slug must be None because otherwise it would have returned
+    if hasattr(instance, "slug"):
+        prefix = getattr(instance.__class__, "SLUG_PREFIX", None)
+        prefix = prefix + "_" if prefix else ""
+
+        slug_length = instance._meta.get_field("slug").max_length - len(prefix)
+        instance.slug = prefix + instance.get_slug(slug_length)
+        while instance.__class__.objects.filter(slug=instance.slug).exists():
+            instance.slug = prefix + instance.get_slug()
+
+
+@receiver(post_init)
+def post_init_coremodel(sender, instance, **kwargs):
+    if not isinstance(instance, CoreModel):
+        return
+
+    if settings.DEBUG:
+        print(f"post_init_coremodel({sender.__name__}, {instance})")
+
+    if getattr(sender, "AUDIT_MODE", False):
+        instance.__old = qux_model_to_dict(instance)
+
+
+@receiver(post_save)
+def post_save_coremodel(sender, instance, created, **kwargs):
+    if not isinstance(instance, CoreModel):
+        return
+
+    if settings.DEBUG:
+        print(f"post_core_coremodel({sender.__name__}, {instance})")
+
+    if not getattr(sender, "AUDIT_MODE", False):
+        return
+
+    if hasattr(instance, "__old"):
+        old = instance.__old
+        new = qux_model_to_dict(instance)
+        diff = {k: (old[k], v) for k, v in new.items() if v != old[k]}
+        if diff:
+            audit_summary = getattr(sender, "AUDIT_SUMMARY", None)
+            audit_details = getattr(sender, "AUDIT_DETAILS", None)
+
+            if audit_summary is None or audit_details is None:
+                return
+
+            audit_summary_obj = audit_summary.objects.create(
+                content_object=instance,
+            )
+
+            for k, (old_value, new_value) in diff.items():
+                kfield = instance.__class__._meta.get_field(k)
+                if isinstance(kfield, FileField):
+                    old_value = old_value.name if old_value else None
+                    new_value = new_value.name if new_value else None
+
+                if isinstance(kfield, DateField) or isinstance(kfield, DateTimeField):
+                    old_value = old_value.isoformat() if old_value else None
+                    new_value = new_value.isoformat() if new_value else None
+
+                audit_details.objects.create(
+                    audit_summary=audit_summary_obj,
+                    field_name=k,
+                    old_value=old_value,
+                    new_value=new_value,
+                )
+
+
+class CoreModelAdmin(admin.ModelAdmin):
     list_per_page = 50
     show_full_result_count = False
 
@@ -293,10 +368,8 @@ class AbstractLead(CoreModel):
     )
 
     # Lead
-    firstname = models.CharField(
-        "First Name", max_length=128, **default_null_blank)
-    lastname = models.CharField(
-        "Last Name", max_length=128, **default_null_blank)
+    firstname = models.CharField("First Name", max_length=128, **default_null_blank)
+    lastname = models.CharField("Last Name", max_length=128, **default_null_blank)
     email = models.EmailField(max_length=240, **default_null_blank)
     phone = models.CharField(max_length=16, **default_null_blank, validators=[regexp])
 
@@ -312,17 +385,13 @@ class AbstractLead(CoreModel):
     )
 
     # UTM
-    utm_source = models.CharField(
-        "UTM Source", max_length=256, **default_null_blank)
-    utm_medium = models.CharField(
-        "UTM Medium", max_length=256, **default_null_blank)
+    utm_source = models.CharField("UTM Source", max_length=256, **default_null_blank)
+    utm_medium = models.CharField("UTM Medium", max_length=256, **default_null_blank)
     utm_campaign = models.CharField(
         "UTM Campaign", max_length=256, **default_null_blank
     )
-    utm_term = models.CharField(
-        "UTM Term", max_length=256, **default_null_blank)
-    utm_content = models.CharField(
-        "UTM Content", max_length=256, **default_null_blank)
+    utm_term = models.CharField("UTM Term", max_length=256, **default_null_blank)
+    utm_content = models.CharField("UTM Content", max_length=256, **default_null_blank)
 
     get_params = models.JSONField(default=dict, blank=True)
 
@@ -371,3 +440,38 @@ class AbstractLead(CoreModel):
         clsobj.save()
 
         return clsobj
+
+
+class CoreModelAuditSummary(CoreModel):
+    slug = models.CharField(max_length=16, unique=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        abstract = True
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
+
+    def get_details(self):
+        if hasattr(self, "details"):
+            return self.details.all()
+
+        raise NotImplementedError
+
+
+class CoreModelAuditDetails(CoreModel):
+    audit_summary = models.ForeignKey(
+        CoreModelAuditSummary, on_delete=models.CASCADE, related_name="details"
+    )
+    field_name = models.CharField(max_length=128)
+    old_value = models.JSONField(default=dict, null=True, blank=True)
+    new_value = models.JSONField(default=dict, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+        indexes = [
+            models.Index(fields=["audit_summary", "field_name"]),
+        ]

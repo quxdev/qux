@@ -8,7 +8,6 @@ data/
 
 # Django
 __pycache__/
-sandbox/
 static/
 upload/
 db.sqlite3
@@ -28,7 +27,6 @@ models*.png
 
 # Distribution / packaging
 .Python
-.DS_Store
 .installed.cfg
 .eggs/
 build/
