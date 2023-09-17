@@ -190,7 +190,7 @@ def pre_save_coremodel(sender, instance, **kwargs):
     if not isinstance(instance, CoreModel):
         return
 
-    if settings.DEBUG:
+    if getattr(settings, "DEBUG_VERBOSE", False):
         print(f"pre_save_coremodel({sender.__name__}, {instance})")
 
     if getattr(instance, "slug", None):
@@ -212,7 +212,7 @@ def post_init_coremodel(sender, instance, **kwargs):
     if not isinstance(instance, CoreModel):
         return
 
-    if settings.DEBUG:
+    if getattr(settings, "DEBUG_VERBOSE", False):
         print(f"post_init_coremodel({sender.__name__}, {instance})")
 
     if getattr(sender, "AUDIT_MODE", False):
@@ -224,7 +224,7 @@ def post_save_coremodel(sender, instance, created, **kwargs):
     if not isinstance(instance, CoreModel):
         return
 
-    if settings.DEBUG:
+    if getattr(settings, "DEBUG_VERBOSE", False):
         print(f"post_core_coremodel({sender.__name__}, {instance})")
 
     if not getattr(sender, "AUDIT_MODE", False):
