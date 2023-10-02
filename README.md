@@ -32,6 +32,8 @@ Create your own _blank.html file and add your own CSS and JS files
 Qux is a django template with augmented models,
 extra template tags, and useful utilities.
 
+It is similar in intent to django_extensions, a massively useful tool.
+
 - [Core](auth/README.md)
 - Auth
 - SEO
@@ -51,18 +53,29 @@ extra template tags, and useful utilities.
   - `dtm_updated`
   - `to_dict(self)`
   - `get_dict(cls, pk)`
-- CoreModelPlus - where all deleted rows are soft-deleted only
+  - `slug` - CharField() that also indicates if the model requires auto-slugs
+  - `AUDIT_SUMMARY` - AuditSummary model
+  - `AUDIT_DETAIL` - AuditDetail model
+- `CoreModelPlus` - where all deleted rows are soft-deleted only
+- `AbstractLead`
+- `CoreModelAuditSummary`
+- `CoreModelAuditDetail`
 
-
-- `AbstractCompany`
-- `AbstractContact`
-- `AbstractContactPhone`
-- `AbstractContactEmail`
-
+#### qux_auth
 
 - `Company`
 - `Profile` - `OneToOne(User)`
 
+#### qux_core
+
+Abstractions
+
+- `AbstractCompany`
+- `AbstractContactPhone`
+- `AbstractContactEmail`
+- `AbstractContact`
+
+Logging
 
 - `DownloadLog`
 - `UploadLog`
@@ -70,6 +83,16 @@ extra template tags, and useful utilities.
 - `CommLog`
 
 ## Auth [_qux_auth_]
+
+### urls.py
+
+```python
+urlpatterns += [
+    ...,
+    path("", include("qux.auth.urls.appurls", namespace="qux_auth")),
+    ...,
+]
+```
 
 ### URLS
 
