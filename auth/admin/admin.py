@@ -3,6 +3,7 @@ from django.contrib import admin
 from ..models import *
 
 
+@admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     model_fields = (
         "id",
@@ -15,9 +16,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_per_page = 25
 
 
-admin.site.register(Service, ServiceAdmin)
-
-
+@admin.register(Preference)
 class PreferenceAdmin(admin.ModelAdmin):
     fields = (
         "user",
@@ -34,6 +33,3 @@ class PreferenceAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ("user", "service")
     list_per_page = 25
-
-
-admin.site.register(Preference, PreferenceAdmin)

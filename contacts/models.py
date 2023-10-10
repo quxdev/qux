@@ -1,44 +1,44 @@
-from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
-from qux.models import CoreModel
 from qux.utils.phone import phone_number
+from ..models import (
+    CoreModel,
+    AbstractCompany,
+    default_null_blank,
+    regexp_phone,
+)
 
 
-class AbstractCompany(CoreModel):
-    name = models.CharField(max_length=128, default=None, null=True, blank=True)
-    shortname = models.CharField(max_length=32, default=None, null=True, blank=True)
-    url = models.URLField()
-
+class Company(AbstractCompany):
     class Meta:
-        abstract = True
+        db_table = "qux_contacts_company"
 
 
-class AbstractContact(CoreModel):
-    regexp = RegexValidator(
-        regex=r"^\+?[1-9]\d{4,14}$",
-        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
-    )
-
-    first_name = models.CharField(max_length=128, default=None, null=True, blank=True)
-    last_name = models.CharField(max_length=128, default=None, null=True, blank=True)
-    display_name = models.CharField(max_length=256, default=None, null=True, blank=True)
+class Contact(CoreModel):
+    first_name = models.CharField(max_length=128, **default_null_blank)
+    last_name = models.CharField(max_length=128, **default_null_blank)
+    display_name = models.CharField(max_length=256, **default_null_blank)
     is_favorite = models.BooleanField(default=False)
     is_private = models.BooleanField(default=True)
-    phone = models.CharField(
-        max_length=16, validators=[regexp], default=None, null=True, blank=True
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.DO_NOTHING,
+        related_name="contacts",
     )
-    email = models.EmailField(max_length=256, default=None, null=True, blank=True)
+    phone = models.CharField(
+        max_length=16,
+        validators=[regexp_phone],
+        **default_null_blank,
+    )
+    email = models.EmailField(
+        max_length=256,
+        **default_null_blank,
+    )
 
     class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        if self.phone:
-            x = phone_number(self.phone)
-            self.phone = x
-
-        super(AbstractContact, self).save(*args, **kwargs)
+        db_table = "qux_contacts_contact"
 
     def displayname(self):
         if self.display_name:
@@ -89,16 +89,24 @@ class AbstractContact(CoreModel):
         return result
 
 
+@receiver(pre_save, sender=Contact)
+def contact_pre_save(sender, instance, **kwargs):
+    if instance.phone:
+        x = phone_number(instance.phone)
+        instance.phone = x
+
+
 class AbstractContactPhone(CoreModel):
-    regexp = RegexValidator(
-        regex=r"^\+?[1-9]\d{4,14}$",
-        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
-    )
+    # TODO: set to actual child of AbstractContact
     contact = models.ForeignKey(
-        AbstractContact, on_delete=models.CASCADE, related_name="phones"
+        Contact, on_delete=models.CASCADE, related_name="phones"
     )
-    phone = models.CharField(max_length=16, validators=[regexp], blank=False)
-    label = models.CharField(max_length=100, default=None, null=True, blank=True)
+    phone = models.CharField(
+        max_length=16,
+        validators=[regexp_phone],
+        blank=False,
+    )
+    label = models.CharField(max_length=100, **default_null_blank)
     is_primary = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 
@@ -127,11 +135,14 @@ class AbstractContactPhone(CoreModel):
 
 
 class AbstractContactEmail(CoreModel):
+    # TODO: Set to actual child of AbstractContact
     contact = models.ForeignKey(
-        AbstractContact, on_delete=models.CASCADE, related_name="emails"
+        Contact,
+        on_delete=models.CASCADE,
+        related_name="emails",
     )
     email = models.EmailField(max_length=256, blank=False)
-    label = models.CharField(max_length=100, default=None, null=True, blank=True)
+    label = models.CharField(max_length=100, **default_null_blank)
     is_primary = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 

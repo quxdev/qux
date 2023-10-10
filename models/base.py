@@ -1,11 +1,9 @@
+import datetime
 import random
 from itertools import chain
 
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.core.validators import RegexValidator
@@ -18,7 +16,16 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
+from qux.lorem import Lorem
+
+# Commonly used definitions
 default_null_blank = dict(default=None, null=True, blank=True)
+
+# https://en.wikipedia.org/wiki/E.164
+regexp_phone = RegexValidator(
+    regex=r"^\+?[1-9]\d{4,14}$",
+    message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
+)
 
 
 def qux_model_to_dict(
@@ -117,6 +124,46 @@ class CoreModel(models.Model):
     def get_dict(cls, pk):
         result = cls.objects.get(id=pk)
         return result.to_dict()
+
+    def randomize(self):
+        if settings.DEBUG:
+            print(f"{self.__class__.__name__}.randomize()")
+
+        for field in self._meta.get_fields():
+            if field.auto_created or not field.editable or field.null:
+                continue
+
+            internal_type = field.get_internal_type()
+            if internal_type == "CharField":
+                value = get_random_string(field.max_length)
+            elif internal_type == "TextField":
+                value = Lorem.words(random.randint(5, 20))
+            elif internal_type == "IntegerField":
+                value = random.randint(0, 100)
+            elif internal_type == "DecimalField":
+                value = random.randint(0, 10000) / 100
+            elif internal_type == "DateField":
+                value = datetime.date.today()
+            elif internal_type == "DateTimeField":
+                value = datetime.datetime.now()
+            elif internal_type == "BooleanField":
+                value = random.choice([True, False])
+            elif internal_type == "EmailField":
+                value = get_random_string(10) + "@" + get_random_string(10) + ".com"
+            elif internal_type == "URLField":
+                value = "https://" + get_random_string(10) + ".com"
+            elif internal_type == "ForeignKey":
+                queryset = field.related_model.objects.all()
+                if not queryset.exists():
+                    raise Exception(f"{field.related_model.__name__} has no objects")
+                value = random.choice(field.related_model.objects.all())
+            else:
+                print(f"randomize: {field.name} {internal_type}")
+                value = None
+
+            setattr(self, field.name, value)
+
+        print(self.__dict__)
 
     def settag(self, tag: str):
         if not hasattr(self, "tags"):
@@ -450,38 +497,3 @@ class AbstractLead(CoreModel):
         clsobj.save()
 
         return clsobj
-
-
-class CoreModelAuditSummary(CoreModel):
-    slug = models.CharField(max_length=16, unique=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey("content_type", "object_id")
-
-    class Meta:
-        abstract = True
-        indexes = [
-            models.Index(fields=["content_type", "object_id"]),
-        ]
-
-    def get_details(self):
-        if hasattr(self, "details"):
-            return self.details.all()
-
-        raise NotImplementedError
-
-
-class CoreModelAuditDetails(CoreModel):
-    audit_summary = models.ForeignKey(
-        CoreModelAuditSummary, on_delete=models.CASCADE, related_name="details"
-    )
-    field_name = models.CharField(max_length=128)
-    old_value = models.JSONField(default=dict, null=True, blank=True)
-    new_value = models.JSONField(default=dict, null=True, blank=True)
-
-    class Meta:
-        abstract = True
-        indexes = [
-            models.Index(fields=["audit_summary", "field_name"]),
-        ]
