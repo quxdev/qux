@@ -231,36 +231,46 @@ def post_save_coremodel(sender, instance, created, **kwargs):
         return
 
     if hasattr(instance, "__old"):
-        old = instance.__old
-        new = qux_model_to_dict(instance)
-        diff = {k: (old[k], v) for k, v in new.items() if v != old[k]}
-        if diff:
-            audit_summary = getattr(sender, "AUDIT_SUMMARY", None)
-            audit_details = getattr(sender, "AUDIT_DETAILS", None)
+        old_data = instance.__old
+        new_data = qux_model_to_dict(instance)
+        diff = {k: (old_data[k], v) for k, v in new_data.items() if v != old_data[k]}
+        if not diff:
+            return
 
-            if audit_summary is None or audit_details is None:
-                return
+        audit_summary = getattr(sender, "AUDIT_SUMMARY", None)
+        audit_details = getattr(sender, "AUDIT_DETAILS", None)
 
-            audit_summary_obj = audit_summary.objects.create(
-                content_object=instance,
+        if audit_summary is None or audit_details is None:
+            return
+
+        user = getattr(instance, "user", None)
+        if user is None:
+            user = getattr(instance, "_user", None)
+
+        if user is None:
+            user = User.objects.get(id=1)
+
+        audit_summary_obj = audit_summary.objects.create(
+            user=getattr(instance, "user", user),
+            content_object=instance,
+        )
+
+        for k, (old_value, new_value) in diff.items():
+            kfield = instance.__class__._meta.get_field(k)
+            if isinstance(kfield, FileField):
+                old_value = old_value.name if old_value else None
+                new_value = new_value.name if new_value else None
+
+            if isinstance(kfield, DateField) or isinstance(kfield, DateTimeField):
+                old_value = old_value.isoformat() if old_value else None
+                new_value = new_value.isoformat() if new_value else None
+
+            audit_details.objects.create(
+                audit_summary=audit_summary_obj,
+                field_name=k,
+                old_value=old_value,
+                new_value=new_value,
             )
-
-            for k, (old_value, new_value) in diff.items():
-                kfield = instance.__class__._meta.get_field(k)
-                if isinstance(kfield, FileField):
-                    old_value = old_value.name if old_value else None
-                    new_value = new_value.name if new_value else None
-
-                if isinstance(kfield, DateField) or isinstance(kfield, DateTimeField):
-                    old_value = old_value.isoformat() if old_value else None
-                    new_value = new_value.isoformat() if new_value else None
-
-                audit_details.objects.create(
-                    audit_summary=audit_summary_obj,
-                    field_name=k,
-                    old_value=old_value,
-                    new_value=new_value,
-                )
 
 
 class CoreModelAdmin(admin.ModelAdmin):
