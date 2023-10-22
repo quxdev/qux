@@ -1,14 +1,19 @@
-@import url('fonts/inter.css');
-@import url('fonts/roboto.css');
-@import url('fonts/metropolis.css');
 @import url('fonts/bootstrap-icons.min.css');
+@import url('fonts/courier.css');
+@import url('fonts/inter.css');
+@import url('fonts/metropolis.css');
+@import url('fonts/roboto.css');
 
-.font-inter {
-    font-family: "Inter", sans-serif;
+.font-courier-prime {
+    font-family: "Courier Prime", monospace;
 }
-.font-roboto {
-    font-family: "Roboto", sans-serif;
+.font-inter {
+  font-family: "Inter", sans-serif;
 }
 .font-metropolis {
-    font-family: "Metropolis", sans-serif;
+  font-family: "Metropolis", sans-serif;
 }
+.font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
