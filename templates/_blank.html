@@ -85,7 +85,27 @@ body {
 {% include '_navbar.html' %}
 {% endblock %}
 
+{% block footer %}
+{% include '_footer.html' %}
+{% endblock %}
+
+{% block qux_content %}
+<div class="container">
+  <div class="my-4 fw-bold
+              {% block qux_page_title_extra %}{% endblock qux_page_title_extra %}">
+    {% block qux_page_title %}{% endblock qux_page_title %}
+  </div>
+
+  <div class="my-4">
+    {% block qux_page_content %}{% endblock qux_page_content %}
+  </div>
+</div>
+{% endblock qux_content %}
+
 {% block javascript %}
+{# Bootstrap #}
+<script src="{% static 'qux/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'qux/js/qux/qux.js' %}"></script>
 {% endblock %}
 
 {% block customjs %}

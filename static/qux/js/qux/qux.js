@@ -8,7 +8,6 @@
  * Date: 2022-01-01
  */
 
-
 function quxDeleteObject(elementId, deleteURL) {
   let csrftoken = $( "input[name=csrfmiddlewaretoken]" ).val();
 
@@ -34,3 +33,19 @@ function quxDeleteObject(elementId, deleteURL) {
       },
   });
 }
+
+// Enable tooltips
+// Bootstrap 4.6
+document.addEventListener("DOMContentLoaded", function() {
+  let tooltipList = document.querySelectorAll("[data-toggle=tooltip]");
+  tooltipList.forEach(function(element) {
+    element.tooltip();
+  });
+});
+
+// Bootstrap 5.2.3
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+const tooltipList = [...tooltipTriggerList].map(
+  tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {})
+);
+

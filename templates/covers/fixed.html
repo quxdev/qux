@@ -1,0 +1,26 @@
+{% extends '_blank.html' %}
+
+{% block customstyle %}
+<link rel="stylesheet" href="{% static 'qux/css/qux_cover.css' %}">
+{% endblock %}
+
+{% block qux_content %}
+{% block cover %}
+<!-- qux._cover -->
+<div id="above-the-fold">
+  <div id="cover-alpha">
+    <div id="cover-content" class="my-4 my-sm-auto py-sm-4">
+      <div id="cover-container" class="container-lg">
+        {% block cover_content %}
+          <div class="d-flex align-items-center">
+          <h1>Qux</h1>
+          </div>
+        {% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{{ block.super }}
+{% endblock qux_content %}
