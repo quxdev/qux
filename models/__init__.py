@@ -5,7 +5,7 @@ from .base import (
 )
 from .plus import (
     CoreModelPlus,
-    CoreModelPlusManager,
+    CoreManagerPlus,
 )
 from .audit import (
     CoreModelAuditSummary,
