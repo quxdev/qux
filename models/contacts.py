@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from qux.models import (
+from qux.models.base import (
     CoreModel,
     default_null_blank,
     regexp_phone,

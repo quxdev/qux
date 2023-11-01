@@ -1,7 +1,5 @@
 import datetime
 import random
-from itertools import chain
-
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import FieldError
@@ -15,7 +13,7 @@ from django.db.models.signals import pre_save, post_init, post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-
+from itertools import chain
 from qux.lorem import Lorem
 
 # Commonly used definitions
@@ -232,6 +230,11 @@ class CoreModel(models.Model):
         return tags
 
 
+class QuxModel(CoreModel):
+    class Meta:
+        abstract = True
+
+
 @receiver(pre_save)
 def pre_save_coremodel(sender, instance, **kwargs):
     if not isinstance(instance, CoreModel):
@@ -318,101 +321,6 @@ def post_save_coremodel(sender, instance, created, **kwargs):
                 old_value=old_value,
                 new_value=new_value,
             )
-
-
-class CoreModelAdmin(admin.ModelAdmin):
-    list_per_page = 50
-    show_full_result_count = False
-
-    # noinspection PyProtectedMember
-    def get_queryset(self, request):
-        """
-        Returns a QuerySet of all model instances that can be edited by the
-        admin site. This is used by changelist_view.
-        """
-
-        # Default: qs = self.model._default_manager.get_query_set()
-        qs = self.model._default_manager.get_queryset()
-
-        # TODO: this should be handled by some parameter to the ChangeList.
-        # () because *None is bad
-        ordering = self.ordering or ()
-        if ordering:
-            qs = qs.order_by(*ordering)
-        return qs
-
-
-class CoreManagerPlus(CoreManager):
-    def get(self, *args, **kwargs):
-        # print("get is_deleted=False")
-        return self.get_queryset().get(*args, **kwargs)
-
-    def filter(self, *args, **kwargs):
-        # print("filter is_deleted=False")
-        return self.get_queryset().filter(*args, **kwargs)
-
-    def get_queryset(self):
-        # print("get_queryset is_deleted=False")
-        return super(CoreManagerPlus, self).get_queryset().filter(is_deleted=False)
-
-    def all_with_deleted(self):
-        # print("all_with_deleted is_deleted=False")
-        return super(CoreManagerPlus, self).get_queryset()
-
-
-class CoreModelPlus(CoreModel):
-    objects = CoreManagerPlus()
-    is_deleted = models.BooleanField(default=False)
-
-    class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        if not self.dtm_created:
-            self.dtm_created = timezone.now()
-        self.dtm_updated = timezone.now()
-        return super(CoreModelPlus, self).save(*args, **kwargs)
-
-    def delete(self, **kwargs):
-        self.is_deleted = True
-        self.save()
-
-    def restore(self):
-        self.is_deleted = False
-        self.save()
-
-
-class CoreModelPlusAdmin(admin.ModelAdmin):
-    list_display = (
-        "is_deleted",
-        "dtm_created",
-        "dtm_updated",
-    )
-    list_filter = ("is_deleted",)
-    readonly_fields = (
-        "dtm_created",
-        "dtm_updated",
-    )
-
-    list_per_page = 50
-    show_full_result_count = False
-
-    # noinspection PyProtectedMember
-    def get_queryset(self, request):
-        """
-        Returns a QuerySet of all model instances that can be edited by the
-        admin site. This is used by changelist_view.
-        """
-
-        # Default: qs = self.model._default_manager.get_query_set()
-        qs = self.model._default_manager.all_with_deleted()
-
-        # TODO: this should be handled by some parameter to the ChangeList.
-        # () because *None is bad
-        ordering = self.ordering or ()
-        if ordering:
-            qs = qs.order_by(*ordering)
-        return qs
 
 
 class AbstractLead(CoreModel):
