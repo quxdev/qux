@@ -16,7 +16,10 @@ class QuxModelAdmin(admin.ModelAdmin):
     show_full_result_count = False
 
     def get_fields(self, request, obj=None):
-        fields = super().get_fields(request, obj)
+        fields = list(set(
+            [field.name for field in self.opts.local_fields] +
+            [field.name for field in self.opts.local_many_to_many]
+        ))
         fields = tuple([f for f in fields if f not in self.excluded])
         return fields
 
@@ -29,6 +32,7 @@ class QuxModelAdmin(admin.ModelAdmin):
         return fields
 
     def get_list_display(self, request):
-        fields = super().get_list_display(request)
+        fields = [field.name for field in self.opts.local_fields]
         fields = tuple([f for f in fields if f not in self.excluded])
         return fields
+
