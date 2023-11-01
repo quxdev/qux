@@ -231,7 +231,8 @@ class CoreModel(models.Model):
 
 
 class QuxModel(CoreModel):
-    pass
+    class Meta:
+        abstract = True
 
 
 @receiver(pre_save)
