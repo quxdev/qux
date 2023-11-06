@@ -2,10 +2,6 @@
 {% load static i18n qux %}
 {% lineless %}
 
-{% block application_name %}Qux{% endblock %}
-{% block apple_mobile_web_app_title %}Qux{% endblock %}
-{% block icon %}{% static 'qux/logo/qux/qux.svg' %}{% endblock %}
-
 {% block keywords %}{{ meta.keywords }}{% endblock %}
 
 {% block title_prefix %}Qux{% endblock %}
@@ -16,22 +12,6 @@
 
 {% block title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
 {% block og_title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
-
-{# Facebook Open Graph #}
-{% block og_url_prefix %}https://qux.dev{% endblock %}
-{% block og_site_name %}Qux{% endblock %}
-{% block og_title_prefix %}Qux{% endblock %}
-{% block og_image %}https://qux.dev/static/logo/logo.png{% endblock %}
-
-{# Twitter Card #}
-{% block twitter_site %}@quxdev{% endblock %}
-{% block twitter_site_id %}@quxdev{% endblock %}
-{% block twitter_title_prefix %}Qux{% endblock %}
-{% block twitter_creator %}@quxdev{% endblock %}"/>
-{% block twitter_creator_id %}@quxdev{% endblock %}"/>
-{% block twitter_image %}https://qux.dev/static/logo/logo.png{% endblock %}
-
-{% block canonical_prefix %}https://qux.dev{% endblock %}
 
 {% block og_url %}{{ meta.canonical }}{% endblock %}
 {% block canonical %}{{ meta.canonical }}{% endblock %}
