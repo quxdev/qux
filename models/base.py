@@ -1,7 +1,9 @@
 import datetime
 import random
+from itertools import chain
+
 from django.conf import settings
-from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.core.validators import RegexValidator
@@ -11,13 +13,16 @@ from django.db.models.fields.files import FileField
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.signals import pre_save, post_init, post_save
 from django.dispatch import receiver
-from django.utils import timezone
 from django.utils.crypto import get_random_string
-from itertools import chain
+
 from qux.lorem import Lorem
 
 # Commonly used definitions
-default_null_blank = dict(default=None, null=True, blank=True)
+default_null_blank = {
+    'default': None,
+    'null': True,
+    'blank': True,
+}
 
 # https://en.wikipedia.org/wiki/E.164
 regexp_phone = RegexValidator(
@@ -99,7 +104,7 @@ class CoreModel(models.Model):
 
     @classmethod
     def initdata(cls):
-        print("{}.initdata()".format(cls.__name__))
+        print(f"{cls.__name__}.initdata()")
 
     def to_dict(
         self,
@@ -165,7 +170,7 @@ class CoreModel(models.Model):
 
     def settag(self, tag: str):
         if not hasattr(self, "tags"):
-            return
+            return None
 
         tags = []
         if self.tags and hasattr("strip", self.tags):
@@ -175,9 +180,11 @@ class CoreModel(models.Model):
         self.tags = ",".join(tags)
         self.save()
 
+        return tags
+
     def deltag(self, tag: str):
         if not hasattr(self, "tags"):
-            return
+            return False
 
         tags = []
         if self.tags:
@@ -188,9 +195,11 @@ class CoreModel(models.Model):
         self.tags = ",".join(tags)
         self.save()
 
+        return True
+
     def hastag(self, tag: str):
         if not hasattr(self, "tags"):
-            return
+            return False
 
         tags = []
         if self.tags and self.tags != "":
@@ -201,7 +210,7 @@ class CoreModel(models.Model):
 
     def gettags(self):
         if not hasattr(self, "tags"):
-            return
+            return None
 
         tags = []
         if self.tags and self.tags != "":
@@ -220,7 +229,7 @@ class CoreModel(models.Model):
                 .distinct()
             )
         except FieldError:
-            return
+            return None
 
         tags = ",".join(tags)
         tags = [x.strip() for x in tags.split(",")]
@@ -311,7 +320,7 @@ def post_save_coremodel(sender, instance, created, **kwargs):
                 old_value = old_value.name if old_value else None
                 new_value = new_value.name if new_value else None
 
-            if isinstance(kfield, DateField) or isinstance(kfield, DateTimeField):
+            if isinstance(kfield, (DateField, DateTimeField)):
                 old_value = old_value.isoformat() if old_value else None
                 new_value = new_value.isoformat() if new_value else None
 
@@ -378,7 +387,8 @@ class AbstractLead(CoreModel):
         clsobj = cls()
 
         metadata = ["HTTP_ACCEPT_LANGUAGE", "HTTP_USER_AGENT", "REMOTE_ADDR"]
-        [setattr(clsobj, f.lower(), request.META.get(f, None)) for f in metadata]
+        for f in metadata:
+            setattr(clsobj, f.lower(), request.META.get(f, None))
 
         urlfields = [
             "utm_source",

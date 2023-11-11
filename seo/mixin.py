@@ -36,7 +36,7 @@ class SEOMixin(ContextMixin):
             result = siteobj.to_dict()
         else:
             if settings.DEBUG:
-                print(f"SEOMixin.seocontext(SEOSite=None)")
+                print("SEOMixin.seocontext(SEOSite=None)")
             result = {}
             return result
 

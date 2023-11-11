@@ -36,12 +36,12 @@ class CustomAuthenticationForm(AuthenticationForm):
         if "@" in username:
             try:
                 username = User.objects.get(email=username).username
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist as exception:
                 raise ValidationError(
                     self.error_messages["invalid_login"],
                     code="invalid_login",
                     params={"username": self.username_field.verbose_name},
-                )
+                ) from exception
         return username
 
 
@@ -64,7 +64,7 @@ class BaseSignupForm(UserCreationForm):
         fields = ("email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
-        super(BaseSignupForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["password1"].widget.attrs.update(
             {"class": "form-control foo-border", "placeholder": "Enter password"}
         )
@@ -82,7 +82,7 @@ class SignupForm(BaseSignupForm):
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
-        super(SignupForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs.update(
             {
                 "class": "form-control foo-border",

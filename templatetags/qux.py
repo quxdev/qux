@@ -41,14 +41,6 @@ def qux_max(value, minvalue):
         return value
 
 
-@register.filter(name="max")
-def qux_max(value, maxvalue):
-    try:
-        return max(value, maxvalue)
-    except TypeError:
-        return value
-
-
 @register.filter(name="qux_floatformat_in")
 def qux_floatformat_in(value, precision):
     return qux_floatformat(value, precision, "in")
@@ -87,10 +79,10 @@ def qux_floatformat(value, precision, locale):
 
 @register.filter(name="strip")
 def strip(value, stripchar):
-    if type(value) is str:
+    if isinstance(value, str):
         return value.strip(stripchar)
-    else:
-        return value
+
+    return value
 
 
 @register.filter(name="date_before")
@@ -101,7 +93,7 @@ def date_before(days):
 
 @register.filter(name="addstr")
 def addstr(a, b):
-    return "{}_{}".format(a, b)
+    return f"{a}_{b}"
 
 
 # https://stackoverflow.com/a/36288962/
