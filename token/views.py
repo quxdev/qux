@@ -1,20 +1,16 @@
-from .forms import *
-
+from django.conf import settings
 # from core.mixin import DjangoViewTrackingMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
-from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
-from django.conf import settings
-
 
 from qux.seo.mixin import SEOMixin
-
+from .forms import *
 from .models import *
 
 
@@ -62,7 +58,11 @@ class CustomTokenDetailView(SEOMixin, LoginRequiredMixin, DetailView):
 class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
     model = CustomToken
     form_class = CustomTokenForm
-    template_name = "bs5/token_create.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "token_create.html"
+    template_name = (
+        "bs5/token_create.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "token_create.html"
+    )
     # fields = ['title', 'slug', 'body', 'citation', 'tags', 'is_draft', 'is_private', ]
     extra_context = {
         "breadcrumbs": ["API KEY", "New"],
@@ -81,7 +81,11 @@ class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
 class CustomTokenUpdateView(SEOMixin, LoginRequiredMixin, UpdateView):
     model = CustomToken
     form_class = CustomTokenForm
-    template_name = "bs5/token_update.html" if getattr(settings, "BOOTSTRAP", "bs4") == "bs5" else "token_update.html"
+    template_name = (
+        "bs5/token_update.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "token_update.html"
+    )
     extra_context = {"base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html")}
 
     @staticmethod
