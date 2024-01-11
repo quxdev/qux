@@ -1,14 +1,20 @@
-from qux.models import CoreModelPlusAdmin
-from .models import *
 from django.contrib import admin
 
+from .models import *
 
-class CustomTokenAdmin(CoreModelPlusAdmin):
+
+@admin.register(CustomToken)
+class CustomTokenAdmin(admin.ModelAdmin):
+    fields = (
+        "name",
+        "user",
+        "key",
+    )
     list_display = (
         "id",
         "user",
         "name",
-    ) + CoreModelPlusAdmin.list_display
+    )
     search_fields = (
         "id",
         "user__username",
@@ -16,6 +22,3 @@ class CustomTokenAdmin(CoreModelPlusAdmin):
     )
     raw_id_fields = ("user",)
     readonly_fields = ("key",)
-
-
-admin.site.register(CustomToken, CustomTokenAdmin)

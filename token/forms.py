@@ -20,6 +20,9 @@ class CustomTokenForm(forms.ModelForm):
     name = forms.CharField(
         label="Name",
         widget=forms.TextInput(
-            attrs={"class": "form-control foo-border", "placeholder": "Enter name"}
+            attrs={
+                "class": "form-control foo-border",
+                "placeholder": "Enter name",
+            }
         ),
     )

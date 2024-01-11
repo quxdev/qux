@@ -5,10 +5,10 @@ from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.authentication import TokenAuthentication
 
-from qux.models import CoreModelPlus
+from qux.models import QuxModel
 
 
-class CustomToken(CoreModelPlus):
+class CustomToken(QuxModel):
     key = models.CharField(max_length=40, unique=True)
     name = models.CharField(max_length=128)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
