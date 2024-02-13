@@ -3,7 +3,7 @@ import random
 from itertools import chain
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.core.validators import RegexValidator
@@ -18,11 +18,7 @@ from django.utils.crypto import get_random_string
 from qux.lorem import Lorem
 
 # Commonly used definitions
-default_null_blank = {
-    'default': None,
-    'null': True,
-    'blank': True,
-}
+default_null_blank = {"default": None, "null": True, "blank": True}
 
 # https://en.wikipedia.org/wiki/E.164
 regexp_phone = RegexValidator(
@@ -172,12 +168,10 @@ class CoreModel(models.Model):
         if not hasattr(self, "tags"):
             return None
 
-        tags = []
-        if self.tags and hasattr("strip", self.tags):
-            tags = [x.strip() for x in self.tags.split(",")]
+        tags = [x.strip() for x in getattr(self, "tags", "").split(",")]
         tags.append(tag)
         tags.sort()
-        self.tags = ",".join(tags)
+        setattr(self, "tags", ",".join(tags))
         self.save()
 
         return tags
@@ -186,13 +180,11 @@ class CoreModel(models.Model):
         if not hasattr(self, "tags"):
             return False
 
-        tags = []
-        if self.tags:
-            tags = [x.strip() for x in self.tags.split(",")]
+        tags = [x.strip() for x in getattr(self, "tags", "").split(",")]
         if tag in tags:
             tags.remove(tag)
         tags.sort()
-        self.tags = ",".join(tags)
+        setattr(self, "tags", ",".join(tags))
         self.save()
 
         return True
@@ -201,20 +193,14 @@ class CoreModel(models.Model):
         if not hasattr(self, "tags"):
             return False
 
-        tags = []
-        if self.tags and self.tags != "":
-            tags = [x.strip() for x in self.tags.split(",")]
-        if tag in tags:
-            return True
-        return False
+        tags = [x.strip() for x in getattr(self, "tags", "").split(",")]
+        return tag in tags
 
     def gettags(self):
         if not hasattr(self, "tags"):
             return None
 
-        tags = []
-        if self.tags and self.tags != "":
-            tags = [x.strip() for x in self.tags.split(",")]
+        tags = [x.strip() for x in getattr(self, "tags", "").split(",")]
         if "" in tags:
             tags.remove("")
         return tags
@@ -246,6 +232,7 @@ class QuxModel(CoreModel):
 
 @receiver(pre_save)
 def pre_save_coremodel(sender, instance, **kwargs):
+    # pylint: disable=unused-argument
     if not isinstance(instance, CoreModel):
         return
 
@@ -268,6 +255,7 @@ def pre_save_coremodel(sender, instance, **kwargs):
 
 @receiver(post_init)
 def post_init_coremodel(sender, instance, **kwargs):
+    # pylint: disable=unused-argument
     if not isinstance(instance, CoreModel):
         return
 
@@ -280,6 +268,7 @@ def post_init_coremodel(sender, instance, **kwargs):
 
 @receiver(post_save)
 def post_save_coremodel(sender, instance, created, **kwargs):
+    # pylint: disable=unused-argument
     if not isinstance(instance, CoreModel):
         return
 
@@ -307,7 +296,7 @@ def post_save_coremodel(sender, instance, created, **kwargs):
             user = getattr(instance, "_user", None)
 
         if user is None:
-            user = User.objects.get(id=1)
+            user = get_user_model().objects.get(id=1)
 
         audit_summary_obj = audit_summary.objects.create(
             user=getattr(instance, "user", user),
@@ -317,12 +306,16 @@ def post_save_coremodel(sender, instance, created, **kwargs):
         for k, (old_value, new_value) in diff.items():
             kfield = instance.__class__._meta.get_field(k)
             if isinstance(kfield, FileField):
-                old_value = old_value.name if old_value else None
-                new_value = new_value.name if new_value else None
+                old_value = old_value.name if hasattr(old_value, "name") else None
+                new_value = new_value.name if hasattr(new_value, "name") else None
 
             if isinstance(kfield, (DateField, DateTimeField)):
-                old_value = old_value.isoformat() if old_value else None
-                new_value = new_value.isoformat() if new_value else None
+                old_value = (
+                    old_value.isoformat() if hasattr(old_value, "isoformat") else None
+                )
+                new_value = (
+                    new_value.isoformat() if hasattr(new_value, "isoformat") else None
+                )
 
             audit_details.objects.create(
                 audit_summary=audit_summary_obj,
@@ -406,10 +399,11 @@ class AbstractLead(CoreModel):
         if "ad_set" in datadict and datadict["ad_set"]:
             datadict["adset_name"] = datadict["ad_set"]
 
-        islink = any([f for f in urlfields if f in datadict.keys()])
+        islink = any(f for f in urlfields if f in datadict.keys())
         if islink:
             fields = [f for f in urlfields if f in datadict]
-            [setattr(clsobj, f, datadict[f]) for f in fields]
+            for f in fields:
+                setattr(clsobj, f, datadict[f])
 
         clsobj.get_params = datadict
         clsobj.save()

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -34,7 +34,9 @@ class AbstractProfile(CoreModel):
     SLUG_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz"
 
     slug = models.CharField(max_length=11, unique=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="%(class)s")
+    user = models.OneToOneField(
+        get_user_model(), on_delete=models.CASCADE, related_name="%(class)s"
+    )
     phone = models.CharField(
         max_length=16,
         validators=[regexp_phone],
@@ -78,7 +80,7 @@ class AbstractProfile(CoreModel):
         return fullname
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=get_user_model())
 def create_profile(sender, instance, created, **kwargs):
     if not created:
         return
@@ -89,7 +91,7 @@ def create_profile(sender, instance, created, **kwargs):
             obj.save()
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=get_user_model())
 def save_profile(sender, instance, **kwargs):
     for subclass in AbstractProfile.__subclasses__():
         obj, created = subclass.objects.get_or_create(user=instance, id=instance.id)
