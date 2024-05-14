@@ -60,34 +60,25 @@
 {{ block.super }}
 <script type="text/javascript">
   function deletecall(url, id) {
-
     let result = confirm("Are you sure that you want to delete this token?");
     if (result) {
-      let csrftoken = $("input[name=csrfmiddlewaretoken]").val();
+      let csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.setRequestHeader("X-CSRFToken", csrftoken);
+  
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          location.reload();
+        } else {  
+        }
+      };
 
-      function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-      }
+      xhr.onerror = function () {
+      };
 
-      $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-          // if not safe, set csrftoken
-          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-          }
-        },
-      });
-
-      $.ajax({
-        method: "POST",
-        url: url,
-        success: function () {
-          $(".row_" + id).hide();
-        },
-        error: function () {
-        },
-      });
+      xhr.send();
     }
   }
 </script>
