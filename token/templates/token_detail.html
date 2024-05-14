@@ -27,11 +27,14 @@
         <label>Key</label>
       </div>
       <div class="p-2 border border-danger rounded bg-danger text-white"
-           style="font-family: 'Roboto Mono', monospace; font-size: 14px; overflow: scroll">
+        style="font-family: 'Roboto Mono', monospace; font-size: 14px; overflow: scroll">
         <span id='token-str'>{{ object.key }}</span>
-        <i id='token-copy-icon'
-           class='fa fa-copy'
-           style='cursor: pointer'></i>
+        <div id="token-copy" style="display: inline;">
+          <i id='token-copy-icon' class='fa fa-copy' style='cursor: pointer;'></i>
+        </div>
+        <div id="token-check" style="display: none;">
+          <i id='token-check-icon' class='fa fa-check' style='cursor: pointer;'></i>
+        </div>
         <span id='token-copied-confirmation' style='display: none'>
           Copied to clipboard
         </span>
@@ -40,8 +43,7 @@
   </div>
 
   <div class='mt-5 d-flex justify-content-center align-items-center'>
-    <button class='btn btn-primary'
-            onclick="location.href='{% url 'qux_token:home' %}'">
+    <button class='btn btn-primary' onclick="location.href='{% url 'qux_token:home' %}'">
       Done
     </button>
   </div>
@@ -51,23 +53,29 @@
 {% block customjs %}
 {{ block.super }}
 <script>
-  $(document).ready(function() {
-    let tokenIcon = $('#token-copy-icon');
-    let tokenCopiedConfirmation = $('#token-copied-confirmation');
+  document.addEventListener('DOMContentLoaded', function () {
+    var tokenCopyIcon = document.getElementById('token-copy');
+    var tokenCheckIcon = document.getElementById('token-check');
 
-    tokenIcon.on('click', function() {
-      navigator.clipboard.writeText($('#token-str').html());
+    var tokenIcon = document.getElementById('token-copy-icon');
+    var tokenCopiedConfirmation = document.getElementById('token-copied-confirmation');
 
-      tokenIcon.removeClass('fa-copy').addClass('fa-check');
-      tokenCopiedConfirmation.fadeIn('slow');
+    tokenCopyIcon.addEventListener('click', function () {
+      navigator.clipboard.writeText(document.getElementById('token-str').innerHTML);
+
+      tokenCopyIcon.style.display = 'none';
+      tokenCheckIcon.style.display = 'inline';
+      tokenCopiedConfirmation.style.display = 'block';
 
       // Revert back to original state
-      setTimeout(function(){ 
-        tokenIcon.removeClass('fa-check');
-        tokenIcon.addClass('fa-copy');
-        tokenCopiedConfirmation.fadeOut('slow');
+      setTimeout(function () {
+        tokenCopyIcon.style.display = 'inline';
+        tokenCheckIcon.style.display = 'none';
+        tokenCopiedConfirmation.style.display = 'none';
       }, 3000);
-    })
-  })
+    });
+  });
 </script>
+
+
 {% endblock %}
