@@ -4,14 +4,13 @@ from itertools import chain
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import FieldError
-from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist, FieldError, ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.fields import DateField, DateTimeField
 from django.db.models.fields.files import FileField
 from django.db.models.fields.related import ManyToManyField
-from django.db.models.signals import pre_save, post_init, post_save
+from django.db.models.signals import post_init, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
