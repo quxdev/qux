@@ -4,14 +4,14 @@ from itertools import chain
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import FieldError
-from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
+from django.contrib.sites.models import Site
+from django.core.exceptions import FieldDoesNotExist, FieldError, ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.fields import DateField, DateTimeField
 from django.db.models.fields.files import FileField
 from django.db.models.fields.related import ManyToManyField
-from django.db.models.signals import pre_save, post_init, post_save
+from django.db.models.signals import post_init, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
@@ -409,3 +409,35 @@ class AbstractLead(CoreModel):
         clsobj.save()
 
         return clsobj
+
+
+class SiteConfiguration(CoreModel):
+
+    name = models.CharField(max_length=32, unique=True)
+    value = models.JSONField()
+    description = models.CharField(max_length=255, null=True)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name="site_config")
+
+    @classmethod
+    def setenv_site(cls, name, value, description=None):
+        obj = cls.objects.get_or_none(name=name)
+        if obj:
+            obj.value = value
+            if description:
+                obj.description = description
+            obj.save()
+        else:
+            obj = cls.objects.create(
+                name=name,
+                value=value,
+                description=description,
+                site_id=settings.SITE_ID,
+            )
+        return obj
+
+    @classmethod
+    def getenv_site(cls, name, default_value):
+        obj = cls.objects.get_or_none(name=name)
+        if obj:
+            return obj.value
+        return default_value
