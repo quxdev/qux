@@ -14,6 +14,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.views.generic import TemplateView
+from django.views.generic import View
 
 try:
     from django.utils.encoding import force_text
@@ -21,11 +22,12 @@ except ImportError:
     from django.utils.encoding import force_str as force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from ..tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
 
 from qux.seo.mixin import SEOMixin
+from ..tokens import account_activation_token
+
 from ..forms import (
     ChangePasswordForm,
     CustomAuthenticationForm,
@@ -36,25 +38,28 @@ from ..forms import (
 )
 
 
-# class HomeView(TemplateView):
-#     template_name = 'home.html'
-#     extra_context = {
-#         "canonical": reverse('qux_auth:home')
-#     }
-
-
 User._meta.get_field("email")._unique = True
 
 
-def signup(request):
+class QuxSignupView(View):
+    """
+    Signup form.
+    """
+
     show_username_signup = getattr(settings, "SHOW_USERNAME_SIGNUP", None)
     form_class = SignupForm if show_username_signup else BaseSignupForm
-    if request.method == "POST":
-        form = form_class(request.POST)
+    activate_user = False
+
+    def post(self, request):
+        """
+        POST method for Signup form.
+        """
+        form = self.form_class(request.POST)
+
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False
-            if not show_username_signup:
+            user.is_active = self.activate_user
+            if not self.show_username_signup:
                 user.username = user.email
                 counter = 1
                 while User.objects.filter(username=user.username).exists():
@@ -94,48 +99,80 @@ def signup(request):
                     # 'Check the <b>spam</b> folder if you do not see the email within a few minutes of the request.'
                 ],
             }
+
             return render(request, "message.html", data)
-    else:
-        form = form_class()
 
-    print(settings.BOOTSTRAP)
+        else:
+            errors = form.errors.as_data()
 
-    if settings.BOOTSTRAP == "bs4":
-        return render(request, "signup.html", {"form": form})
-    elif settings.BOOTSTRAP == "bs5":
-        return render(request, "bs5/signup.html", {"form": form})
-    else:
-        return render(request, "signup.html", {"form": form})
+            error_messages = []
+            for field, field_errors in errors.items():
+                for error in field_errors:
+                    message = (
+                        error.message % error.params if error.params else error.message
+                    )
+                    error_messages.append(message)
 
+            data = {
+                "title": "Invalid credentials.",
+                "messages": error_messages,
+            }
+            return render(request, "message.html", data)
 
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        login(request, user)
-        data = {
-            "title": "Account verified",
-            "messages": [
-                '<a style="color:red" href="/">Click here<a/> to continue to your account.'
-            ],
-        }
-        return render(request, "message.html", data)
-    else:
-        data = {
-            "title": "Invalid URL",
-            "messages": [
-                "Activation link is invalid!",
-            ],
-        }
-        return render(request, "message.html", data)
+    def get(self, request):
+        """
+        GET method for Signup form.
+        """
+        form = self.form_class()
+
+        if settings.BOOTSTRAP == "bs4":
+            return render(request, "signup.html", {"form": form})
+        elif settings.BOOTSTRAP == "bs5":
+            return render(request, "bs5/signup.html", {"form": form})
+        else:
+            return render(request, "signup.html", {"form": form})
 
 
-class CoreLoginView(SEOMixin, LoginView):
+class QuxActivateView(View):
+    """
+    Activate account.
+    """
+
+    def get(self, request, uidb64, token):
+        """
+        GET method to activate a user account.
+        """
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
+            login(request, user)
+            data = {
+                "title": "Account verified",
+                "messages": [
+                    '<a style="color:red" href="/">Click here<a/> to continue to your account.'
+                ],
+            }
+            return render(request, "message.html", data)
+        else:
+            data = {
+                "title": "Invalid URL",
+                "messages": [
+                    "Activation link is invalid!",
+                ],
+            }
+            return render(request, "message.html", data)
+
+
+class QuxLoginView(SEOMixin, LoginView):
+    """
+    Login View.
+    """
+
     form_class = CustomAuthenticationForm
     template_name = (
         "bs5/login.html"
@@ -154,43 +191,7 @@ class CoreLoginView(SEOMixin, LoginView):
         return super().form_invalid(form)
 
 
-def logout_request(request):
-    logout(request)
-    messages.info(request, "Logged out successfully!")
-    return redirect("/")
-
-
-def login_request(request):
-    next_path = request.GET.get("next")
-    if request.user.is_authenticated:
-        return redirect(settings.LOGIN_REDIRECT_URL)
-
-    if request.method == "POST":
-        form = AuthenticationForm(request=request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.info(request, f"You are now logged in as {username}")
-                redirect_to = settings.LOGIN_REDIRECT_URL
-                if next_path:
-                    redirect_to = next_path
-                return redirect(redirect_to)
-            else:
-                messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Invalid username or password.")
-    form = CustomAuthenticationForm()
-    data = {
-        # "canonical": reverse('qux_auth:login'),
-        "form": form,
-    }
-    return render(request, "login.html", data)
-
-
-class ChangePasswordView(SEOMixin, TemplateView):
+class QuxChangePasswordView(SEOMixin, TemplateView):
     form_class = ChangePasswordForm
     template_name = (
         "bs5/change-password.html"
@@ -222,7 +223,7 @@ class ChangePasswordView(SEOMixin, TemplateView):
         return render(request, self.template_name, context=dict(form=form))
 
 
-class CorePasswordResetView(SEOMixin, PasswordResetView):
+class QuxPasswordResetView(SEOMixin, PasswordResetView):
     form_class = CustomPasswordResetForm
     template_name = (
         "bs5/password_reset_form.html"
@@ -240,7 +241,7 @@ class CorePasswordResetView(SEOMixin, PasswordResetView):
     }
 
 
-class CorePasswordResetDoneView(SEOMixin, PasswordResetDoneView):
+class QuxPasswordResetDoneView(SEOMixin, PasswordResetDoneView):
     template_name = "password_reset_done.html"
     extra_context = {
         "title": "Reset password",
@@ -248,7 +249,7 @@ class CorePasswordResetDoneView(SEOMixin, PasswordResetDoneView):
     }
 
 
-class CorePasswordResetConfirmView(PasswordResetConfirmView):
+class QuxPasswordResetConfirmView(PasswordResetConfirmView):
     form_class = CustomSetPasswordForm
     template_name = (
         "bs5/password_reset_form.html"
@@ -263,9 +264,52 @@ class CorePasswordResetConfirmView(PasswordResetConfirmView):
     }
 
 
-class CorePasswordResetCompleteView(PasswordResetCompleteView):
+class QuxPasswordResetCompleteView(PasswordResetCompleteView):
+
     template_name = "password_reset_complete.html"
     extra_context = {
         "title": "Password changed successfully",
         "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
+
+
+def logout_request(request):
+    """
+    Function based logout view.
+    """
+    logout(request)
+    messages.info(request, "Logged out successfully!")
+    return redirect("/")
+
+
+def login_request(request):
+    """
+    Function based login view.
+    """
+    next_path = request.GET.get("next")
+    if request.user.is_authenticated:
+        return redirect(settings.LOGIN_REDIRECT_URL)
+
+    if request.method == "POST":
+        form = AuthenticationForm(request=request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}")
+                redirect_to = settings.LOGIN_REDIRECT_URL
+                if next_path:
+                    redirect_to = next_path
+                return redirect(redirect_to)
+
+            messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    form = CustomAuthenticationForm()
+    data = {
+        # "canonical": reverse('qux_auth:login'),
+        "form": form,
+    }
+    return render(request, "login.html", data)
