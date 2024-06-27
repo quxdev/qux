@@ -1,32 +1,60 @@
+"""
+    App urls for qux_auth.
+"""
+
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from ..views.appviews import *
+from ..views.appviews import (
+    QuxSignupView,
+    QuxActivateView,
+    QuxLoginView,
+    QuxChangePasswordView,
+    QuxPasswordResetView,
+    QuxPasswordResetDoneView,
+    QuxPasswordResetConfirmView,
+    QuxPasswordResetCompleteView,
+    TemplateView,
+)
 
 app_name = "qux_auth"
 
 urlpatterns = [
-    path("signup/", signup, name="signup"),
-    path("activate/<uidb64>/<token>/", activate, name="activate"),
+    path("signup/", QuxSignupView.as_view(), name="signup"),
     path(
-        "login/", CoreLoginView.as_view(redirect_authenticated_user=True), name="login"
+        "activate/<uidb64>/<token>/",
+        QuxActivateView.as_view(),
+        name="activate",
+    ),
+    path(
+        "login/",
+        QuxLoginView.as_view(redirect_authenticated_user=True),
+        name="login",
     ),
     path("logout/", LogoutView.as_view(), name="logout"),
-    path("change-password/", ChangePasswordView.as_view(), name="change_password"),
-    path(r"password-reset/", CorePasswordResetView.as_view(), name="password_reset"),
+    path(
+        "change-password/",
+        QuxChangePasswordView.as_view(),
+        name="change_password",
+    ),
+    path(
+        r"password-reset/",
+        QuxPasswordResetView.as_view(),
+        name="password_reset",
+    ),
     path(
         r"password-reset/done/",
-        CorePasswordResetDoneView.as_view(),
+        QuxPasswordResetDoneView.as_view(),
         name="password_reset_done",
     ),
     path(
         r"reset/<uidb64>/<token>/",
-        CorePasswordResetConfirmView.as_view(),
+        QuxPasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
     path(
         r"reset/done/",
-        CorePasswordResetCompleteView.as_view(),
+        QuxPasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
     path(
