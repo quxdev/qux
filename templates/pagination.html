@@ -1,60 +1,62 @@
 {% load static qux %}
-<div id="pagination">
-  <div class="row mx-n1">
-    <div class="col px-1">
-      <ul class="pagination justify-content-left">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?{% url_replace page=1 %}">
-              <i class="fa-solid fa-fw fa-angle-double-left"></i>
-            </a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" href="?{% url_replace page=page_obj.previous_page_number %}">
-              <i class="fa-solid fa-fw fa-angle-left"></i>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-double-left"></i></a>
-          </li>
-          <li class="page-item disabled">
-            <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-left"></i></a>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
+{% if page_obj.paginator.num_pages > 1 %}
+  <div id="pagination">
+    <div class="row">
+      <div class="col">
+        <ul class="pagination my-3 justify-content-left">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{% url_replace page=1 %}">
+                <i class="fa-solid fa-fw fa-angle-double-left"></i>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?{% url_replace page=page_obj.previous_page_number %}">
+                <i class="fa-solid fa-fw fa-angle-left"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-double-left"></i></a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-left"></i></a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
 
-    <div class="col-auto px-1 align-items-center">
-      <ul class="pagination">
-        <li class="page-item disabled">
-          <a class="page-link" tabindex="-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
-        </li>
-      </ul>
-    </div>
+      <div class="col-auto px-1 align-items-center">
+        <ul class="pagination my-3">
+          <li class="page-item disabled">
+            <a class="page-link" tabindex="-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
+          </li>
+        </ul>
+      </div>
 
-    <div class="col px-1">
-      <ul class="pagination justify-content-end">
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?{% url_replace page=page_obj.next_page_number %}">
-              <i class="fa-solid fa-fw fa-angle-right"></i>
-            </a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" href="?{% url_replace page=page_obj.paginator.num_pages %}">
-              <i class="fa-solid fa-fw fa-angle-double-right"></i>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" href="#"><i class="fa-solid fa-fw fa-angle-right"></i></a>
-          </li>
-          <li class="page-item disabled">
-            <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-double-right"></i></a>
-          </li>
-        {% endif %}
-      </ul>
+      <div class="col">
+        <ul class="pagination my-3 justify-content-end">
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{% url_replace page=page_obj.next_page_number %}">
+                <i class="fa-solid fa-fw fa-angle-right"></i>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?{% url_replace page=page_obj.paginator.num_pages %}">
+                <i class="fa-solid fa-fw fa-angle-double-right"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#"><i class="fa-solid fa-fw fa-angle-right"></i></a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" tabindex="-1"><i class="fa-solid fa-fw fa-angle-double-right"></i></a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
   </div>
-</div>
+{% endif %}
