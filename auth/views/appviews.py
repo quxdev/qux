@@ -47,6 +47,11 @@ class QuxSignupView(View):
     """
 
     show_username_signup = getattr(settings, "SHOW_USERNAME_SIGNUP", None)
+    template_name = (
+        "bs5/signup.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "signup.html"
+    )
     form_class = SignupForm if show_username_signup else BaseSignupForm
     activate_user = False
 
@@ -67,70 +72,71 @@ class QuxSignupView(View):
                     counter += 1
 
             user.save()
-            # current_site = get_current_site(request)
-            mail_subject = "Activate your account."
 
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = account_activation_token.make_token(user)
-            domain = request.build_absolute_uri("/")[:-1]
-            activate_url = reverse(
-                "qux_auth:activate", kwargs={"uidb64": uid, "token": token}
-            )
-            data = {
-                "user": user,
-                # 'domain': current_site.domain,
-                "domain": domain,
-                "uid": uid,
-                "token": token,
-                "activate_url": domain + activate_url,
-            }
-            message = render_to_string("acc_active_email.html", data)
-            to_email = form.cleaned_data.get("email")
-            email = EmailMessage(mail_subject, message, to=[to_email])
-            email.content_subtype = "html"
-            email.send()
+            to_email = send_signup_verification_email(request, user, form)
 
             data = {
                 "title": "Verify account",
                 "messages": [
-                    "We have sent an account verification email to <b>{}</b> to complete your registration.".format(
-                        to_email
+                    (
+                        f"We have sent an account verification email to <b>{to_email}</b> "
+                        "to complete your registration."
                     ),
-                    # 'Check the <b>spam</b> folder if you do not see the email within a few minutes of the request.'
+                    (
+                        "Check the <b>spam</b> folder if you do not see the email within a "
+                        "few minutes of the request."
+                    ),
                 ],
             }
 
             return render(request, "message.html", data)
 
-        else:
-            errors = form.errors.as_data()
+        errors = form.errors.as_data()
 
-            error_messages = []
-            for field, field_errors in errors.items():
-                for error in field_errors:
-                    message = (
-                        error.message % error.params if error.params else error.message
-                    )
-                    error_messages.append(message)
+        error_messages = []
+        for _, field_errors in errors.items():
+            for error in field_errors:
+                message = (
+                    error.message % error.params if error.params else error.message
+                )
+                error_messages.append(message)
 
-            data = {
-                "title": "Invalid credentials.",
-                "messages": error_messages,
-            }
-            return render(request, "message.html", data)
+        data = {
+            "title": "Invalid credentials.",
+            "messages": error_messages,
+        }
+        return render(request, "message.html", data)
 
     def get(self, request):
         """
         GET method for Signup form.
         """
         form = self.form_class()
+        context = {"form": form}
+        return render(request, template_name=self.template_name, context=context)
 
-        if settings.BOOTSTRAP == "bs4":
-            return render(request, "signup.html", {"form": form})
-        elif settings.BOOTSTRAP == "bs5":
-            return render(request, "bs5/signup.html", {"form": form})
-        else:
-            return render(request, "signup.html", {"form": form})
+
+def send_signup_verification_email(request, user, form):
+    mail_subject = "Activate your account."
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = account_activation_token.make_token(user)
+    domain = request.build_absolute_uri("/")[:-1]
+    activate_url = reverse("qux_auth:activate", kwargs={"uidb64": uid, "token": token})
+    data = {
+        "user": user,
+        # 'domain': current_site.domain,
+        "domain": domain,
+        "uid": uid,
+        "token": token,
+        "activate_url": domain + activate_url,
+    }
+    message = render_to_string("acc_active_email.html", data)
+    to_email = form.cleaned_data.get("email")
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    email.content_subtype = "html"
+    email.send()
+
+    return to_email
 
 
 class QuxActivateView(View):
@@ -138,7 +144,8 @@ class QuxActivateView(View):
     Activate account.
     """
 
-    def get(self, request, uidb64, token):
+    @staticmethod
+    def get(request, uidb64, token):
         """
         GET method to activate a user account.
         """
@@ -158,14 +165,15 @@ class QuxActivateView(View):
                 ],
             }
             return render(request, "message.html", data)
-        else:
-            data = {
-                "title": "Invalid URL",
-                "messages": [
-                    "Activation link is invalid!",
-                ],
-            }
-            return render(request, "message.html", data)
+
+        # else
+        data = {
+            "title": "Invalid URL",
+            "messages": [
+                "Activation link is invalid!",
+            ],
+        }
+        return render(request, "message.html", data)
 
 
 class QuxLoginView(SEOMixin, LoginView):
@@ -205,14 +213,14 @@ class QuxChangePasswordView(SEOMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update(dict(form=self.form_class(user=self.request.user)))
+        ctx["form"] = self.form_class(user=self.request.user)
         return ctx
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.form_class(data=request.POST, user=request.user)
         if form.is_valid():
             user = request.user
@@ -220,7 +228,7 @@ class QuxChangePasswordView(SEOMixin, TemplateView):
             user.save()
             messages.success(request, "Password changed successfully")
             return redirect("/")
-        return render(request, self.template_name, context=dict(form=form))
+        return render(request, self.template_name, context={"form": form})
 
 
 class QuxPasswordResetView(SEOMixin, PasswordResetView):
@@ -258,7 +266,7 @@ class QuxPasswordResetConfirmView(PasswordResetConfirmView):
     )
     success_url = reverse_lazy("qux_auth:password_reset_complete")
     extra_context = {
-        "title": f"Change password",
+        "title": "Change password",
         "submit_btn_text": "Change Password",
         "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
     }
