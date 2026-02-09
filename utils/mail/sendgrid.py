@@ -1,9 +1,7 @@
 import base64
 import os
 
-from sendgrid.helpers.mail import (
-    FileContent, FileName, FileType,
-    Mail, Attachment, To)
+from sendgrid.helpers.mail import FileContent, FileName, FileType, Mail, Attachment, To
 
 from sendgrid.sendgrid import SendGridAPIClient
 

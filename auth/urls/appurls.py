@@ -1,5 +1,5 @@
 """
-    App urls for qux_auth.
+App urls for qux_auth.
 """
 
 from django.contrib.auth.views import LogoutView
@@ -38,27 +38,27 @@ urlpatterns = [
         name="change_password",
     ),
     path(
-        r"password-reset/",
+        "password-reset/",
         QuxPasswordResetView.as_view(),
         name="password_reset",
     ),
     path(
-        r"password-reset/done/",
+        "password-reset/done/",
         QuxPasswordResetDoneView.as_view(),
         name="password_reset_done",
     ),
     path(
-        r"reset/<uidb64>/<token>/",
+        "reset/<uidb64>/<token>/",
         QuxPasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
     path(
-        r"reset/done/",
+        "reset/done/",
         QuxPasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
     path(
-        r"needhelp/",
+        "needhelp/",
         TemplateView.as_view(template_name="login.html"),
         name="support_request",
     ),

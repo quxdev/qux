@@ -13,7 +13,7 @@ from qux.models import default_null_blank
 
 
 class DownloadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
     url = models.URLField(max_length=2048, verbose_name="URL")
     original = models.CharField(
         max_length=128, **default_null_blank, verbose_name="Original File Name"
@@ -28,7 +28,7 @@ class DownloadLog(CoreModel):
 
 
 class UploadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
     filename = models.CharField(max_length=128)
     filepath = models.CharField(max_length=256)
     filehash = models.CharField(max_length=16, editable=False)
@@ -91,7 +91,7 @@ class CoreCommLog(CoreModel):
         default="email",
         verbose_name="Comm Type",
     )
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **default_null_blank)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
     provider = models.CharField(
         max_length=32, **default_null_blank, verbose_name="Service Provider"
     )

@@ -15,8 +15,12 @@ class CustomToken(QuxModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        db_table = "qux_custom_token"
         verbose_name = "Custom Token"
         verbose_name_plural = "Custom Tokens"
+
+    def __str__(self):
+        return f"{self.name} ({self.user})"
 
     def save(self, *args, **kwargs):
         if not self.key:

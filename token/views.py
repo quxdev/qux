@@ -1,4 +1,5 @@
 from django.conf import settings
+
 # from core.mixin import DjangoViewTrackingMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404

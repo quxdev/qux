@@ -16,18 +16,22 @@ class QuxModelAdmin(admin.ModelAdmin):
     show_full_result_count = False
 
     def get_fields(self, request, obj=None):
-        fields = list(set(
-            [field.name for field in self.opts.local_fields] +
-            [field.name for field in self.opts.local_many_to_many]
-        ))
+        fields = list(
+            set(
+                [field.name for field in self.opts.local_fields]
+                + [field.name for field in self.opts.local_many_to_many]
+            )
+        )
         fields = tuple([f for f in fields if f not in self.excluded])
         return fields
 
     def get_readonly_fields(self, request, obj=None):
-        fields = list(set(
-            [field.name for field in self.opts.local_fields] +
-            [field.name for field in self.opts.local_many_to_many]
-        ))
+        fields = list(
+            set(
+                [field.name for field in self.opts.local_fields]
+                + [field.name for field in self.opts.local_many_to_many]
+            )
+        )
         fields = tuple([f for f in fields if f in self.readonly])
         return fields
 
@@ -35,4 +39,3 @@ class QuxModelAdmin(admin.ModelAdmin):
         fields = [field.name for field in self.opts.local_fields]
         fields = tuple([f for f in fields if f not in self.excluded])
         return fields
-

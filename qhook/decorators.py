@@ -1,14 +1,19 @@
-from .models import QHookTarget
-from .serializers import QHookTargetSerializer
+import logging
+
 import requests
 from django.conf import settings
+
+from .models import QHookTarget
+from .serializers import QHookTargetSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def qhook(func):
     def wrapper(*args, **kwargs):
-        print("QHOOK: ", func.__name__)
+        logger.debug("QHOOK: %s", func.__name__)
         data_dict = func(*args, **kwargs)
-        print("QHOOK: ", data_dict)
+        logger.debug("QHOOK: %s", data_dict)
 
         identifier = data_dict.get("identifier", None)
         if identifier is None:
