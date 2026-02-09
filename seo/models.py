@@ -23,7 +23,7 @@ class SEOSite(SEOModel):
 
 class SEOPage(SEOModel):
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
-    canonical = models.CharField(max_length=255, unique=True)
+    canonical = models.CharField(max_length=255)
     page_name = models.CharField(max_length=64, **default_null_blank)
     page_title = models.CharField(max_length=256, **default_null_blank)
     description = models.CharField(max_length=512, **default_null_blank)
@@ -33,3 +33,8 @@ class SEOPage(SEOModel):
         db_table = "qux_seo_page"
         verbose_name = "Page Data"
         verbose_name_plural = "Page Data"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["site", "canonical"], name="unique_site_canonical"
+            ),
+        ]
