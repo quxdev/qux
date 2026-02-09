@@ -1,7 +1,7 @@
 from qux.models import CoreModel
 from django.db import models
 
-QHOOK_STATUS = (("SUCESS", "success"), ("FAIL", "fail"), ("PENDING", "pending"))
+QHOOK_STATUS = (("SUCCESS", "success"), ("FAIL", "fail"), ("PENDING", "pending"))
 
 
 class QHookTarget(CoreModel):
@@ -13,7 +13,16 @@ class QHookTarget(CoreModel):
     status = models.CharField(max_length=32, choices=QHOOK_STATUS, default="PENDING")
 
     class Meta:
-        unique_together = ("identifier", "target_url")
+        db_table = "qux_qhook_target"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["identifier", "target_url"],
+                name="unique_qhook_identifier_url",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.identifier} → {self.event}"
 
     def success(self):
         self.attempts += 1

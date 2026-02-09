@@ -89,4 +89,3 @@ class Email(object):
             "status": status,
         }
         return obj
-

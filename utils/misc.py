@@ -52,7 +52,7 @@ class QuxComplexEncoder(json.JSONEncoder):
         elif isinstance(obj, uuid.UUID):
             return obj.hex
         elif isinstance(obj, np.generic):
-            return np.asscalar(obj)
+            return obj.item()
         else:
             return json.JSONEncoder.default(self, obj)
 
@@ -66,10 +66,10 @@ def todate(x, default=None, timestamp=False):
     :param timestamp: return date if False and datetime if True
     :return:
     """
-    if type(x) is datetime.date:
-        result = x
-    elif type(x) is datetime.datetime:
+    if isinstance(x, datetime.datetime):
         result = x if timestamp else x.date()
+    elif isinstance(x, datetime.date):
+        result = x
     # elif type(dt) == str or type(dt) == unicode:
     elif isinstance(x, str):
         result = default
@@ -86,10 +86,10 @@ def todate(x, default=None, timestamp=False):
 
 
 def tofloat(numstr, defaultvalue=None):
-    if type(numstr) in [int, float]:
+    if isinstance(numstr, (int, float)):
         return float(numstr)
 
-    if type(numstr) in [str, str] and numstr == "":
+    if isinstance(numstr, str) and numstr == "":
         return float(0)
 
     try:
@@ -103,9 +103,9 @@ def tofloat(numstr, defaultvalue=None):
 
 
 def toint(numstr, default=None):
-    if type(numstr) in [int, float]:
+    if isinstance(numstr, (int, float)):
         result = int(numstr)
-    elif type(numstr) in [str, str]:
+    elif isinstance(numstr, str):
         if numstr == "":
             result = default
         else:
@@ -122,26 +122,26 @@ def toint(numstr, default=None):
 
 def tostring(somevalue):
     numdecimalplaces = 2
-    if type(somevalue) == float:
+    if isinstance(somevalue, float):
         result = "{0:,.{1}f}".format(somevalue, numdecimalplaces)
         return result
-    if type(somevalue) == int:
+    if isinstance(somevalue, int):
         result = "{0:,d}".format(somevalue)
         return result
     return somevalue
 
 
 def tonumericlist(target):
-    if type(target) is not list:
+    if not isinstance(target, list):
         return
 
-    if all(type(x) in [int, float] for x in target):
+    if all(isinstance(x, (int, float)) for x in target):
         return target
 
     # target needs fixing
     result = []
     for x in target:
-        if type(x) in [int, float]:
+        if isinstance(x, (int, float)):
             result.append(x)
         else:
             result.append(0)
@@ -150,8 +150,4 @@ def tonumericlist(target):
 
 
 def tobool(x):
-    y = ["yes", "y", "true", "1"]
-    if any([v == x.lower() for v in y]):
-        return True
-    else:
-        return False
+    return str(x).lower() in ("yes", "y", "true", "1")

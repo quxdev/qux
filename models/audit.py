@@ -8,8 +8,8 @@ from .base import CoreModel
 
 class CoreModelAuditSummary(CoreModel):
     slug = models.CharField(max_length=16, unique=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
 

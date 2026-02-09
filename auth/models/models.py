@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from django.contrib.auth.models import User
@@ -6,6 +7,8 @@ from django.db import models
 
 from qux.models import CoreModel, default_null_blank
 from qux.utils import cast
+
+logger = logging.getLogger(__name__)
 
 
 class Service(CoreModel):
@@ -43,11 +46,9 @@ class Preference(CoreModel):
     SLUG_PREFIX = "pref"
 
     slug = models.CharField(max_length=11, unique=True)
-    user = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, related_name="preferences"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="preferences")
     service = models.ForeignKey(
-        Service, on_delete=models.DO_NOTHING, related_name="preferences"
+        Service, on_delete=models.CASCADE, related_name="preferences"
     )
     name = models.CharField(max_length=128)
     value = models.TextField(**default_null_blank)
@@ -59,7 +60,12 @@ class Preference(CoreModel):
         db_table = "qux_preference"
         verbose_name = "Preference"
         verbose_name_plural = "Preferences"
-        unique_together = ("user", "service", "name")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "service", "name"],
+                name="unique_user_service_preference",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.service}.{self.name}"
@@ -74,7 +80,7 @@ class Preference(CoreModel):
         if not os.path.exists(fixtures):
             return
 
-        print(f"Fixture: {fixtures}")
+        logger.info("Fixture: %s", fixtures)
 
         with open(fixtures, "r") as f:
             data = json.load(f)

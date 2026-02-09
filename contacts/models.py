@@ -24,8 +24,10 @@ class Contact(CoreModel):
     is_private = models.BooleanField(default=True)
     company = models.ForeignKey(
         Company,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name="contacts",
+        null=True,
+        blank=True,
     )
     phone = models.CharField(
         max_length=16,

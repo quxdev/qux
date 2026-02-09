@@ -1,4 +1,5 @@
 import datetime
+import logging
 import random
 from itertools import chain
 
@@ -15,6 +16,8 @@ from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
 from qux.lorem import Lorem
+
+logger = logging.getLogger(__name__)
 
 # Commonly used definitions
 default_null_blank = {"default": None, "null": True, "blank": True}
@@ -99,7 +102,7 @@ class CoreModel(models.Model):
 
     @classmethod
     def initdata(cls):
-        print(f"{cls.__name__}.initdata()")
+        logger.debug("%s.initdata()", cls.__name__)
 
     def to_dict(
         self,
@@ -125,7 +128,7 @@ class CoreModel(models.Model):
 
     def randomize(self):
         if settings.DEBUG:
-            print(f"{self.__class__.__name__}.randomize()")
+            logger.debug("%s.randomize()", self.__class__.__name__)
 
         for field in self._meta.get_fields():
             if field.auto_created or not field.editable or field.null:
@@ -156,12 +159,12 @@ class CoreModel(models.Model):
                     raise Exception(f"{field.related_model.__name__} has no objects")
                 value = random.choice(field.related_model.objects.all())
             else:
-                print(f"randomize: {field.name} {internal_type}")
+                logger.debug("randomize: %s %s", field.name, internal_type)
                 value = None
 
             setattr(self, field.name, value)
 
-        print(self.__dict__)
+        logger.debug(self.__dict__)
 
     def settag(self, tag: str):
         if not hasattr(self, "tags"):
@@ -236,7 +239,7 @@ def pre_save_coremodel(sender, instance, **kwargs):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
-        print(f"pre_save_coremodel({sender.__name__}, {instance})")
+        logger.debug("pre_save_coremodel(%s, %s)", sender.__name__, instance)
 
     if getattr(instance, "slug", None):
         return
@@ -259,7 +262,7 @@ def post_init_coremodel(sender, instance, **kwargs):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
-        print(f"post_init_coremodel({sender.__name__}, {instance})")
+        logger.debug("post_init_coremodel(%s, %s)", sender.__name__, instance)
 
     if getattr(sender, "AUDIT_MODE", False):
         instance.__old = qux_model_to_dict(instance)
@@ -272,7 +275,7 @@ def post_save_coremodel(sender, instance, created, **kwargs):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
-        print(f"post_core_coremodel({sender.__name__}, {instance})")
+        logger.debug("post_save_coremodel(%s, %s)", sender.__name__, instance)
 
     if not getattr(sender, "AUDIT_MODE", False):
         return
