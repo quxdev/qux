@@ -6,10 +6,10 @@ from django.utils import timezone
 from .sendgrid import QuxSendGrid
 
 
-class Email(object):
+class Email:
     def __init__(self):
         self.provider = getattr(settings, "EMAIL_PROVIDER", "AWS")
-        self.sender = settings.EMAIL_SENDER
+        self.sender = getattr(settings, "EMAIL_SENDER", None)
         self.mailer = QuxSendGrid()
         self.to = None
         self.also = None
@@ -25,20 +25,20 @@ class Email(object):
         regex = r"^[\w\d._%+\-]+@(?![.])[\w\d.\-]+\.[\w\d]{2,}$"
         email_regex = re.compile(regex)
 
-        if type(email) is str:
+        if isinstance(email, str):
             if email_regex.match(email):
                 return True
-        elif type(email) is tuple:
+        elif isinstance(email, tuple):
             if email_regex.match(email[1]):
                 return True
         return False
 
     def validate_target(self, single_target):
         to = []
-        if type(single_target) is str:
+        if isinstance(single_target, str):
             if self.validate_email(single_target):
                 to = [single_target]
-        elif type(single_target) is list:
+        elif isinstance(single_target, list):
             to = [target for target in single_target if self.validate_email(target)]
 
         return to

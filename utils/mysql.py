@@ -16,5 +16,5 @@ def resetsequence(appmodels):
             for appmodel in appmodels:
                 # noinspection PyProtectedMember
                 table = appmodel._meta.db_table
-                sqlstr = "ALTER TABLE {:s} AUTO_INCREMENT = 1;".format(table)
+                sqlstr = f"ALTER TABLE {table:s} AUTO_INCREMENT = 1;"
                 cursor.execute(sqlstr)

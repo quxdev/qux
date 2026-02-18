@@ -10,7 +10,7 @@ from .app_settings import app_settings
 logger = logging.getLogger(__name__)
 
 
-class BaseLoggingMixin(object):
+class BaseLoggingMixin:
     """Mixin to log requests"""
 
     CLEANED_SUBSTITUTE = "********************"
@@ -25,7 +25,7 @@ class BaseLoggingMixin(object):
 
         self.log = None
 
-        super(BaseLoggingMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def initial(self, request, *args, **kwargs):
         self.log = {"requested_at": now()}
@@ -34,7 +34,7 @@ class BaseLoggingMixin(object):
         else:
             self.log["data"] = self._clean_data(request.body)
 
-        super(BaseLoggingMixin, self).initial(request, *args, **kwargs)
+        super().initial(request, *args, **kwargs)
 
         try:
             # Accessing request.data *for the first time* parses the request body, which may raise
@@ -47,15 +47,13 @@ class BaseLoggingMixin(object):
         self.log["data"] = self._clean_data(data)
 
     def handle_exception(self, exc):
-        response = super(BaseLoggingMixin, self).handle_exception(exc)
+        response = super().handle_exception(exc)
         self.log["errors"] = traceback.format_exc()
 
         return response
 
     def finalize_response(self, request, response, *args, **kwargs):
-        response = super(BaseLoggingMixin, self).finalize_response(
-            request, response, *args, **kwargs
-        )
+        response = super().finalize_response(request, response, *args, **kwargs)
 
         # Ensure backward compatibility for those using _should_log hook
         if hasattr(self, "_should_log"):
@@ -102,7 +100,7 @@ class BaseLoggingMixin(object):
                 self.log.update({"query_params": self.log["data"]})
             try:
                 self.handle_log()
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 # ensure that all exceptions raised by handle_log
                 # doesn't prevent API call to continue as expected
                 logger.exception("Logging API call raise exception!")
@@ -176,8 +174,7 @@ class BaseLoggingMixin(object):
             return None
         if hasattr(user, "profile"):
             return getattr(user.profile, "slug", default_userid)
-        else:
-            return default_userid
+        return default_userid
 
     @staticmethod
     def _get_username(request):
@@ -195,7 +192,7 @@ class BaseLoggingMixin(object):
         response_ms = int(response_timedelta.total_seconds() * 1000)
         return max(response_ms, 0)
 
-    def should_log(self, request, response):
+    def should_log(self, request, response):  # pylint: disable=unused-argument
         """
         Method that should return a value that evaluated to True if the request should be logged.
         By default, check if the request method is in logging_methods.
@@ -223,7 +220,7 @@ class BaseLoggingMixin(object):
             return [self._clean_data(d) for d in data]
 
         if isinstance(data, dict):
-            SENSITIVE_FIELDS = {
+            sensitive_fields = {
                 "api",
                 "token",
                 "key",
@@ -234,7 +231,7 @@ class BaseLoggingMixin(object):
 
             data = dict(data)
             if self.sensitive_fields:
-                SENSITIVE_FIELDS = SENSITIVE_FIELDS | {
+                sensitive_fields = sensitive_fields | {
                     field.lower() for field in self.sensitive_fields
                 }
 
@@ -245,6 +242,6 @@ class BaseLoggingMixin(object):
                     pass
                 if isinstance(value, (list, dict)):
                     data[key] = self._clean_data(value)
-                if key.lower() in SENSITIVE_FIELDS:
+                if key.lower() in sensitive_fields:
                     data[key] = self.CLEANED_SUBSTITUTE
         return data

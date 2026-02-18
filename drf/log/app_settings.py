@@ -1,22 +1,20 @@
 from django.conf import settings
 
 
-class AppSettings(object):
+class AppSettings:
     def __init__(self, prefix):
         self.prefix = prefix
 
     def _setting(self, name, default):
         return getattr(settings, self.prefix + name, default)
 
-    # noinspection PyPep8Naming
     @property
-    def ADMIN_LOG_READONLY(self):
+    def ADMIN_LOG_READONLY(self):  # pylint: disable=invalid-name
         """Prevent log entries from being modified from Django admin."""
         return self._setting("ADMIN_LOG_READONLY", False)
 
-    # noinspection PyPep8Naming
     @property
-    def DECODE_REQUEST_BODY(self):
+    def DECODE_REQUEST_BODY(self):  # pylint: disable=invalid-name
         """
         Allow the request.body byte string to be decoded to a string.
 
@@ -25,21 +23,18 @@ class AppSettings(object):
         """
         return self._setting("DECODE_REQUEST_BODY", True)
 
-    # noinspection PyPep8Naming
     @property
-    def PATH_LENGTH(self):
+    def PATH_LENGTH(self):  # pylint: disable=invalid-name
         """Maximum length of request path to log"""
         return self._setting("PATH_LENGTH", 256)
 
-    # noinspection PyPep8Naming
     @property
-    def LOOKUP_FIELD(self):
+    def LOOKUP_FIELD(self):  # pylint: disable=invalid-name
         """Field to identify user in User model"""
         return self._setting("LOOKUP_FIELD", "email")
 
-    # noinspection PyPep8Naming
     @property
-    def MAX_SIZE(self):
+    def MAX_SIZE(self):  # pylint: disable=invalid-name
         """Maximum size of field to log"""
         return self._setting("MAX_SIZE", 4096)
 

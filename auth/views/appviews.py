@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
@@ -19,7 +19,7 @@ from django.views.generic import View
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from qux.seo.mixin import SEOMixin
 from ..tokens import account_activation_token
@@ -33,8 +33,7 @@ from ..forms import (
     BaseSignupForm,
 )
 
-
-User._meta.get_field("email")._unique = True
+User = get_user_model()
 
 
 class QuxSignupView(View):
@@ -61,10 +60,11 @@ class QuxSignupView(View):
             user = form.save(commit=False)
             user.is_active = self.activate_user
             if not self.show_username_signup:
-                user.username = user.email
+                base_username = user.email
+                user.username = base_username
                 counter = 1
                 while User.objects.filter(username=user.username).exists():
-                    user.username = user.username + str(counter)
+                    user.username = f"{base_username}{counter}"
                     counter += 1
 
             user.save()
@@ -153,11 +153,11 @@ class QuxActivateView(View):
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
             user.save()
-            login(request, user)
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             data = {
                 "title": "Account verified",
                 "messages": [
-                    '<a style="color:red" href="/">Click here<a/> to continue to your account.'
+                    '<a style="color:red" href="/">Click here</a> to continue to your account.'
                 ],
             }
             return render(request, "message.html", data)
@@ -222,6 +222,7 @@ class QuxChangePasswordView(SEOMixin, TemplateView):
             user = request.user
             user.set_password(form.cleaned_data.get("new_password"))
             user.save()
+            update_session_auth_hash(request, user)
             messages.success(request, "Password changed successfully")
             return redirect("/")
         return render(request, self.template_name, context={"form": form})

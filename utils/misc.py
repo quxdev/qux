@@ -5,7 +5,10 @@ import random
 import string
 import uuid
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 FMT_DTSTR = [
     "%Y-%m-%d",
@@ -43,18 +46,17 @@ def random_number(length=10):
 
 
 class QuxComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, o):
         # date
-        if hasattr(obj, "isoformat"):
-            return obj.isoformat()
-        elif isinstance(obj, decimal.Decimal):
-            return "{0:f}".format(obj)
-        elif isinstance(obj, uuid.UUID):
-            return obj.hex
-        elif isinstance(obj, np.generic):
-            return obj.item()
-        else:
-            return json.JSONEncoder.default(self, obj)
+        if hasattr(o, "isoformat"):
+            return o.isoformat()
+        if isinstance(o, decimal.Decimal):
+            return f"{o:f}"
+        if isinstance(o, uuid.UUID):
+            return o.hex
+        if np is not None and isinstance(o, np.generic):
+            return o.item()
+        return super().default(o)
 
 
 def todate(x, default=None, timestamp=False):
@@ -113,7 +115,7 @@ def toint(numstr, default=None):
                 result = int(numstr.replace(", ", ""))
             except ValueError:
                 result = default
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
                 result = default
     else:
         result = default
@@ -123,17 +125,17 @@ def toint(numstr, default=None):
 def tostring(somevalue):
     numdecimalplaces = 2
     if isinstance(somevalue, float):
-        result = "{0:,.{1}f}".format(somevalue, numdecimalplaces)
+        result = f"{somevalue:,.{numdecimalplaces}f}"
         return result
     if isinstance(somevalue, int):
-        result = "{0:,d}".format(somevalue)
+        result = f"{somevalue:,d}"
         return result
     return somevalue
 
 
 def tonumericlist(target):
     if not isinstance(target, list):
-        return
+        return None
 
     if all(isinstance(x, (int, float)) for x in target):
         return target

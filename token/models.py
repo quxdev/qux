@@ -4,6 +4,7 @@ from binascii import hexlify
 from django.contrib.auth import get_user_model
 from django.db import models
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 from qux.models import QuxModel
 
@@ -34,3 +35,9 @@ class CustomToken(QuxModel):
 
 class CustomTokenAuthentication(TokenAuthentication):
     model = CustomToken
+
+    def authenticate_credentials(self, key):
+        user, token = super().authenticate_credentials(key)
+        if not token.is_active:
+            raise AuthenticationFailed("Token has been deactivated.")
+        return user, token

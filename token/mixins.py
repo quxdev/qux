@@ -1,8 +1,11 @@
-from django.conf import settings
+import logging
+
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
 
 from qux.token.models import CustomTokenAuthentication
+
+logger = logging.getLogger(__name__)
 
 
 def authenticate_user(request):
@@ -21,13 +24,12 @@ def authenticate_user(request):
         user = request.user
         token = None
 
-    if settings.DEBUG:
-        print(f"User: {user}, Token: {token}")
+    logger.debug("User: %s, Token: %s", user, token)
 
     return user
 
 
-class TokenAccessMixin(object):
+class TokenAccessMixin:  # pylint: disable=too-few-public-methods
     """
     access_required - list of strings, required param
 
@@ -43,6 +45,9 @@ class TokenAccessMixin(object):
             return JsonResponse(
                 data="User is not authenticated!", safe=False, status=401
             )
+
+        if not self.access_required:
+            return super().dispatch(request, *args, **kwargs)
 
         user_groups = list(user.groups.values_list("name", flat=True))
 

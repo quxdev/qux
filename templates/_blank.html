@@ -1,23 +1,21 @@
-{% extends '_seo.html' %}
-{% load static i18n qux %}
-{% lineless %}
+{% block meta_summary %}{% endblock %}<!DOCTYPE HTML>{% load static i18n qux %}{% lineless %}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="Author" content="Qux">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+{% include 'qux/seo/seo.html' %}
 
-{% block keywords %}{{ meta.keywords }}{% endblock %}
+{# Canonical URL #}
+<link rel="canonical" href="{% block canonical_prefix %}{% endblock %}{% block canonical %}{{ meta.canonical }}{% endblock %}">
 
-{% block title_prefix %}Qux{% endblock %}
+{% block meta_tags %}{% endblock %}
 
-{% block meta_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
-{% block og_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
-{% block twitter_description %}{% if meta.description %}{{ meta.description }}{% endif %}{% endblock %}
-
-{% block title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
-{% block og_title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}
-
-{% block og_url %}{{ meta.canonical }}{% endblock %}
-{% block canonical %}{{ meta.canonical }}{% endblock %}
+{% block extra_head %} {% endblock %}
 
 {% block stylesheets %}
-{{ block.super }}
+{% qux_static 'qux/css/qux.css' lazy=False %}
 {% endblock %}
 
 {% block style %}
@@ -48,10 +46,12 @@ body {
 </style>
 {% endblock %}
 
-{% block customstyle %}
-{{ block.super }}
-{% endblock %}
+{% block customstyle %} {% endblock %}
 
+<title>{% block title_prefix %}Qux{% endblock %}{% block title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}</title>
+</head>
+
+<body>
 {% block widgets %}
 <div id="loading" class="d-none">
   <div id="spinner" class="fa-5x">
@@ -65,10 +65,23 @@ body {
 {% include '_navbar.html' %}
 {% endblock %}
 
-{% block footer %}
-{% include '_footer.html' %}
-{% endblock %}
+{% block cover %}{% endblock %}
 
+{% block basecontent %}
+{% block breadcrumb %}{% endblock breadcrumb %}
+
+{% block headerbar %}{% endblock headerbar %}
+
+{% block header %}{% endblock header %}
+
+{% block sub_navbar %}{% endblock sub_navbar %}
+
+{% block messages %}{% endblock messages %}
+
+{% block rawcontent %}
+<!-- qux_content -->
+<main role="main">
+<div id="qux_content">
 {% block qux_content %}
 <div class="container">
   <div class="my-4 fw-bold
@@ -81,14 +94,24 @@ body {
   </div>
 </div>
 {% endblock qux_content %}
+</div>
+</main>
+{% endblock rawcontent %}
+
+{% endblock basecontent %}
+
+{% block footer %}
+{% include '_footer.html' %}
+{% endblock %}
 
 {% block javascript %}
 {# Bootstrap #}
-<script src="{% static 'qux/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'qux/js/qux/qux.js' %}"></script>
+{% qux_static 'qux/js/bootstrap/bootstrap.bundle.js' %}
+{% qux_static 'qux/js/qux/qux.js' %}
 {% endblock %}
 
 {% block customjs %}
-{{ block.super }}
 {% endblock %}
+</body>
+</html>
 {% endlineless %}

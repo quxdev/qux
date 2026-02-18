@@ -192,7 +192,7 @@ def fetch_sitemap_urls(domain, scheme="https"):
 # ---------------------------------------------------------------------------
 
 
-def audit_urls(domain, pages):
+def audit_urls(domain, pages):  # pylint: disable=too-many-locals
     """Audit a list of pre-fetched pages and store results.
 
     This is the core audit engine used by both :func:`scan_site` (which
@@ -268,7 +268,9 @@ def audit_urls(domain, pages):
     audit.total_warnings = total_warnings
     audit.status = "completed"
     audit.dtm_audited = timezone.now()
-    audit.save(update_fields=["total_errors", "total_warnings", "status", "dtm_audited"])
+    audit.save(
+        update_fields=["total_errors", "total_warnings", "status", "dtm_audited"]
+    )
 
     logger.info(
         "SEO audit complete for %s: %d URLs, %d errors, %d warnings",

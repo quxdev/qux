@@ -2,8 +2,8 @@ import os
 import json
 from typing import Optional
 
-import xmltodict
-import dicttoxml
+import xmltodict  # pylint: disable=import-error
+import dicttoxml  # pylint: disable=import-error
 
 
 def alchemy_xmltodict(filepath_or_buffer) -> Optional[dict]:
@@ -11,12 +11,12 @@ def alchemy_xmltodict(filepath_or_buffer) -> Optional[dict]:
     is_buffer = hasattr(filepath_or_buffer, "read")
 
     if is_file:
-        with open(filepath_or_buffer) as xmlfile:
+        with open(filepath_or_buffer, encoding="utf-8") as xmlfile:
             xmldict = xmltodict.parse(xmlfile.read())
     elif is_buffer:
         xmldict = xmltodict.parse(filepath_or_buffer.read())
     else:
-        return
+        return None
 
     result = json.loads(json.dumps(xmldict))
 
@@ -44,7 +44,7 @@ def dict2xml_attr(data, rootnode=None):
     :param rootnode:
     :return:
     """
-    wrap = False if rootnode is None or isinstance(data, list) else True
+    wrap = not (rootnode is None or isinstance(data, list))
     root = "objects" if rootnode is None else rootnode
     root_singular = root[:-1] if "s" == root[-1] and rootnode is None else root
     xml = ""

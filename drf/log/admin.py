@@ -74,9 +74,18 @@ class APIRequestLogAdmin(admin.ModelAdmin):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
 
-        # convert start_date and end_date to datetime objects
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        if not start_date or not end_date:
+            return JsonResponse(
+                {"error": "start_date and end_date are required"}, status=400
+            )
+
+        try:
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return JsonResponse(
+                {"error": "Invalid date format, use YYYY-MM-DD"}, status=400
+            )
 
         chart_data = self.chart_data(start_date, end_date)
         return JsonResponse(list(chart_data), safe=False)

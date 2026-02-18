@@ -1,3 +1,4 @@
+import os
 import datetime
 from decimal import Decimal
 from decimal import InvalidOperation
@@ -5,6 +6,9 @@ from urllib.parse import urlencode
 
 from django import template
 from django.conf import settings
+from django.contrib.staticfiles.finders import find as staticfiles_find
+from django.templatetags.static import static
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -21,7 +25,7 @@ def multiply(value, arg):
 def divide(value, arg):
     try:
         return value / arg
-    except TypeError:
+    except (TypeError, ZeroDivisionError):
         return None
 
 
@@ -34,7 +38,7 @@ def atleast(value, arg):
 
 
 @register.filter(name="min")
-def qux_max(value, minvalue):
+def qux_min(value, minvalue):
     try:
         return min(value, minvalue)
     except TypeError:
@@ -61,6 +65,8 @@ def qux_floatformat(value, precision, locale):
         return "-"
 
     value = round(value, precision)
+    negative = value < 0
+    value = abs(value)
     right = value - int(value)
     left = int(value)
     result = ""
@@ -73,6 +79,9 @@ def qux_floatformat(value, precision, locale):
 
     if right:
         result = f"{result}{str(right)[1:]}"
+
+    if negative:
+        result = f"-{result}"
 
     return result
 
@@ -100,9 +109,22 @@ def addstr(a, b):
 @register.simple_tag(takes_context=True)
 def url_replace(context, **kwargs):
     query = context["request"].GET.copy()
-    [query.pop(kwarg) for kwarg in kwargs if kwarg in query]
+    for kwarg in kwargs:
+        if kwarg in query:
+            query.pop(kwarg)
     query.update(kwargs)
     return urlencode(query)
+
+
+GETCONFIG_BLOCKED = {
+    "SECRET_KEY",
+    "DATABASE_PASSWORD",
+    "DATABASES",
+    "EMAIL_HOST_PASSWORD",
+    "SENDGRID_API_KEY",
+    "AWS_SECRET_ACCESS_KEY",
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET",
+}
 
 
 @register.filter(name="getconfig")
@@ -113,12 +135,15 @@ def getconfig(setting: str, default_value: str = None):
     :param default_value:
     :return:
     """
+    upper = setting.upper()
+    if upper in GETCONFIG_BLOCKED or "SECRET" in upper or "PASSWORD" in upper:
+        return default_value
     return getattr(settings, setting, default_value)
 
 
 # https://stackoverflow.com/a/50630001/
 @register.tag
-def lineless(parser, token):
+def lineless(parser, token):  # pylint: disable=unused-argument
     nodelist = parser.parse(("endlineless",))
     parser.delete_first_token()
     return LinelessNode(nodelist)
@@ -135,3 +160,32 @@ class LinelessNode(template.Node):
             if line.strip():
                 output_str = "\n".join((output_str, line))
         return output_str
+
+
+@register.simple_tag
+def qux_static(path, lazy=True):
+    # Debug-aware min/max switching
+    if not settings.DEBUG:
+        name, ext = os.path.splitext(path)
+        if not name.endswith(".min"):
+            min_path = f"{name}.min{ext}"
+            if staticfiles_find(min_path):
+                path = min_path
+
+    url = static(path)
+    ext = os.path.splitext(path)[1].lower()
+
+    if ext == ".css":
+        if lazy:
+            return mark_safe(
+                f'<link rel="stylesheet" href="{url}" media="print" onload="this.media=\'all\'">'
+                f'<noscript><link rel="stylesheet" href="{url}"></noscript>'
+            )
+        return mark_safe(f'<link rel="stylesheet" href="{url}">')
+
+    if ext == ".js":
+        if lazy:
+            return mark_safe(f'<script src="{url}" defer></script>')
+        return mark_safe(f'<script src="{url}"></script>')
+
+    return mark_safe(url)

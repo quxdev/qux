@@ -13,4 +13,7 @@ from .audit import (
     CoreModelAuditSummary,
     CoreModelAuditDetails,
 )
-from .contacts import *
+from .contacts import (
+    AbstractCompany,
+    AbstractProfile,
+)

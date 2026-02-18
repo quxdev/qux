@@ -10,8 +10,8 @@ class CustomTokenForm(forms.ModelForm):
             "name",
         ]
 
-    def save(self, user=None):
-        newform = super(CustomTokenForm, self).save(commit=False)
+    def save(self, commit=None, user=None):  # pylint: disable=unused-argument
+        newform = super().save(commit=False)
         if user:
             newform.user = user
         newform.save()
