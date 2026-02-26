@@ -1,0 +1,81 @@
+{# Canonical Identity #}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta name="robots" content="{{ robots|default:'index,follow' }}">
+
+{# Deterministic Entity Graph #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+
+    {
+      "@type": "Organization",
+      "@id": "{{ organization_url }}#organization",
+      "name": "{{ organization_name }}",
+      "url": "{{ organization_url }}",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ organization_logo }}"
+      }
+      {% if organization_sameas %}
+      ,
+      "sameAs": [
+        {% for url in organization_sameas %}
+        "{{ url }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+      {% endif %}
+    },
+
+    {
+      "@type": "WebSite",
+      "@id": "{{ organization_url }}#website",
+      "url": "{{ organization_url }}",
+      "name": "{{ site_name }}",
+      "publisher": {
+        "@id": "{{ organization_url }}#organization"
+      }
+    },
+
+    {
+      "@type": "WebPage",
+      "@id": "{{ canonical_url }}#webpage",
+      "url": "{{ canonical_url }}",
+      "name": "{{ page_title }}",
+      "description": "{{ meta_description }}",
+      "isPartOf": {
+        "@id": "{{ organization_url }}#website"
+      },
+      "about": {
+        "@id": "{{ organization_url }}#organization"
+      }
+      {% if date_published %}
+      ,
+      "datePublished": "{{ date_published }}"
+      {% endif %}
+      {% if date_modified %}
+      ,
+      "dateModified": "{{ date_modified }}"
+      {% endif %}
+      {% if primary_image %}
+      ,
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "{{ primary_image }}"
+      }
+      {% endif %}
+    }
+
+    {% if author_name %}
+    ,
+    {
+      "@type": "Person",
+      "@id": "{{ author_url }}#person",
+      "name": "{{ author_name }}",
+      "url": "{{ author_url }}"
+    }
+    {% endif %}
+
+  ]
+}
+</script>

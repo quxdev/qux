@@ -1,12 +1,16 @@
+import re
 import sys
 
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.utils import ProgrammingError
 
 from qux.utils.mysql import resetsequence
+
+# Only allow valid Django app label characters
+APP_LABEL_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_]*$")
 
 
 # noinspection PyProtectedMember
@@ -14,7 +18,7 @@ class Command(BaseCommand):
     help = "Clear data from all app tables in database"
 
     def __init__(self, *args, **kwargs):
-        super(Command, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.wipe = False
         self.nuke = False
         self.app_labels = None
@@ -37,14 +41,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *app_labels, **options):
-        # self.verbosity = options.get('verbosity')
-        # self.interactive = options.get('interactive')
         self.wipe = options.get("wipe", False)
         self.nuke = options.get("nuke", False)
 
         self.app_labels = set(app_labels)
         bad_app_labels = set()
         for app in [x for x in self.app_labels if x not in ["users"]]:
+            if not APP_LABEL_RE.match(app):
+                self.stderr.write(f"Invalid app label: '{app}'")
+                sys.exit(2)
             try:
                 apps.get_app_config(app)
             except LookupError:
@@ -52,9 +57,17 @@ class Command(BaseCommand):
         if bad_app_labels:
             for app in bad_app_labels:
                 self.stderr.write(
-                    "App '%s' could not be found. Is it in INSTALLED_APPS?" % app
+                    f"App '{app}' could not be found. Is it in INSTALLED_APPS?"
                 )
             sys.exit(2)
+
+        if self.nuke:
+            confirm = input(
+                f"This will DROP tables for {self.app_labels}. Type 'yes' to confirm: "
+            )
+            if confirm != "yes":
+                self.stdout.write("Aborted.")
+                return
 
         if self.wipe:
             for app in self.app_labels:
@@ -63,17 +76,15 @@ class Command(BaseCommand):
                 )
                 for appmodel in appmodels:
                     if appmodel._meta.managed:
-                        print("Deleting all items in model {}".format(appmodel))
+                        self.stdout.write(f"Deleting all items in model {appmodel}")
                         try:
                             appmodel.objects.all().delete()
                         except ProgrammingError:
-                            print("model {} table is corrupt".format(appmodel))
+                            self.stderr.write(f"model {appmodel} table is corrupt")
                 self.do_wipe(app)
 
         elif self.nuke:
             self.do_nuke()
-
-        return
 
     @staticmethod
     def do_wipe(app):
@@ -81,43 +92,28 @@ class Command(BaseCommand):
         resetsequence(appmodels)
 
     def do_nuke(self):
+        User = get_user_model()
         if "users" in self.app_labels:
-            print("NUKING users")
-            [x.delete() for x in User.objects.all()]
-
-            with connection.cursor() as cursor:
-                sqlstr = "ALTER TABLE auth_user AUTO_INCREMENT = 1;"
-                cursor.execute(sqlstr)
-
+            self.stdout.write("NUKING users")
+            User.objects.all().delete()
             self.app_labels.remove("users")
 
         with connection.cursor() as cursor:
             for app in self.app_labels:
-                print("NUKING %s" % app)
-                cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+                self.stdout.write(f"NUKING {app}")
+
+                # Drop known model tables
                 for table in self.apptables(app):
-                    sqlstr = "DROP TABLE IF EXISTS {:s};".format(table)
-                    print(sqlstr)
-                    cursor.execute(sqlstr)
+                    cursor.execute(f"DROP TABLE IF EXISTS {table};")
 
-                cursor.execute("SHOW TABLES LIKE '{}_%'".format(app))
-                tables = [x[0] for x in list(cursor.fetchall())]
-                for table in tables:
-                    sqlstr = "DROP TABLE IF EXISTS {:s};".format(table)
-                    print(sqlstr)
-                    cursor.execute(sqlstr)
-
-                cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
-
-                sqlstr = "DELETE FROM django_migrations WHERE app='{:s}';".format(app)
-                print(sqlstr)
-                cursor.execute(sqlstr)
+                # Parameterized delete from migrations
+                cursor.execute("DELETE FROM django_migrations WHERE app = %s;", [app])
 
     def apptables(self, app=None):
         target = [app] if app else self.app_labels
         tables = []
-        for app in target:
-            appmodels = apps.get_app_config(app).get_models(include_auto_created=True)
+        for label in target:
+            appmodels = apps.get_app_config(label).get_models(include_auto_created=True)
             for appmodel in appmodels:
                 tables.append(appmodel._meta.db_table)
 

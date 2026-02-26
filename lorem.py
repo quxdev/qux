@@ -1,4 +1,4 @@
-class Lorem:
+class Lorem:  # pylint: disable=too-few-public-methods
     lorem_text = (
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
         "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut "

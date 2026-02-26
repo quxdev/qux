@@ -3,11 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from qux.models.base import (
-    CoreModel,
-    default_null_blank,
-    regexp_phone,
-)
+from qux.models.base import CoreModel, default_null_blank, regexp_phone
 
 
 class AbstractCompany(CoreModel):
@@ -54,6 +50,7 @@ class AbstractProfile(CoreModel):
         return cls.objects.get(slug=slug).user
 
     def get_initials(self):
+        # pylint: disable=no-member
         user = self.user
         if user.first_name and user.last_name:
             initials = user.first_name[0] + " " + user.last_name[0]
@@ -67,6 +64,7 @@ class AbstractProfile(CoreModel):
         return initials
 
     def get_fullname(self):
+        # pylint: disable=no-member
         user = self.user
         if user.first_name and user.last_name:
             fullname = user.first_name + " " + user.last_name
@@ -81,19 +79,11 @@ class AbstractProfile(CoreModel):
 
 
 @receiver(post_save, sender=get_user_model())
-def create_profile(sender, instance, created, **kwargs):
+def create_profile(
+    sender, instance, created, **kwargs
+):  # pylint: disable=unused-argument
     if not created:
         return
 
     for subclass in AbstractProfile.__subclasses__():
-        obj, created = subclass.objects.get_or_create(user=instance, id=instance.id)
-        if created:
-            obj.save()
-
-
-@receiver(post_save, sender=get_user_model())
-def save_profile(sender, instance, **kwargs):
-    for subclass in AbstractProfile.__subclasses__():
-        obj, created = subclass.objects.get_or_create(user=instance, id=instance.id)
-        if created:
-            obj.save()
+        subclass.objects.get_or_create(user=instance)

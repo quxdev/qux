@@ -1,8 +1,8 @@
 {% extends '_blank.html' %}
-{% load static %}
+{% load qux %}
 
 {% block customstyle %}
-<link rel="stylesheet" href="{% static 'qux/css/qux_cover.css' %}">
+{% qux_static 'qux/css/qux_cover.css' %}
 {% endblock %}
 
 {% block qux_content %}

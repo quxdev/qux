@@ -11,8 +11,8 @@ from django.views.generic import ListView
 from django.views.generic import UpdateView
 
 from qux.seo.mixin import SEOMixin
-from .forms import *
-from .models import *
+from .forms import CustomTokenForm
+from .models import CustomToken
 
 
 class CustomTokenListView(SEOMixin, LoginRequiredMixin, ListView):
@@ -72,7 +72,7 @@ class CustomTokenCreateView(SEOMixin, LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.save(self.request.user)
-        return super(CustomTokenCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
     def get_success_url(self, *args, **kwargs):
         # return HttpResponseRedirect(reverse('token:home', kwargs={'key': self.object.key}))
@@ -99,5 +99,5 @@ class CustomTokenDeleteView(SEOMixin, LoginRequiredMixin, DeleteView):
     extra_context = {"base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html")}
 
     @staticmethod
-    def get_success_url(**kwargs):
+    def get_success_url(**kwargs):  # pylint: disable=arguments-differ
         return reverse("qux_token:home")

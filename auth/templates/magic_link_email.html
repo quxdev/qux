@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Magic Link Sign In</title>
+    </head>
+    <body style="margin: 0;
+                 padding: 0;
+                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                 background-color: #f8fafc">
+        <table role="presentation"
+               width="100%"
+               cellpadding="0"
+               cellspacing="0"
+               style="background-color: #f8fafc;
+                      padding: 24px">
+            <tr>
+                <td align="center">
+                    <table role="presentation"
+                           width="600"
+                           cellpadding="0"
+                           cellspacing="0"
+                           style="background-color: #ffffff;
+                                  border: 1px solid #e2e8f0;
+                                  border-radius: 8px;
+                                  padding: 32px;
+                                  max-width: 600px">
+                        <tr>
+                            <td>
+                                <h2 style="margin: 0 0 24px;
+                                           font-weight: 700;
+                                           font-size: 28px;
+                                           color: #0f172a;
+                                           text-align: center">Use this magic link to sign in</h2>
+                                <p style="margin: 0 0 16px;
+                                          font-size: 16px;
+                                          color: #334155;
+                                          line-height: 1.6">
+                                    {% if user.first_name %}
+                                        Hello {{ user.first_name }},
+                                    {% else %}
+                                        Hello,
+                                    {% endif %}
+                                </p>
+                                <p style="margin: 0 0 24px;
+                                          font-size: 16px;
+                                          color: #334155;
+                                          line-height: 1.6">
+                                    You requested a magic link to sign in—here it is. This link expires in <strong>{{ expiration_time }}</strong>.
+                                </p>
+                                <div style="text-align: center; margin: 32px 0;">
+                                    <a href="{{ magic_link_url }}"
+                                       style="display: inline-block;
+                                              background-color: hsl(152, 69%, 31%);
+                                              color: #ffffff;
+                                              text-decoration: none;
+                                              padding: 16px 32px;
+                                              border-radius: 8px;
+                                              font-weight: 700;
+                                              font-size: 16px;
+                                              text-align: center;
+                                              min-width: 200px">Sign in</a>
+                                </div>
+                                <p style="margin: 24px 0 16px; font-size: 14px; color: #64748b;">
+                                    If the button doesn't work, copy and paste this URL into your browser:
+                                </p>
+                                <p style="margin: 0 0 24px; font-size: 14px; word-break: break-all;">
+                                    <a href="{{ magic_link_url }}"
+                                       style="color: #0369a1;
+                                              text-decoration: underline">{{ magic_link_url }}</a>
+                                </p>
+                                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+                                <p style="margin: 0;
+                                          font-size: 14px;
+                                          color: #64748b;
+                                          text-align: center">
+                                    If you didn't request this email, you can safely ignore it.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="margin: 24px 0 0;
+                              font-size: 12px;
+                              color: #64748b;
+                              text-align: center">© {% now "Y" %} {{ domain }} · All rights reserved</p>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

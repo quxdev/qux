@@ -1,0 +1,89 @@
+{# Core Identity #}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta name="robots" content="{{ robots|default:'index,follow' }}">
+<meta name="author" content="{{ author_name }}">
+<meta name="publisher" content="{{ publisher_name }}">
+
+{# Primary Entity Definition #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{{ schema_type }}",
+  "@id": "{{ canonical_url }}#entity",
+  "name": "{{ page_title }}",
+  "url": "{{ canonical_url }}",
+  "description": "{{ meta_description }}",
+  {% if date_published %}
+  "datePublished": "{{ date_published }}",
+  {% endif %}
+  {% if date_modified %}
+  "dateModified": "{{ date_modified }}",
+  {% endif %}
+  {% if primary_image %}
+  "image": "{{ primary_image }}",
+  {% endif %}
+  "inLanguage": "en"
+}
+</script>
+
+{# FAQ Structured Answers (if applicable) #}
+{% if faq_items %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faq_items %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer|escapejs }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
+{# HowTo Structured Content (optional) #}
+{% if howto_steps %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "{{ page_title }}",
+  "step": [
+    {% for step in howto_steps %}
+    {
+      "@type": "HowToStep",
+      "name": "{{ step.title|escapejs }}",
+      "text": "{{ step.description|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
+{# Breadcrumb grounding #}
+{% if breadcrumbs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {% for crumb in breadcrumbs %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "name": "{{ crumb.name }}",
+      "item": "{{ crumb.url }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}

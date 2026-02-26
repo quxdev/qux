@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.admin.utils import flatten_fieldsets
 
 
 class QuxModelAdmin(admin.ModelAdmin):
@@ -17,25 +16,22 @@ class QuxModelAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = list(
-            set(
+            dict.fromkeys(
                 [field.name for field in self.opts.local_fields]
                 + [field.name for field in self.opts.local_many_to_many]
             )
         )
-        fields = tuple([f for f in fields if f not in self.excluded])
-        return fields
+        return tuple(f for f in fields if f not in self.excluded)
 
     def get_readonly_fields(self, request, obj=None):
         fields = list(
-            set(
+            dict.fromkeys(
                 [field.name for field in self.opts.local_fields]
                 + [field.name for field in self.opts.local_many_to_many]
             )
         )
-        fields = tuple([f for f in fields if f in self.readonly])
-        return fields
+        return tuple(f for f in fields if f in self.readonly)
 
     def get_list_display(self, request):
         fields = [field.name for field in self.opts.local_fields]
-        fields = tuple([f for f in fields if f not in self.excluded])
-        return fields
+        return tuple(f for f in fields if f not in self.excluded)

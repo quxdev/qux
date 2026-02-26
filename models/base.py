@@ -4,7 +4,6 @@ import random
 from itertools import chain
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core.exceptions import FieldDoesNotExist, FieldError, ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
@@ -40,13 +39,11 @@ def qux_model_to_dict(
         exclude = ["id", "dtm_created", "dtm_updated"]
     opts = instance._meta
     data = {}
-    if exclude_none:
-        exclude = []
 
     for f in chain(opts.concrete_fields, opts.many_to_many):
         if fields is not None and f.name not in fields:
             continue
-        if exclude and f.name in exclude:
+        if not exclude_none and exclude and f.name in exclude:
             continue
         field_name = f.verbose_name if verbose_name else f.name
         if isinstance(f, ManyToManyField):
@@ -62,11 +59,14 @@ def qux_model_to_dict(
                 except FieldDoesNotExist:
                     data[field_name] = []
         else:
-            data[field_name] = f.value_from_object(instance)
+            value = f.value_from_object(instance)
+            if exclude_none and value is None:
+                continue
+            data[field_name] = value
     return data
 
 
-class CoreManager(models.Manager):
+class CoreManager(models.Manager):  # pylint: disable=too-few-public-methods
     def get_or_none(self, **kwargs):
         try:
             return self.get(**kwargs)
@@ -126,7 +126,7 @@ class CoreModel(models.Model):
         result = cls.objects.get(id=pk)
         return result.to_dict()
 
-    def randomize(self):
+    def randomize(self):  # pylint: disable=too-many-branches
         if settings.DEBUG:
             logger.debug("%s.randomize()", self.__class__.__name__)
 
@@ -154,10 +154,10 @@ class CoreModel(models.Model):
             elif internal_type == "URLField":
                 value = "https://" + get_random_string(10) + ".com"
             elif internal_type == "ForeignKey":
-                queryset = field.related_model.objects.all()
-                if not queryset.exists():
-                    raise Exception(f"{field.related_model.__name__} has no objects")
-                value = random.choice(field.related_model.objects.all())
+                all_objects = list(field.related_model.objects.all())
+                if not all_objects:
+                    raise ValueError(f"{field.related_model.__name__} has no objects")
+                value = random.choice(all_objects)
             else:
                 logger.debug("randomize: %s %s", field.name, internal_type)
                 value = None
@@ -171,7 +171,8 @@ class CoreModel(models.Model):
             return None
 
         tags = [x.strip() for x in getattr(self, "tags", "").split(",")]
-        tags.append(tag)
+        if tag not in tags:
+            tags.append(tag)
         tags.sort()
         setattr(self, "tags", ",".join(tags))
         self.save()
@@ -233,9 +234,8 @@ class QuxModel(CoreModel):
 
 
 @receiver(pre_save)
-def pre_save_coremodel(sender, instance, **kwargs):
-    # pylint: disable=unused-argument
-    if not isinstance(instance, CoreModel):
+def pre_save_coremodel(sender, instance, **kwargs):  # pylint: disable=unused-argument
+    if not issubclass(sender, CoreModel):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
@@ -256,22 +256,22 @@ def pre_save_coremodel(sender, instance, **kwargs):
 
 
 @receiver(post_init)
-def post_init_coremodel(sender, instance, **kwargs):
-    # pylint: disable=unused-argument
-    if not isinstance(instance, CoreModel):
+def post_init_coremodel(sender, instance, **kwargs):  # pylint: disable=unused-argument
+    if not issubclass(sender, CoreModel):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
         logger.debug("post_init_coremodel(%s, %s)", sender.__name__, instance)
 
     if getattr(sender, "AUDIT_MODE", False):
-        instance.__old = qux_model_to_dict(instance)
+        instance.__old = qux_model_to_dict(instance)  # pylint: disable=protected-access
 
 
 @receiver(post_save)
-def post_save_coremodel(sender, instance, created, **kwargs):
-    # pylint: disable=unused-argument
-    if not isinstance(instance, CoreModel):
+def post_save_coremodel(
+    sender, instance, created, **kwargs
+):  # pylint: disable=unused-argument
+    if not issubclass(sender, CoreModel):
         return
 
     if getattr(settings, "DEBUG_VERBOSE", False):
@@ -281,7 +281,7 @@ def post_save_coremodel(sender, instance, created, **kwargs):
         return
 
     if hasattr(instance, "__old"):
-        old_data = instance.__old
+        old_data = instance.__old  # pylint: disable=protected-access
         new_data = qux_model_to_dict(instance)
         diff = {k: (old_data[k], v) for k, v in new_data.items() if v != old_data[k]}
         if not diff:
@@ -298,7 +298,12 @@ def post_save_coremodel(sender, instance, created, **kwargs):
             user = getattr(instance, "_user", None)
 
         if user is None:
-            user = get_user_model().objects.get(id=1)
+            logger.warning(
+                "Audit: no user found for %s (pk=%s), skipping audit.",
+                sender.__name__,
+                instance.pk,
+            )
+            return
 
         audit_summary_obj = audit_summary.objects.create(
             user=getattr(instance, "user", user),
@@ -332,7 +337,7 @@ class AbstractLead(CoreModel):
         regex=r"^\+?[1-9]\d{4,14}$",
         message=(
             "Phone number must be entered in the format: '+999999999'. "
-            "Up to 15 digits allowed.",
+            "Up to 15 digits allowed."
         ),
     )
 

@@ -7,8 +7,8 @@ from ..models import (
     CoreModel,
     AbstractCompany,
     default_null_blank,
-    regexp_phone,
 )
+from ..models.base import regexp_phone
 
 
 class Company(AbstractCompany):
@@ -45,13 +45,11 @@ class Contact(CoreModel):
     def displayname(self):
         if self.display_name:
             return self.display_name
-        elif self.first_name:
+        if self.first_name:
             if self.last_name:
                 return self.first_name + " " + self.last_name
-            else:
-                return self.first_name
-        else:
-            return self.id
+            return self.first_name
+        return self.id
 
     def asdict(self):
         result = {
@@ -62,44 +60,47 @@ class Contact(CoreModel):
             "is_favorite": self.is_favorite,
             "is_private": self.is_private,
             "phone": self.phone,
-            "phones": [x.asdict() for x in self.phones.all().order_by("-is_primary")],
+            "phones": [
+                x.asdict() for x in self.phones.all().order_by("-is_primary")
+            ],  # pylint: disable=no-member
             "email": self.email,
-            "emails": [x.asdict() for x in self.emails.all().order_by("-is_primary")],
+            "emails": [
+                x.asdict() for x in self.emails.all().order_by("-is_primary")
+            ],  # pylint: disable=no-member
         }
         return result
 
     def primaryphone(self):
-        phone = self.phones.filter(is_primary=True)
+        phone = self.phones.filter(is_primary=True)  # pylint: disable=no-member
         if phone.exists():
             return phone.first()
-        else:
-            return self.phones.first()
+        return self.phones.first()  # pylint: disable=no-member
 
     def primaryemail(self):
-        email = self.emails.filter(is_primary=True)
+        email = self.emails.filter(is_primary=True)  # pylint: disable=no-member
         if email.exists():
             return email.first()
-        else:
-            return self.emails.first()
+        return self.emails.first()  # pylint: disable=no-member
 
     def hasphone(self, phone):
         p = phone_number(phone)
         if p is None:
             return False
 
-        result = any([x for x in self.phones.all() if x.phone == p])
+        result = any(
+            x for x in self.phones.all() if x.phone == p
+        )  # pylint: disable=no-member
         return result
 
 
 @receiver(pre_save, sender=Contact)
-def contact_pre_save(sender, instance, **kwargs):
+def contact_pre_save(sender, instance, **kwargs):  # pylint: disable=unused-argument
     if instance.phone:
         x = phone_number(instance.phone)
         instance.phone = x
 
 
 class AbstractContactPhone(CoreModel):
-    # TODO: set to actual child of AbstractContact
     contact = models.ForeignKey(
         Contact, on_delete=models.CASCADE, related_name="phones"
     )
@@ -122,9 +123,7 @@ class AbstractContactPhone(CoreModel):
         x = phone_number(self.phone)
         if x:
             self.phone = x
-            super(AbstractContactPhone, self).save(*args, **kwargs)
-        else:
-            return
+        super().save(*args, **kwargs)
 
     def asdict(self):
         result = {
@@ -137,7 +136,6 @@ class AbstractContactPhone(CoreModel):
 
 
 class AbstractContactEmail(CoreModel):
-    # TODO: Set to actual child of AbstractContact
     contact = models.ForeignKey(
         Contact,
         on_delete=models.CASCADE,

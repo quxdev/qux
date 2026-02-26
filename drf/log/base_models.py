@@ -53,4 +53,4 @@ class BaseAPIRequestLog(models.Model):
         verbose_name = "API Request Log"
 
     def __str__(self):
-        return "{} {}".format(self.method, self.path)
+        return f"{self.method} {self.path}"

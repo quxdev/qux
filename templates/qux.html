@@ -1,0 +1,120 @@
+{% block meta_summary %}{% endblock %}<!DOCTYPE HTML>{% load static i18n qux %}{% lineless %}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="Author" content="Qux">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+{% block search_optimization %}
+{% include 'seo.html' %}
+{% include 'geo.html' %}
+{% endblock search_optimization %}
+
+{# Canonical URL #}
+<link rel="canonical" href="{% block canonical_prefix %}{% endblock %}{% block canonical %}{{ meta.canonical }}{% endblock %}">
+
+{% block meta_tags %}{% endblock %}
+
+{% block extra_head %} {% endblock %}
+
+{% block stylesheets %}
+{% qux_static 'qux/css/qux.css' lazy=False %}
+{% endblock %}
+
+{% block style %}
+<style>
+body {
+  background-color: rgb(249, 246, 239);
+}
+.navbar {
+  padding: 1rem;
+}
+.navbar-brand img {
+  height: 2.5rem;
+}
+#loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #fff;
+  z-index: 99;
+  opacity: 0.7;
+}
+#loading > div {
+  margin: auto;
+}
+</style>
+{% endblock %}
+
+{% block customstyle %} {% endblock %}
+
+<title>{% block title_prefix %}Qux{% endblock %}{% block title %}{% if meta.page_title %} | {{ meta.page_title }}{% endif %}{% endblock %}</title>
+</head>
+
+<body>
+{% block widgets %}
+<div id="loading" class="d-none">
+  <div id="spinner" class="fa-5x">
+    <i class="fas fa-spinner fa-spin"></i>
+  </div>
+</div>
+{% endblock %}
+
+{% block navbar %}
+<!-- navbar -->
+{% include '_navbar.html' %}
+{% endblock %}
+
+{% block cover %}{% endblock %}
+
+{% block basecontent %}
+{% block breadcrumb %}{% endblock breadcrumb %}
+
+{% block headerbar %}{% endblock headerbar %}
+
+{% block header %}{% endblock header %}
+
+{% block sub_navbar %}{% endblock sub_navbar %}
+
+{% block messages %}{% endblock messages %}
+
+{% block rawcontent %}
+<!-- qux_content -->
+<main role="main">
+<div id="qux_content">
+{% block qux_content %}
+<div class="container">
+  <div class="my-4 fw-bold
+              {% block qux_page_title_extra %}{% endblock qux_page_title_extra %}">
+    {% block qux_page_title %}{% endblock qux_page_title %}
+  </div>
+
+  <div class="my-4">
+    {% block qux_page_content %}{% endblock qux_page_content %}
+  </div>
+</div>
+{% endblock qux_content %}
+</div>
+</main>
+{% endblock rawcontent %}
+
+{% endblock basecontent %}
+
+{% block footer %}
+{% include '_footer.html' %}
+{% endblock %}
+
+{% block javascript %}
+{# Bootstrap #}
+{% qux_static 'qux/js/bootstrap/bootstrap.bundle.js' %}
+{% qux_static 'qux/js/qux/qux.js' %}
+{% endblock %}
+
+{% block customjs %}
+{% endblock %}
+</body>
+</html>
+{% endlineless %}

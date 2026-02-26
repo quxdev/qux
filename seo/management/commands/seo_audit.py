@@ -39,15 +39,17 @@ class Command(BaseCommand):
         audit = scan_site(domain, scheme=scheme)
 
         if audit.status == "failed":
-            self.stderr.write(self.style.ERROR(
-                f"Audit failed — could not fetch sitemap for {domain}"
-            ))
+            self.stderr.write(
+                self.style.ERROR(f"Audit failed — could not fetch sitemap for {domain}")
+            )
             return
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Audit complete: {audit.total_urls} URLs, "
-            f"{audit.total_errors} errors, {audit.total_warnings} warnings"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Audit complete: {audit.total_urls} URLs, "
+                f"{audit.total_errors} errors, {audit.total_warnings} warnings"
+            )
+        )
 
         if options["report"]:
             self.stdout.write("")

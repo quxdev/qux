@@ -1,8 +1,11 @@
 import inspect
+import logging
 import os
 from functools import wraps
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 def qux_debug(func):
@@ -12,15 +15,15 @@ def qux_debug(func):
             return func(*args, **kwargs)
 
         func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
+        func_args_str = ", ".join(f"{k} = {v!r}" for k, v in func_args.items())
 
         inspect_stack = inspect.stack()
         frame = inspect_stack[1]
         filename = os.path.relpath(frame.filename, settings.BASE_DIR)
         lineno = frame.lineno
         function = frame.function
-        print(f"{function}({func_args_str})")
-        print(f"-- {filename}:{lineno}")
+        logger.debug("%s(%s)", function, func_args_str)
+        logger.debug("-- %s:%s", filename, lineno)
 
         return func(*args, **kwargs)
 

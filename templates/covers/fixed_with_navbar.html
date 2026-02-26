@@ -1,9 +1,9 @@
 {% extends '_blank.html' %}
-{% load static %}
+{% load qux %}
 
 {% block javascript %}
 {{ block.super }}
-<script src="{% static 'qux/js/qux/qux_cover.js' %}"></script>
+{% qux_static 'qux/js/qux/qux_cover.js' %}
 {% endblock javascript %}
 
 {% block customstyle %}

@@ -1,13 +1,13 @@
 import datetime
 
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import TruncDay
-from django.urls import path
 from django.http import JsonResponse
+from django.urls import path
 
 from .app_settings import app_settings
-from .models import APIRequestLog
+from .models import APILoggingRule, APIRequestLog
 
 
 class APIRequestLogAdmin(admin.ModelAdmin):
@@ -19,14 +19,15 @@ class APIRequestLogAdmin(admin.ModelAdmin):
         "method",
         "path",
         "status_code",
-        "user",
+        "get_username",
         "view_method",
         "remote_addr",
         "host",
         # "query_params",
     )
     ordering = ("-requested_at",)
-    list_filter = ("view_method", "status_code")
+    list_filter = ("view_method", "status_code", "method")
+    search_fields = ("path", "username_persistent", "remote_addr", "host")
 
     if app_settings.ADMIN_LOG_READONLY:
         readonly_fields = (
@@ -49,17 +50,18 @@ class APIRequestLogAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         # Aggregate api logs per day
-        chart_data = (
-            APIRequestLog.objects.annotate(date=TruncDay("requested_at"))
-            .values("date")
-            .annotate(y=Count("id"))
-            .order_by("-date")
-        )
+        chart_data = self.chart_data_default()
 
         extra_context = extra_context or {"chart_data": list(chart_data)}
 
         # Call the superclass changelist_view to render the page
         return super().changelist_view(request, extra_context=extra_context)
+
+    def get_username(self, obj):  # noqa: D401
+        """Human readable username field for list display."""
+        return obj.username_persistent or obj.user
+
+    get_username.short_description = "User"
 
     def get_urls(self):
         urls = super().get_urls()
@@ -74,23 +76,71 @@ class APIRequestLogAdmin(admin.ModelAdmin):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
 
-        # convert start_date and end_date to datetime objects
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        if not start_date or not end_date:
+            return JsonResponse(
+                {"error": "start_date and end_date are required"}, status=400
+            )
+
+        try:
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return JsonResponse(
+                {"error": "Invalid date format, use YYYY-MM-DD"}, status=400
+            )
 
         chart_data = self.chart_data(start_date, end_date)
         return JsonResponse(list(chart_data), safe=False)
 
+    def chart_data_default(self):
+        qs = (
+            APIRequestLog.objects.annotate(date=TruncDay("requested_at"))
+            .values("date")
+            .annotate(
+                y=Count("id"),
+                y2xx=Count("id", filter=Q(status_code__gte=200, status_code__lt=300)),
+                y4xx=Count("id", filter=Q(status_code__gte=400, status_code__lt=500)),
+                y5xx=Count("id", filter=Q(status_code__gte=500)),
+            )
+            .order_by("-date")
+        )
+        return qs
+
     def chart_data(self, start_date, end_date):
-        return (
+        qs = (
             APIRequestLog.objects.filter(
                 requested_at__date__gte=start_date, requested_at__date__lte=end_date
             )
             .annotate(date=TruncDay("requested_at"))
             .values("date")
-            .annotate(y=Count("id"))
+            .annotate(
+                y=Count("id"),
+                y2xx=Count("id", filter=Q(status_code__gte=200, status_code__lt=300)),
+                y4xx=Count("id", filter=Q(status_code__gte=400, status_code__lt=500)),
+                y5xx=Count("id", filter=Q(status_code__gte=500)),
+            )
             .order_by("-date")
         )
+        return qs
 
 
 admin.site.register(APIRequestLog, APIRequestLogAdmin)
+
+
+@admin.register(APILoggingRule)
+class APILoggingRuleAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "enabled", "active", "dtm_updated")
+    list_filter = ("enabled", "active")
+    search_fields = ("user__username", "user__email", "notes")
+
+    actions = ("enable_selected", "disable_selected")
+
+    def enable_selected(self, request, queryset):  # type: ignore[no-untyped-def]
+        queryset.update(enabled=True, active=True)
+
+    enable_selected.short_description = "Enable logging for selected users"
+
+    def disable_selected(self, request, queryset):  # type: ignore[no-untyped-def]
+        queryset.update(enabled=False, active=True)
+
+    disable_selected.short_description = "Disable logging for selected users"
