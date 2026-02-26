@@ -1,22 +1,10 @@
-{% block meta_summary %}{% endblock %}<!DOCTYPE HTML>{% load static qux %}{% lineless %}
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="Author" content="Qux">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="{% block application_name %}{% endblock %}">
 <meta name="apple-mobile-web-app-title" content="{% block apple_mobile_web_app_title %}{% endblock %}">
-<meta name="theme-color" content="rgb(64, 64, 64)">
-
+<meta name="theme-color" content="rgb(128, 128, 128)">
 <meta name="description" content="{% block meta_description %}{% endblock %}">
 <meta name="keywords" content="{% block keywords %}{% endblock %}">
-
 <link rel="icon" type="image/png" href="{% block icon %}{% endblock %}">
-
-{% block favicon %}
-{% endblock favicon %}
-
+{% block favicon %}{% endblock favicon %}
 {# Facebook Open Graph #}
 <meta property="og:locale" content="en_US"/>
 <meta property="og:type" content="website"/>
@@ -25,7 +13,6 @@
 <meta property="og:title" content="{% block og_title_prefix %}{% endblock %}{% block og_title %}{% endblock %}"/>
 <meta property="og:description" content="{% block og_description %}{% endblock %}"/>
 <meta property="og:image" content="{% block og_image %}{% endblock %}"/>
-
 {# Twitter Card #}
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="{% block twitter_site %}{% endblock %}"/>
@@ -36,58 +23,3 @@
 <meta name="twitter:creator:id" content="{% block twitter_creator_id %}{% endblock %}"/>
 <meta name="twitter:image" content="{% block twitter_image %}{% endblock %}"/>
 
-{# Canonical URL #}
-<link rel="canonical" href="{% block canonical_prefix %}{% endblock %}{% block canonical %}{% endblock %}">
-
-{% block meta_tags %}{% endblock %}
-
-{% block extra_head %} {% endblock %}
-
-{% block stylesheets %}
-<link rel="stylesheet" type="text/css" href="{% static 'qux/css/qux.css' %}">
-{% endblock %}
-
-{% block customstyle %} {% endblock %}
-
-<title>{% block title_prefix %}{% endblock %}{% block title %}{% endblock %}</title>
-</head>
-
-<body>
-{% block widgets %}{% endblock %}
-
-{% block navbar %}{% endblock %}
-
-{% block cover %}{% endblock %}
-
-{% block basecontent %}
-{% block breadcrumb %}{% endblock breadcrumb %}
-
-{% block headerbar %}{% endblock headerbar %}
-
-{% block header %}{% endblock header %}
-
-{% block sub_navbar %}{% endblock sub_navbar %}
-
-{% block messages %}{% endblock messages %}
-
-{% block rawcontent %}
-<!-- qux_content -->
-<main role="main">
-<div id="qux_content">
-{% block qux_content %}{% endblock qux_content %}
-</div>
-</main>
-{% endblock rawcontent %}
-
-{% endblock basecontent %}
-
-{% block footer %}{% endblock %}
-
-{% block javascript %}
-{% endblock %}
-
-{% block customjs %}
-{% endblock %}
-</body>
-</html>
-{% endlineless %}

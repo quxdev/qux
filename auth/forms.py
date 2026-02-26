@@ -1,12 +1,17 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth.forms import SetPasswordForm
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ValidationError
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -62,6 +67,12 @@ class BaseSignupForm(UserCreationForm):
     class Meta:
         model = User
         fields = ("email", "password1", "password2")
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("A user with that email address already exists.")
+        return email
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -160,9 +171,37 @@ class CustomSetPasswordForm(SetPasswordForm):
         help_text=password_validation.password_validators_help_text_html(),
     )
     new_password2 = forms.CharField(
-        label="New password confirmation",
-        strip=False,
+        label="Confirm new password",
         widget=forms.PasswordInput(
             attrs={"class": "form-control foo-border", "autocomplete": "new-password"}
         ),
+        strip=False,
     )
+
+
+class MagicLinkRequestForm(forms.Form):
+    email = forms.EmailField(
+        label="Email address",
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control foo-border",
+                "placeholder": "email@example.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+
+class CompleteProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name"]
+        widgets = {
+            "first_name": forms.TextInput(
+                attrs={"class": "form-control foo-border", "placeholder": "First name"}
+            ),
+            "last_name": forms.TextInput(
+                attrs={"class": "form-control foo-border", "placeholder": "Last name"}
+            ),
+        }

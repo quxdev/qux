@@ -18,11 +18,13 @@ def fetchurl(urlstr: str):
     :return: (contents, response_status_code)
     """
     try:
-        response = requests.get(urlstr)
+        response = requests.get(urlstr, timeout=30)
         contents = response.content
     except requests.exceptions.InvalidSchema:
         try:
-            response = urlopen(urlstr)
+            response = urlopen(  # pylint: disable=consider-using-with
+                urlstr, timeout=30
+            )
             contents = response.read()
         except URLError:
             return None, None
@@ -41,7 +43,7 @@ def fetchurl_to_file(urlstr: str, target: str):
     """
     contents, status_code = fetchurl(urlstr)
     if contents is None or status_code != 200:
-        return
+        return None
 
     with open(target, "wb") as fhandle:
         fhandle.write(contents)
@@ -52,7 +54,7 @@ def fetchurl_to_file(urlstr: str, target: str):
     return True
 
 
-class MetaURL(object):
+class MetaURL:
     def __init__(self):
         self.orig_url = None
         self.url = None
@@ -95,7 +97,7 @@ class MetaURL(object):
         }
 
         try:
-            response = requests.get(self.url, headers=headers)
+            response = requests.get(self.url, headers=headers, timeout=30)
             response.raise_for_status()
         except requests.exceptions.ConnectionError:
             return JsonResponse({"message": "URL appears to be invalid"})

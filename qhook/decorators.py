@@ -1,4 +1,5 @@
 import logging
+from functools import wraps
 
 import requests
 from django.conf import settings
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def qhook(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         logger.debug("QHOOK: %s", func.__name__)
         data_dict = func(*args, **kwargs)
@@ -17,13 +19,13 @@ def qhook(func):
 
         identifier = data_dict.get("identifier", None)
         if identifier is None:
-            raise Exception("Identifier is required")
+            raise ValueError("Identifier is required")
         event = data_dict.get("event", None)
         if event is None:
-            raise Exception("Event is required")
+            raise ValueError("Event is required")
         _hook = QHookTarget.objects.get_or_none(identifier=identifier)
         if _hook is None:
-            raise Exception("Hook not found")
+            raise LookupError("Hook not found")
 
         if not (event in settings.QHOOK_EVENTS and event == _hook.event):
             return
@@ -48,7 +50,7 @@ def qhook(func):
 
 
 def call_target_url(target_url, data):
-    resp = requests.post(target_url, json=data)
+    resp = requests.post(target_url, json=data, timeout=30)
     if resp.status_code == 200:
         return True
     return False

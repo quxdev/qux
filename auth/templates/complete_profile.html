@@ -1,0 +1,13 @@
+{% extends 'forms/_form.html' %}
+{% load qux quxform %}
+{% block form_title %}{{ title }}{% endblock %}
+{% block form_body %}
+    <form method="post">
+        {% csrf_token %}
+        {% include 'forms/_field.html' %}
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-outline-primary my-3">{{ submit_btn_text }}</button>
+        </div>
+        {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}" />{% endif %}
+    </form>
+{% endblock %}

@@ -12,7 +12,7 @@ import logging
 import re
 from urllib.parse import urlparse
 from xml.etree import ElementTree
-
+from bs4 import BeautifulSoup
 import requests
 from django.utils import timezone
 
@@ -24,19 +24,32 @@ logger = logging.getLogger(__name__)
 # SEO extraction patterns
 # ---------------------------------------------------------------------------
 
-SEO_PATTERNS = {
-    "title": r"<title>(.*?)</title>",
-    "meta_description": r'name="description"\s+content="([^"]*)"',
-    "canonical": r'rel="canonical"\s+href="([^"]*)"',
-    "og_url": r'property="og:url"\s+content="([^"]*)"',
-    "og_site_name": r'property="og:site_name"\s+content="([^"]*)"',
-    "og_title": r'property="og:title"\s+content="([^"]*)"',
-    "og_description": r'property="og:description"\s+content="([^"]*)"',
-    "og_image": r'property="og:image"\s+content="([^"]*)"',
-    "twitter_card": r'name="twitter:card"\s+content="([^"]*)"',
-    "twitter_title": r'name="twitter:title"\s+content="([^"]*)"',
-    "twitter_description": r'name="twitter:description"\s+content="([^"]*)"',
-    "twitter_image": r'name="twitter:image"\s+content="([^"]*)"',
+# SEO_PATTERNS = {
+#     "title": r"<title>(.*?)</title>",
+#     "meta_description": r'name="description"\s+content="([^"]*)"',
+#     "canonical": r'rel="canonical"\s+href="([^"]*)"',
+#     "og_url": r'property="og:url"\s+content="([^"]*)"',
+#     "og_site_name": r'property="og:site_name"\s+content="([^"]*)"',
+#     "og_title": r'property="og:title"\s+content="([^"]*)"',
+#     "og_description": r'property="og:description"\s+content="([^"]*)"',
+#     "og_image": r'property="og:image"\s+content="([^"]*)"',
+#     "twitter_card": r'name="twitter:card"\s+content="([^"]*)"',
+#     "twitter_title": r'name="twitter:title"\s+content="([^"]*)"',
+#     "twitter_description": r'name="twitter:description"\s+content="([^"]*)"',
+#     "twitter_image": r'name="twitter:image"\s+content="([^"]*)"',
+# }
+
+META_TAGS_MAP = {
+    "description": "meta_description",
+    "twitter:card": "twitter_card",
+    "twitter:title": "twitter_title",
+    "twitter:description": "twitter_description",
+    "twitter:image": "twitter_image",
+    "og:url": "og_url",
+    "og:site_name": "og_site_name",
+    "og:title": "og_title",
+    "og:description": "og_description",
+    "og:image": "og_image",
 }
 
 # Tags that must have non-empty values on every public page.
@@ -58,13 +71,35 @@ REQUEST_TIMEOUT = 15  # seconds
 # ---------------------------------------------------------------------------
 
 
+# def extract_seo(html):
+#     """Extract SEO tag values from rendered HTML into a dict."""
+#     values = {}
+#     for key, pattern in SEO_PATTERNS.items():
+#         match = re.search(pattern, html, re.DOTALL)
+#         values[key] = match.group(1).strip() if match else None
+#     return values
+
+
 def extract_seo(html):
-    """Extract SEO tag values from rendered HTML into a dict."""
-    values = {}
-    for key, pattern in SEO_PATTERNS.items():
-        match = re.search(pattern, html, re.DOTALL)
-        values[key] = match.group(1).strip() if match else None
-    return values
+    soup = BeautifulSoup(html, "html.parser")
+    data = {
+        "title": (
+            soup.title.string.strip() if soup.title and soup.title.string else None
+        ),
+        "canonical": (link := soup.find("link", rel="canonical")) and link.get("href"),
+    }
+    # Initialize all mapped keys to None so callers can rely on their presence
+    for key in META_TAGS_MAP.values():
+        data.setdefault(key, None)
+    for tag in soup.find_all("meta"):
+        content = tag.get("content")
+        if not content:
+            continue
+        if (name := tag.get("name")) in META_TAGS_MAP:
+            data[META_TAGS_MAP[name]] = content
+        elif (name := tag.get("property")) in META_TAGS_MAP:
+            data[META_TAGS_MAP[name]] = content
+    return data
 
 
 def check_seo_quality(seo):
@@ -192,7 +227,7 @@ def fetch_sitemap_urls(domain, scheme="https"):
 # ---------------------------------------------------------------------------
 
 
-def audit_urls(domain, pages):
+def audit_urls(domain, pages):  # pylint: disable=too-many-locals
     """Audit a list of pre-fetched pages and store results.
 
     This is the core audit engine used by both :func:`scan_site` (which
@@ -268,7 +303,9 @@ def audit_urls(domain, pages):
     audit.total_warnings = total_warnings
     audit.status = "completed"
     audit.dtm_audited = timezone.now()
-    audit.save(update_fields=["total_errors", "total_warnings", "status", "dtm_audited"])
+    audit.save(
+        update_fields=["total_errors", "total_warnings", "status", "dtm_audited"]
+    )
 
     logger.info(
         "SEO audit complete for %s: %d URLs, %d errors, %d warnings",

@@ -1,40 +1,57 @@
+import logging
+from typing import cast
+
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.views import PasswordResetCompleteView
-from django.contrib.auth.views import PasswordResetConfirmView
-from django.contrib.auth.views import PasswordResetDoneView
-from django.contrib.auth.views import PasswordResetView
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
-from django.utils.decorators import method_decorator
-from django.utils.encoding import force_bytes, force_str
-from django.views.generic import TemplateView
-from django.views.generic import View
-
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.contrib.auth import get_user_model
+from django.utils.encoding import force_bytes
+
+try:
+    from django.utils.encoding import force_str as force_text
+except ImportError:  # pragma: no cover
+    from django.utils.encoding import force_text  # type: ignore[attr-defined]
+
+from django.utils.http import (
+    base36_to_int,
+    urlsafe_base64_decode,
+    urlsafe_base64_encode,
+)
+from django.views.generic import TemplateView, View
 
 from qux.seo.mixin import SEOMixin
-from ..tokens import account_activation_token
 
 from ..forms import (
+    BaseSignupForm,
     ChangePasswordForm,
+    CompleteProfileForm,
     CustomAuthenticationForm,
     CustomPasswordResetForm,
     CustomSetPasswordForm,
+    MagicLinkRequestForm,
     SignupForm,
-    BaseSignupForm,
 )
+from ..tokens import account_activation_token, magic_link_token
 
-
-User._meta.get_field("email")._unique = True
+User = get_user_model()
 
 
 class QuxSignupView(View):
@@ -61,10 +78,11 @@ class QuxSignupView(View):
             user = form.save(commit=False)
             user.is_active = self.activate_user
             if not self.show_username_signup:
-                user.username = user.email
+                base_username = user.email
+                user.username = base_username
                 counter = 1
                 while User.objects.filter(username=user.username).exists():
-                    user.username = user.username + str(counter)
+                    user.username = f"{base_username}{counter}"
                     counter += 1
 
             user.save()
@@ -87,15 +105,14 @@ class QuxSignupView(View):
 
             return render(request, "message.html", data)
 
-        errors = form.errors.as_data()
+        errors_obj = getattr(form, "errors", None)
 
-        error_messages = []
-        for _, field_errors in errors.items():
-            for error in field_errors:
-                message = (
-                    error.message % error.params if error.params else error.message
-                )
-                error_messages.append(message)
+        error_messages: list[str] = []
+        if errors_obj:
+            for field_errors in errors_obj.values():
+                for message in field_errors:
+                    if message:
+                        error_messages.append(str(message))
 
         data = {
             "title": "Invalid credentials.",
@@ -146,18 +163,18 @@ class QuxActivateView(View):
         GET method to activate a user account.
         """
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
+            uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, ObjectDoesNotExist):
             user = None
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
             user.save()
-            login(request, user)
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             data = {
                 "title": "Account verified",
                 "messages": [
-                    '<a style="color:red" href="/">Click here<a/> to continue to your account.'
+                    '<a style="color:red" href="/">Click here</a> to continue to your account.'
                 ],
             }
             return render(request, "message.html", data)
@@ -195,7 +212,7 @@ class QuxLoginView(SEOMixin, LoginView):
         return super().form_invalid(form)
 
 
-class QuxChangePasswordView(SEOMixin, TemplateView):
+class QuxChangePasswordView(LoginRequiredMixin, SEOMixin, TemplateView):
     form_class = ChangePasswordForm
     template_name = (
         "bs5/change-password.html"
@@ -212,19 +229,16 @@ class QuxChangePasswordView(SEOMixin, TemplateView):
         ctx["form"] = self.form_class(user=self.request.user)
         return ctx
 
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
     def post(self, request):
         form = self.form_class(data=request.POST, user=request.user)
         if form.is_valid():
             user = request.user
             user.set_password(form.cleaned_data.get("new_password"))
             user.save()
+            update_session_auth_hash(request, user)
             messages.success(request, "Password changed successfully")
             return redirect("/")
-        return render(request, self.template_name, context={"form": form})
+        return render(request, cast(str, self.template_name), context={"form": form})
 
 
 class QuxPasswordResetView(SEOMixin, PasswordResetView):
@@ -317,3 +331,300 @@ def login_request(request):
         "form": form,
     }
     return render(request, "login.html", data)
+
+
+class MagicLinkRequestView(SEOMixin, TemplateView):
+    template_name = (
+        "bs5/magic_link_request.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "magic_link_request.html"
+    )
+    extra_context = {
+        "title": "Magic link",
+        "submit_btn_text": "Send magic link",
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
+    }
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        prefill_email = self.request.GET.get("email")
+        if prefill_email:
+            ctx["form"] = MagicLinkRequestForm(initial={"email": prefill_email})
+        else:
+            ctx["form"] = MagicLinkRequestForm()
+        return ctx
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect(settings.LOGIN_REDIRECT_URL)
+        return super().get(request)
+
+    def post(self, request):
+        form = MagicLinkRequestForm(request.POST)
+        if not form.is_valid():
+            return self.render_to_response({"form": form})
+
+        email = form.cleaned_data["email"].strip().lower()
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            base_username = email
+            candidate_username = base_username
+            suffix = 1
+            while User.objects.filter(username=candidate_username).exists():
+                candidate_username = f"{base_username}{suffix}"
+                suffix += 1
+            user = User.objects.create(
+                username=candidate_username,
+                email=email,
+                is_active=True,
+            )
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = magic_link_token.make_token(user)
+        domain = request.build_absolute_uri("/")[:-1]
+        next_path = request.GET.get("next") or request.POST.get("next")
+        callback_kwargs = {"uidb64": uid, "token": token}
+        # Use unified login link callback under /login/link/
+        callback_url = reverse("qux_auth:login_link", kwargs=callback_kwargs)
+        if next_path:
+            callback_url = f"{callback_url}?next={next_path}"
+
+        hours = int(settings.PASSWORD_RESET_TIMEOUT / 3600)
+        minutes = int(settings.PASSWORD_RESET_TIMEOUT % 3600 / 60)
+
+        expiration_time = ""
+        if hours > 0:
+            expiration_time = f"{hours} hour{'' if hours == 1 else 's'}"
+        if minutes > 0:
+            expiration_time += (
+                f"{' and ' if hours > 0 else ''}"
+                + f"{minutes} minute{'' if minutes == 1 else 's'}"
+            )
+
+        message = render_to_string(
+            "magic_link_email.html",
+            {
+                "user": user,
+                "domain": domain,
+                "magic_link_url": domain + callback_url,
+                "expiration_time": expiration_time,
+            },
+        )
+        email_obj = EmailMessage(
+            subject="Your magic link",
+            body=message,
+            to=[email],
+        )
+        email_obj.content_subtype = "html"
+        email_obj.send()
+
+        return render(
+            request,
+            "message.html",
+            {
+                "title": "Check your email",
+                "messages": [
+                    f"We sent a magic link to <b>{email}</b>. It expires in {expiration_time}.",
+                    "Check spam if you do not see it in a couple of minutes.",
+                ],
+            },
+        )
+
+
+class MagicLinkLoginView(SEOMixin, View):
+    @staticmethod
+    def _get_token_status(user: User | None, token: str) -> str:
+        """Return one of: "valid", "expired", or "invalid" using public APIs."""
+        if not user or not token:
+            return "invalid"
+
+        # Extract timestamp from token
+        try:
+            ts_b36, _ = token.split("-")
+            ts = base36_to_int(ts_b36)
+        except (ValueError, TypeError):
+            return "invalid"
+
+        # Determine expiry strictly by timestamp window
+        from datetime import datetime
+
+        now_seconds = int((datetime.now() - datetime(2001, 1, 1)).total_seconds())
+        if (now_seconds - ts) > settings.PASSWORD_RESET_TIMEOUT:
+            return "expired"
+
+        # Within window → rely on Django's public check_token for validity
+        return "valid" if magic_link_token.check_token(user, token) else "invalid"
+
+    @staticmethod
+    def _log_magic_link_event(
+        request,
+        *,
+        status: str,
+        user: User | None,
+        reason: str | None = None,
+    ) -> None:
+        """Log a magic link login event for monitoring and counting."""
+        logger = logging.getLogger(__name__)
+        forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        ip = (
+            forwarded_for.split(",")[0].strip()
+            if forwarded_for
+            else request.META.get("REMOTE_ADDR", "")
+        )
+        ua = request.META.get("HTTP_USER_AGENT", "")
+        next_path = request.GET.get("next")
+        user_id = getattr(user, "id", None)
+        email = getattr(user, "email", "")
+        logger.info(
+            "magic_link_login status=%s reason=%s user_id=%s email=%s ip=%s ua=%s next=%s",
+            status,
+            reason or "",
+            user_id,
+            email,
+            ip,
+            ua,
+            next_path,
+        )
+
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, ObjectDoesNotExist):
+            user = None
+
+        status = self._get_token_status(user, token)
+
+        if status != "valid":
+            next_path = request.GET.get("next")
+            magic_link_url = reverse("qux_auth:magic_link")
+            if next_path:
+                magic_link_url = f"{magic_link_url}?next={next_path}"
+            # Pre-fill email if we could resolve the user
+            if user and user.email:
+                sep = "&" if "?" in magic_link_url else "?"
+                magic_link_url = f"{magic_link_url}{sep}email={user.email}"
+            title = "Link expired" if status == "expired" else "Invalid link"
+            reason = (
+                "This magic link has expired."
+                if status == "expired"
+                else "This magic link is invalid. Please request a new one."
+            )
+            self._log_magic_link_event(
+                request,
+                status=status,
+                user=user,
+                reason="expired" if status == "expired" else "invalid",
+            )
+            return render(
+                request,
+                "message.html",
+                {
+                    "title": title,
+                    "messages": [
+                        reason,
+                        (
+                            f'<a class="btn btn-outline-primary btn-block w-100 py-2 mt-3" '
+                            f'href="{magic_link_url}">Get a new magic link</a>'
+                        ),
+                    ],
+                },
+            )
+        # Proceed to login directly on GET (fast one-click flow)
+        next_path = request.GET.get("next")
+        login(request, user)
+        self._log_magic_link_event(request, status="success", user=user)
+        # If first-time login (no first_name/last_name), route to complete-profile
+        if (
+            user
+            and hasattr(settings, "SHOW_COMPLETE_PROFILE_FORM")
+            and settings.SHOW_COMPLETE_PROFILE_FORM
+            and not user.first_name
+            and not user.last_name
+        ):
+            url = reverse("qux_auth:update_profile")
+            if next_path:
+                url = f"{url}?next={next_path}"
+            return redirect(url)
+
+        redirect_to = next_path or settings.LOGIN_REDIRECT_URL
+        return redirect(redirect_to)
+
+
+class CompleteProfileView(LoginRequiredMixin, SEOMixin, TemplateView):
+    template_name = (
+        "bs5/complete_profile.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "complete_profile.html"
+    )
+    extra_context = {
+        "title": "Update your profile",
+        "submit_btn_text": "Save and continue",
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
+    }
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["form"] = CompleteProfileForm(instance=self.request.user)
+        return ctx
+
+    def get(self, request):
+        if (
+            hasattr(settings, "SHOW_COMPLETE_PROFILE_FORM")
+            and settings.SHOW_COMPLETE_PROFILE_FORM
+            and request.user.first_name
+            and request.user.last_name
+        ):
+            redirect_to = request.GET.get("next") or settings.LOGIN_REDIRECT_URL
+            return redirect(redirect_to)
+        return super().get(request)
+
+    def post(self, request):
+        form = CompleteProfileForm(request.POST, instance=request.user)
+        if not form.is_valid():
+            return self.render_to_response({"form": form})
+        form.save()
+        redirect_to = request.GET.get("next") or settings.LOGIN_REDIRECT_URL
+        return redirect(redirect_to)
+
+
+class QuxSetPasswordView(LoginRequiredMixin, SEOMixin, TemplateView):
+    template_name = (
+        "bs5/set_password.html"
+        if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+        else "set_password.html"
+    )
+    extra_context = {
+        "form_title": "Set your password",
+        "submit_btn_text": "Save and continue",
+        "base_template": getattr(settings, "ROOT_TEMPLATE", "_blank.html"),
+    }
+
+    def get(self, request):
+        # If user already has a password, redirect them
+        if request.user.password:
+            redirect_to = request.GET.get("next") or settings.LOGIN_REDIRECT_URL
+            return redirect(redirect_to)
+        return super().get(request)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["form"] = CustomSetPasswordForm(self.request.user)
+        return ctx
+
+    def post(self, request):
+        form = CustomSetPasswordForm(request.user, request.POST)
+        if not form.is_valid():
+            return self.render_to_response({"form": form})
+
+        # Set the new password
+        user = request.user
+        user.set_password(form.cleaned_data.get("new_password1"))
+        user.save()
+
+        messages.success(request, "Password set successfully!")
+
+        # Redirect to next page or default
+        redirect_to = request.GET.get("next") or settings.LOGIN_REDIRECT_URL
+        return redirect(redirect_to)

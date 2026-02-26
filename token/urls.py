@@ -1,6 +1,12 @@
 from django.urls import path
 
-from .views import *
+from .views import (
+    CustomTokenCreateView,
+    CustomTokenDeleteView,
+    CustomTokenDetailView,
+    CustomTokenListView,
+    CustomTokenUpdateView,
+)
 
 app_name = "qux_token"
 

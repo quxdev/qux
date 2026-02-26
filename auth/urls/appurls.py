@@ -2,18 +2,23 @@
 App urls for qux_auth.
 """
 
+from django.conf import settings
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from ..views.appviews import (
-    QuxSignupView,
+    CompleteProfileView,
+    MagicLinkLoginView,
+    MagicLinkRequestView,
     QuxActivateView,
-    QuxLoginView,
     QuxChangePasswordView,
-    QuxPasswordResetView,
-    QuxPasswordResetDoneView,
-    QuxPasswordResetConfirmView,
+    QuxLoginView,
     QuxPasswordResetCompleteView,
+    QuxPasswordResetConfirmView,
+    QuxPasswordResetDoneView,
+    QuxPasswordResetView,
+    QuxSetPasswordView,
+    QuxSignupView,
     TemplateView,
 )
 
@@ -31,6 +36,19 @@ urlpatterns = [
         QuxLoginView.as_view(redirect_authenticated_user=True),
         name="login",
     ),
+]
+
+# Configure the primary login route based on settings.USE_EMAIL_SIGNIN
+if hasattr(settings, "USE_MAGIC_LINK") and settings.USE_MAGIC_LINK:
+    urlpatterns += [
+        path(
+            "magic-link/",
+            MagicLinkRequestView.as_view(),
+            name="magic_link",
+        ),
+    ]
+
+urlpatterns += [
     path("logout/", LogoutView.as_view(), name="logout"),
     path(
         "change-password/",
@@ -61,5 +79,20 @@ urlpatterns = [
         "needhelp/",
         TemplateView.as_view(template_name="login.html"),
         name="support_request",
+    ),
+    path(
+        "login/link/<uidb64>/<token>/",
+        MagicLinkLoginView.as_view(),
+        name="login_link",
+    ),
+    path(
+        "update-profile/",
+        CompleteProfileView.as_view(),
+        name="update_profile",
+    ),
+    path(
+        r"set-password/",
+        QuxSetPasswordView.as_view(),
+        name="set_password",
     ),
 ]

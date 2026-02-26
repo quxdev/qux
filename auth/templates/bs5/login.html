@@ -1,34 +1,36 @@
-{% extends 'forms/_form.html' %}
+{% extends "forms/_form.html" %}
 {% load static %}
 {% load qux quxform %}
-
-{% block form_title %}{{ form_title }}{% endblock %}
-
+{% block form_title %}
+  {{ form_title }}
+{% endblock form_title %}
 <!-- form_body -->
 {% block form_body %}
-<form method="post">
-  {% csrf_token %}
-
-  {% include 'forms/bs5/_field.html' with changepassword=True needhelp=True %}
-
-  <!-- submit -->
-  <div class="d-grid gap-2">
-    <button type="submit" class="btn btn-outline-primary my-3">
-      {% if submit_btn_text %}
-      {{ submit_btn_text }}
-      {% else %}
-      Submit
-      {% endif %}
-    </button>
-  </div>
-</form>
-
-{% if "SHOW_USERNAME_SIGNUP"|getconfig:False %}
-<div class="form-container text-muted mx-auto my-4">
-  <a href="{% url 'qux_auth:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
-    New? Create an account
-  </a>
-</div>
-{% endif %}
-
+  <form method="post">
+    {% csrf_token %}
+    {% include "forms/bs5/_field.html" with changepassword=True needhelp=True %}
+    <!-- submit -->
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-outline-primary my-3">
+        {% if submit_btn_text %}
+          {{ submit_btn_text }}
+        {% else %}
+          Submit
+        {% endif %}
+      </button>
+    </div>
+  </form>
+  {% if "SHOW_USERNAME_SIGNUP"|getconfig:False %}
+    <div class="form-container text-muted mx-auto my-4">
+      <a href="{% url "qux_auth:signup" %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+        New? Create an account
+      </a>
+    </div>
+  {% endif %}
+  {% if "USE_MAGIC_LINK"|getconfig:False %}
+    <div class="form-container text-muted mx-auto my-2">
+      Want a faster sign‑in? <a href="{% url "qux_auth:magic_link" %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}"
+    class="text-primary font-weight-bold">Get a magic link</a> sent to your email.
+    </div>
+  {% endif %}
 {% endblock form_body %}

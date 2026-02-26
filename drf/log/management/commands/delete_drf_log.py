@@ -1,7 +1,10 @@
-from django.core.management.base import BaseCommand
-from ...models import APIRequestLog
 import datetime
+
+from django.core.management.base import BaseCommand
 from django.utils import timezone
+
+from ...app_settings import app_settings
+from ...models import APIRequestLog
 
 
 class Command(BaseCommand):
@@ -16,7 +19,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        days_num = options["days_num"]
+        days_num = options["days_num"] or app_settings.RETENTION_DAYS
 
         if days_num:
             today = timezone.now()

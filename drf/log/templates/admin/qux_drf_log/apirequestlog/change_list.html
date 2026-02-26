@@ -1,18 +1,13 @@
 {% extends "admin/change_list.html" %}
 {% load static %}
-
 <!-- Override extrahead to add Chart.js -->
 {% block extrahead %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static "qux/css/qux.css" %}" />
-<link rel="stylesheet" href="{% static "qux_api_log/css/qux_api_log.css" %}" />
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<script>
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "qux_api_log/css/qux_api_log.css" %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <script>
     document.addEventListener('DOMContentLoaded', () => {
+        var container = document.getElementById('api-log-chart');
         var ctx = document.getElementById('chart').getContext('2d');
 
         // parse chart data
@@ -23,99 +18,75 @@
             d.x = new Date(d.date).toJSON().slice(0, 10);
         });
 
+        // Compose datasets from server fields
+        var datasets = [
+            { label: 'total', field: 'y', color: '#5eb4ef' },
+            { label: '2xx', field: 'y2xx', color: '#28a745' },
+            { label: '4xx', field: 'y4xx', color: '#ffc107' },
+            { label: '5xx', field: 'y5xx', color: '#dc3545' },
+        ].map(function (cfg) {
+            return {
+                label: cfg.label,
+                data: chartData.map(function (d) { return { x: d.x, y: d[cfg.field] }; }),
+                backgroundColor: cfg.color,
+            };
+        });
+
         // Render the chart
         var chart = new Chart(ctx, {
             type: 'bar',
-            data: {
-                datasets: [{
-                    label: 'total requests',
-                    data: chartData,
-                    backgroundColor: '#5eb4ef',
-                }, ],
-            },
+            data: { datasets: datasets },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                legend: { 
+                    display: true,
+                    position: 'top',
+                    labels: { 
+                        fontColor: getComputedStyle(document.body).color,
+                        padding: 15,
+                        boxWidth: 12,
+                        fontSize: 12
+                    } 
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
-                        time: {
-                            unit: 'day',
-                            round: 'day',
-                            displayFormats: {
-                                day: 'MMM D',
-                            },
-                        },
-                    }, ],
+                        time: { unit: 'day', round: 'day', displayFormats: { day: 'MMM D' } },
+                        ticks: { fontColor: getComputedStyle(document.body).color },
+                    }],
                     yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            stepSize: 1,
-                            suggestedMax: 5,
-                        },
-                    }, ],
+                        ticks: { beginAtZero: true, stepSize: 1, suggestedMax: 5, fontColor: getComputedStyle(document.body).color },
+                    }],
                 },
             },
         });
 
-        function onDateChange(newStart, newEnd) {
-            var formattedStart = newStart.format('YYYY-MM-D');
-            var formattedEnd = newEnd.format('YYYY-MM-D');
-
-            const res = fetch("/admin/rest_framework_tracking/apirequestlog/chart_data/?start_date=" + formattedStart + "&end_date=" + formattedEnd)
-                .then(resp => resp.json())
-                .then(resp => {
-                    resp.forEach((d) => {
-                        d.x = new Date(d.date);
-                    });
-                
-                    chart.data.datasets[0].data = resp;
-                    chart.update();
-                })
-
-            formatDateRangeInput(newStart, newEnd)
-        }
-
-        function formatDateRangeInput(newStart, newEnd) {
-            document.querySelector('#daterangepicker span').innerHTML = newStart.format('MMMM D, YYYY') + ' - ' + newEnd.format('MMMM D, YYYY');
-        }
+        
 
         var start = chartData.length ? moment(chartData[chartData.length - 1].x) : moment();
         var end = moment();
+        var saved = window.localStorage.getItem('api_log_daterange');
+        if (saved) {
+            try {
+                var obj = JSON.parse(saved);
+                if (obj && obj.start && obj.end) {
+                    start = moment(obj.start);
+                    end = moment(obj.end);
+                }
+            } catch (e) {}
+        }
 
-
-        $('#daterangepicker').daterangepicker({
-            startDate: start,
-            endDate: end,
-            ranges: {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                'Lifetime': [chartData.length ? moment(chartData[chartData.length - 1].x) : moment(), moment()],
-            }
-        }, onDateChange);
-
-        formatDateRangeInput(start, end);
     });
-</script>
-
-{{ chart_data|json_script:"chartData" }}
-
-{% endblock %}
-
-{% block content %}
-<!-- Render The Date Range Picker -->
-<div id="daterangepicker"
-    style="margin-bottom: 10px; background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: -moz-fit-content; width: fit-content;">
-    <i class="bi bi-calendar"></i>&nbsp;
-    <span></span> <i class="fa fa-caret-down"></i>
-</div>
-<!-- Render the chart -->
-<div style="width: 80%;">
-    <canvas style="margin-bottom: 30px; width: 60%; height: 50%;" id="chart"></canvas>
-</div>
-<!-- Render the rest of the ChangeList view -->
-{{ block.super }}
-{% endblock %}
+    </script>
+    {{ chart_data|json_script:"chartData" }}
+{% endblock extrahead %}
+{% block result_list %}
+    <div id="api-log-chart">
+        <!-- Render the chart -->
+        <div class="api-log-chart-canvas">
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+    {{ block.super }}
+{% endblock result_list %}

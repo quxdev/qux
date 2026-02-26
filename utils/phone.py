@@ -62,8 +62,7 @@ def fakephonenumber(countrycode: str = "IN"):
             )
 
         return phone_number(result)
-    else:
-        return None
+    return None
 
 
 def format_phone_number(phone, fmt="national"):

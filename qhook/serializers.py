@@ -1,5 +1,6 @@
-from .models import QHookTarget
 from rest_framework import serializers
+
+from .models import QHookTarget
 
 
 class QHookTargetSerializer(serializers.ModelSerializer):

@@ -2,11 +2,13 @@ import json
 import logging
 import os
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from qux.models import CoreModel, default_null_blank
 from qux.utils import cast
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +84,7 @@ class Preference(CoreModel):
 
         logger.info("Fixture: %s", fixtures)
 
-        with open(fixtures, "r") as f:
+        with open(fixtures, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         for item in data:
@@ -94,7 +96,6 @@ class Preference(CoreModel):
             service = Service.objects.get_or_none(id=item["service"])
             if service is None:
                 continue
-            else:
-                item["service"] = service
+            item["service"] = service
 
             cls.objects.update_or_create(**item)

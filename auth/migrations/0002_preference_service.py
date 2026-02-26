@@ -9,47 +9,108 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('qux_auth', '0001_initial'),
+        ("qux_auth", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Service',
+            name="Service",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dtm_created', models.DateTimeField(auto_now_add=True, verbose_name='DTM Created')),
-                ('dtm_updated', models.DateTimeField(auto_now=True, verbose_name='DTM Updated')),
-                ('slug', models.CharField(max_length=14, unique=True)),
-                ('name', models.CharField(max_length=64, unique=True)),
-                ('description', models.TextField(blank=True, default=None, null=True)),
-                ('url', models.URLField(blank=True, default=None, max_length=1024, null=True, verbose_name='URL')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "dtm_created",
+                    models.DateTimeField(auto_now_add=True, verbose_name="DTM Created"),
+                ),
+                (
+                    "dtm_updated",
+                    models.DateTimeField(auto_now=True, verbose_name="DTM Updated"),
+                ),
+                ("slug", models.CharField(max_length=14, unique=True)),
+                ("name", models.CharField(max_length=64, unique=True)),
+                ("description", models.TextField(blank=True, default=None, null=True)),
+                (
+                    "url",
+                    models.URLField(
+                        blank=True,
+                        default=None,
+                        max_length=1024,
+                        null=True,
+                        verbose_name="URL",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Service',
-                'verbose_name_plural': 'Services',
-                'db_table': 'qux_service',
+                "verbose_name": "Service",
+                "verbose_name_plural": "Services",
+                "db_table": "qux_service",
             },
         ),
         migrations.CreateModel(
-            name='Preference',
+            name="Preference",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dtm_created', models.DateTimeField(auto_now_add=True, verbose_name='DTM Created')),
-                ('dtm_updated', models.DateTimeField(auto_now=True, verbose_name='DTM Updated')),
-                ('slug', models.CharField(max_length=11, unique=True)),
-                ('name', models.CharField(max_length=128)),
-                ('value', models.TextField(blank=True, default=None, null=True)),
-                ('type', models.CharField(blank=True, default=None, max_length=32, null=True)),
-                ('category', models.CharField(blank=True, default=None, max_length=32, null=True)),
-                ('is_basic', models.BooleanField(default=False)),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='preferences', to='qux_auth.service')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='preferences', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "dtm_created",
+                    models.DateTimeField(auto_now_add=True, verbose_name="DTM Created"),
+                ),
+                (
+                    "dtm_updated",
+                    models.DateTimeField(auto_now=True, verbose_name="DTM Updated"),
+                ),
+                ("slug", models.CharField(max_length=11, unique=True)),
+                ("name", models.CharField(max_length=128)),
+                ("value", models.TextField(blank=True, default=None, null=True)),
+                (
+                    "type",
+                    models.CharField(
+                        blank=True, default=None, max_length=32, null=True
+                    ),
+                ),
+                (
+                    "category",
+                    models.CharField(
+                        blank=True, default=None, max_length=32, null=True
+                    ),
+                ),
+                ("is_basic", models.BooleanField(default=False)),
+                (
+                    "service",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="preferences",
+                        to="qux_auth.service",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="preferences",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Preference',
-                'verbose_name_plural': 'Preferences',
-                'db_table': 'qux_preference',
-                'unique_together': {('user', 'service', 'name')},
+                "verbose_name": "Preference",
+                "verbose_name_plural": "Preferences",
+                "db_table": "qux_preference",
+                "unique_together": {("user", "service", "name")},
             },
         ),
     ]

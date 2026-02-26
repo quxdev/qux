@@ -1,4 +1,5 @@
 import base64
+import mimetypes
 import os
 
 from sendgrid.helpers.mail import FileContent, FileName, FileType, Mail, Attachment, To
@@ -6,34 +7,33 @@ from sendgrid.helpers.mail import FileContent, FileName, FileType, Mail, Attachm
 from sendgrid.sendgrid import SendGridAPIClient
 
 
-class QuxSendGrid(object):
+class QuxSendGrid:
     def __init__(self):
         self.sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        self.sender = "raptor@finmachines.net"
+        self.sender = None
         self.also = None
         self.to = None
-        self.subject = "[FM Energy] Raptor Pricing"
+        self.subject = None
         self.message = None
         self.files = None
 
     def send(self):
         if self.sg is None:
-            print("{}.sg = None".format(self.__name__))
             return None, None
 
         if self.message is None:
             return None, None
 
-        if type(self.to) is str:
+        if isinstance(self.to, str):
             to = [To(self.to)]
-        elif type(self.to) is list:
+        elif isinstance(self.to, list):
             to = [To(target) for target in self.to]
         else:
             to = []
 
-        if type(self.also) is str:
+        if isinstance(self.also, str):
             to = to + [To(self.also)]
-        elif type(self.also) is list:
+        elif isinstance(self.also, list):
             to = to + [To(target) for target in self.also]
 
         message = Mail(
@@ -43,7 +43,7 @@ class QuxSendGrid(object):
             html_content=self.message,
         )
         if self.files:
-            if type(self.files) is list:
+            if isinstance(self.files, list):
                 for f in self.files:
                     att = self.getattachment(f)
                     message.add_attachment(att)
@@ -52,7 +52,7 @@ class QuxSendGrid(object):
 
         try:
             response = self.sg.send(message)
-        except:
+        except Exception:  # pylint: disable=broad-exception-caught
             response = None
 
         return message, response
@@ -64,17 +64,16 @@ class QuxSendGrid(object):
 
         with open(filename, "rb") as f:
             data = f.read()
-            f.close()
 
         encoded = base64.b64encode(data).decode()
 
+        mime_type, _ = mimetypes.guess_type(filename)
+        if not mime_type:
+            mime_type = "application/octet-stream"
+
         attachment = Attachment()
         attachment.file_content = FileContent(encoded)
-        attachment.file_type = FileType(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        attachment.file_type = FileType(mime_type)
         attachment.file_name = FileName(os.path.basename(filename))
-        # attachment.disposition = Disposition('attachment')
-        # attachment.content_id = ContentId('Example Content ID')
 
         return attachment

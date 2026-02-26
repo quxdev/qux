@@ -1,19 +1,26 @@
 import hashlib
+import logging
 import os
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from qux.models import CoreModel
 from qux.models import default_null_blank
+
+User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 # from django_mysql.models import EnumField
 
 
 class DownloadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
+    user = models.ForeignKey(
+        get_user_model(), on_delete=models.SET_NULL, **default_null_blank
+    )
     url = models.URLField(max_length=2048, verbose_name="URL")
     original = models.CharField(
         max_length=128, **default_null_blank, verbose_name="Original File Name"
@@ -28,7 +35,9 @@ class DownloadLog(CoreModel):
 
 
 class UploadLog(CoreModel):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
+    user = models.ForeignKey(
+        get_user_model(), on_delete=models.SET_NULL, **default_null_blank
+    )
     filename = models.CharField(max_length=128)
     filepath = models.CharField(max_length=256)
     filehash = models.CharField(max_length=16, editable=False)
@@ -39,15 +48,17 @@ class UploadLog(CoreModel):
         verbose_name = "Upload Log"
 
     def save(self, *args, **kwargs):
-        # https://stackoverflow.com/a/3431838/
         fullpath = os.path.join(settings.BASE_DIR, self.filepath, self.filename)
-        filehash = hashlib.md5()
-        with open(fullpath, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                filehash.update(chunk)
-        self.filehash = filehash.hexdigest()
+        try:
+            filehash = hashlib.md5()
+            with open(fullpath, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    filehash.update(chunk)
+            self.filehash = filehash.hexdigest()
+        except FileNotFoundError:
+            logger.warning("UploadLog: file not found at %s", fullpath)
+            self.filehash = ""
 
-        # https://stackoverflow.com/a/25527773/
         super().save(*args, **kwargs)
 
 
@@ -91,7 +102,9 @@ class CoreCommLog(CoreModel):
         default="email",
         verbose_name="Comm Type",
     )
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, **default_null_blank)
+    user = models.ForeignKey(
+        get_user_model(), on_delete=models.SET_NULL, **default_null_blank
+    )
     provider = models.CharField(
         max_length=32, **default_null_blank, verbose_name="Service Provider"
     )

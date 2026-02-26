@@ -1,6 +1,5 @@
 from django.db import models
 
 
-class PrefetchUserManager(models.Manager):
-    def get_queryset(self):
-        return super(PrefetchUserManager, self).get_queryset()
+class PrefetchUserManager(models.Manager):  # pylint: disable=too-few-public-methods
+    pass
