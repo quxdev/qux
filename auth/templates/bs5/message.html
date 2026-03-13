@@ -1,10 +1,38 @@
-{% extends 'forms/bs5/form.html' %}
+{% extends 'forms/bs5/_form.html' %}
 {% load static %}
+
+{% block customstyle %}
+  {{ block.super }}
+  <style>
+    .qux-rightside-header-title {
+      display: flex !important;
+      justify-content: center !important;
+      text-align: center !important;
+    }
+  </style>
+{% endblock customstyle %}
 
 {% block form_title %}{{ title }}{% endblock %}
 
 {% block form_body %}
-  {% for m in messages %}
-    <p>{{ m | safe }}</p>
-  {% endfor %}
+  <div class="text-center">
+    <div class="lead mb-4">
+      {% for m in messages %}
+        <p>{{ m | safe }}</p>
+      {% endfor %}
+    </div>
+
+    <hr class="my-4">
+
+    <div class="text-muted">
+      {% if show_login_link %}
+        <p>
+          Prefer to use your password? 
+          <a href="{% url 'qux_auth:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="text-primary font-weight-bold">
+            Sign in with a password
+          </a>.
+        </p>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

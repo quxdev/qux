@@ -1,4 +1,6 @@
+import hashlib
 import logging
+import time
 from typing import cast
 
 from django.conf import settings
@@ -15,6 +17,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
@@ -347,11 +350,12 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        prefill_email = self.request.GET.get("email")
-        if prefill_email:
-            ctx["form"] = MagicLinkRequestForm(initial={"email": prefill_email})
-        else:
-            ctx["form"] = MagicLinkRequestForm()
+        if "form" not in ctx:
+            initial = {"render_ts": time.time()}
+            prefill_email = self.request.GET.get("email")
+            if prefill_email:
+                initial["email"] = prefill_email
+            ctx["form"] = MagicLinkRequestForm(initial=initial)
         return ctx
 
     def get(self, request):
@@ -359,12 +363,104 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
             return redirect(settings.LOGIN_REDIRECT_URL)
         return super().get(request)
 
+    def _get_fingerprint(self, request):
+        ip = (
+            request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+            or request.META.get("REMOTE_ADDR", "")
+        )
+        ua = request.META.get("HTTP_USER_AGENT", "")
+        return hashlib.sha256(f"{ip}:{ua}".encode()).hexdigest()
+
+    def _is_rate_limited(self, request, email):
+        """Returns (is_limited, is_email_limit)"""
+        fingerprint = self._get_fingerprint(request)
+        fp_key = f"qux_auth_ml_fp:{fingerprint}"
+        email_key = f"qux_auth_ml_email:{email}"
+
+        fp_limit = getattr(settings, "MAGIC_LINK_RATE_LIMIT", 10)
+        email_limit = getattr(settings, "MAGIC_LINK_EMAIL_LIMIT", 5)
+        period = getattr(settings, "MAGIC_LINK_RATE_PERIOD", 3600)
+
+        fp_count = cache.get(fp_key, 0)
+        if fp_count >= fp_limit:
+            return True, False
+
+        email_count = cache.get(email_key, 0)
+        if email_count >= email_limit:
+            return True, True
+
+        cache.set(fp_key, fp_count + 1, period)
+        cache.set(email_key, email_count + 1, period)
+        return False, False
+
+    def _get_expiration_time_str(self):
+        hours = int(settings.PASSWORD_RESET_TIMEOUT / 3600)
+        minutes = int(settings.PASSWORD_RESET_TIMEOUT % 3600 / 60)
+        expiration_time = ""
+        if hours > 0:
+            expiration_time = f"{hours} hour{'' if hours == 1 else 's'}"
+        if minutes > 0:
+            expiration_time += (
+                f"{' and ' if hours > 0 else ''}"
+                + f"{minutes} minute{'' if minutes == 1 else 's'}"
+            )
+        return expiration_time
+
+    def _error_response(self, request, title, error_messages):
+        return render(
+            request,
+            "bs5/message.html"
+            if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+            else "message.html",
+            {
+                "title": title,
+                "messages": error_messages,
+                "show_login_link": True,
+            },
+        )
+
+    def _success_response(self, request, email):
+        expiration_time = self._get_expiration_time_str()
+        return render(
+            request,
+            "message.html",
+            {
+                "title": "Check your email",
+                "messages": [
+                    f"We sent a magic link to <b>{email}</b>. It expires in {expiration_time}.",
+                    "Check spam if you do not see it in a couple of minutes.",
+                ],
+                "show_login_link": True,
+            },
+        )
+
     def post(self, request):
         form = MagicLinkRequestForm(request.POST)
         if not form.is_valid():
             return self.render_to_response({"form": form})
 
         email = form.cleaned_data["email"].strip().lower()
+        website = form.cleaned_data.get("website")
+        render_ts = form.cleaned_data.get("render_ts")
+        now = time.time()
+
+        # 1. Honeypot check
+        if form.cleaned_data.get("phone_number"):
+            logging.warning(f"Bot detected via honeypot (phone_number field): {email} from {request.META.get('REMOTE_ADDR')}")
+            return self._success_response(request, email)
+
+        # 2. Timing check (Silent)
+        min_time = getattr(settings, "MAGIC_LINK_MIN_SUBMIT_TIME", 2)
+        if render_ts and (now - render_ts) < min_time:
+            logging.warning(f"Bot detected via timing: {email} submitted in {now - render_ts:.2f}s")
+            return self._success_response(request, email)
+
+        # 3. Rate limiting (Transparent to users)
+        limited, is_email_limit = self._is_rate_limited(request, email)
+        if limited:
+            error_msg = "You have requested too many magic links. Please wait an hour and try again."
+            return self._error_response(request, "Too many requests", [error_msg])
+
         try:
             user = User.objects.get(email=email)
         except ObjectDoesNotExist:
@@ -385,23 +481,11 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
         domain = request.build_absolute_uri("/")[:-1]
         next_path = request.GET.get("next") or request.POST.get("next")
         callback_kwargs = {"uidb64": uid, "token": token}
-        # Use unified login link callback under /login/link/
         callback_url = reverse("qux_auth:login_link", kwargs=callback_kwargs)
         if next_path:
             callback_url = f"{callback_url}?next={next_path}"
 
-        hours = int(settings.PASSWORD_RESET_TIMEOUT / 3600)
-        minutes = int(settings.PASSWORD_RESET_TIMEOUT % 3600 / 60)
-
-        expiration_time = ""
-        if hours > 0:
-            expiration_time = f"{hours} hour{'' if hours == 1 else 's'}"
-        if minutes > 0:
-            expiration_time += (
-                f"{' and ' if hours > 0 else ''}"
-                + f"{minutes} minute{'' if minutes == 1 else 's'}"
-            )
-
+        expiration_time = self._get_expiration_time_str()
         message = render_to_string(
             "magic_link_email.html",
             {
@@ -419,17 +503,7 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
         email_obj.content_subtype = "html"
         email_obj.send()
 
-        return render(
-            request,
-            "message.html",
-            {
-                "title": "Check your email",
-                "messages": [
-                    f"We sent a magic link to <b>{email}</b>. It expires in {expiration_time}.",
-                    "Check spam if you do not see it in a couple of minutes.",
-                ],
-            },
-        )
+        return self._success_response(request, email)
 
 
 class MagicLinkLoginView(SEOMixin, View):

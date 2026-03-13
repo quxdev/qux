@@ -6,7 +6,36 @@
 {% block form_body %}
     <form method="post">
         {% csrf_token %}
-        {% include "forms/_field.html" %}
+
+        {# Hidden fields including timestamp #}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+
+        {# Honeypot field - completely removed from flow #}
+        <div style="position: absolute; left: -5000px; top: -5000px;" aria-hidden="true">
+            {{ form.phone_number }}
+        </div>
+
+        {# Visible fields excluding honeypot #}
+        {% for field in form.visible_fields %}{% if field.name != 'phone_number' and field.name != 'render_ts' %}
+            <div class="row form-group">
+                <div class="col">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        {{ field.label }}
+                        {% if field.field.required %}<span style="color: red;">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}{% endfor %}
+
         <div class="d-grid gap-2">
             <button type="submit" class="btn btn-outline-primary my-3">{{ submit_btn_text }}</button>
         </div>

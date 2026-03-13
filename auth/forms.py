@@ -1,3 +1,4 @@
+import time
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import (
@@ -191,6 +192,27 @@ class MagicLinkRequestForm(forms.Form):
             }
         ),
     )
+
+    # Honeypot field - should be hidden via CSS in template
+    phone_number = forms.CharField(
+        label=None,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": "d-none",
+                "tabindex": "-1",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    # Timestamp field to track render time
+    render_ts = forms.FloatField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["render_ts"].initial = time.time()
 
 
 class CompleteProfileForm(forms.ModelForm):
