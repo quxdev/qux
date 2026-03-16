@@ -364,10 +364,9 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
         return super().get(request)
 
     def _get_fingerprint(self, request):
-        ip = (
-            request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
-            or request.META.get("REMOTE_ADDR", "")
-        )
+        ip = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[
+            0
+        ].strip() or request.META.get("REMOTE_ADDR", "")
         ua = request.META.get("HTTP_USER_AGENT", "")
         return hashlib.sha256(f"{ip}:{ua}".encode()).hexdigest()
 
@@ -409,9 +408,11 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
     def _error_response(self, request, title, error_messages):
         return render(
             request,
-            "bs5/message.html"
-            if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
-            else "message.html",
+            (
+                "bs5/message.html"
+                if getattr(settings, "BOOTSTRAP", "bs4") == "bs5"
+                else "message.html"
+            ),
             {
                 "title": title,
                 "messages": error_messages,
@@ -440,22 +441,37 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
             return self.render_to_response({"form": form})
 
         email = form.cleaned_data["email"].strip().lower()
-        website = form.cleaned_data.get("website")
         render_ts = form.cleaned_data.get("render_ts")
         now = time.time()
 
         # 1. Honeypot check
         if form.cleaned_data.get("phone_number"):
-            logging.warning(f"Bot detected via honeypot (phone_number field): {email} from {request.META.get('REMOTE_ADDR')}")
+            logging.warning(
+                f"Bot detected via honeypot (phone_number field): {email} from {request.META.get('REMOTE_ADDR')}"
+            )
             return self._success_response(request, email)
 
         # 2. Timing check (Silent)
         min_time = getattr(settings, "MAGIC_LINK_MIN_SUBMIT_TIME", 2)
         if render_ts and (now - render_ts) < min_time:
-            logging.warning(f"Bot detected via timing: {email} submitted in {now - render_ts:.2f}s")
+            logging.warning(
+                f"Bot detected via timing: {email} submitted in {now - render_ts:.2f}s"
+            )
             return self._success_response(request, email)
 
-        # 3. Rate limiting (Transparent to users)
+        # 3. Domain check
+        blocked_domains = getattr(settings, "BLOCKED_DOMAIN_FOR_MAGIC_LINK", [])
+        email_domain = email.split("@")[-1] if "@" in email else ""
+        if email_domain in blocked_domains:
+            logging.warning(
+                f"Domain blocked for magic link: {email} from {request.META.get('REMOTE_ADDR')}"
+            )
+            error_msg = f"Magic links are not available for personal email addresses."
+            return self._error_response(
+                request, "Please use your work email", [error_msg]
+            )
+
+        # 4. Rate limiting (Transparent to users)
         limited, is_email_limit = self._is_rate_limited(request, email)
         if limited:
             error_msg = "You have requested too many magic links. Please wait an hour and try again."
