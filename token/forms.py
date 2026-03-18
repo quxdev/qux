@@ -10,11 +10,14 @@ class CustomTokenForm(forms.ModelForm):
             "name",
         ]
 
-    def save(self, commit=None, user=None):  # pylint: disable=unused-argument
+    def save(self, commit=True, user=None):
         newform = super().save(commit=False)
         if user:
             newform.user = user
-        newform.save()
+
+        if commit:
+            newform.save()
+
         return newform
 
     name = forms.CharField(
