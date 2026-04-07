@@ -32,7 +32,7 @@
                                            font-weight: 700;
                                            font-size: 28px;
                                            color: #0f172a;
-                                           text-align: center">Use this code to sign in</h2>
+                                           text-align: center">Use this <strong>login code</strong> to sign in</h2>
                                 <p style="margin: 0 0 16px;
                                           font-size: 16px;
                                           color: #334155;
@@ -47,19 +47,21 @@
                                           font-size: 16px;
                                           color: #334155;
                                           line-height: 1.6">
-                                    You requested a login code for your CLI—here it is. This code expires in <strong>{{ expiration_time }}</strong>.
+                                    You requested a <strong>login code</strong> for your CLI—here it is. This <strong>code</strong> expires in <strong>{{ expiration_time }}</strong>.
                                 </p>
                                 <div style="text-align: center; margin: 32px 0;">
                                     <div style="display: inline-block;
-                                               background-color: #f1f5f9;
-                                               color: #0f172a;
-                                               padding: 24px 48px;
-                                               border-radius: 12px;
-                                               font-weight: 800;
-                                               font-size: 48px;
-                                               letter-spacing: 8px;
+                                               background-color: hsl(152, 69%, 31%);
+                                               color: #ffffff;
+                                               padding: 16px 32px;
+                                               border-radius: 8px;
+                                               font-weight: 700;
+                                               font-size: 32px;
+                                               letter-spacing: 4px;
                                                text-align: center;
-                                               border: 2px solid #e2e8f0;
+                                               min-width: 200px;
+                                               user-select: all;
+                                               -webkit-user-select: all;
                                                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
                                         {{ otp }}
                                     </div>
@@ -77,7 +79,7 @@
                     <p style="margin: 24px 0 0;
                               font-size: 12px;
                               color: #64748b;
-                              text-align: center">© {% now "Y" %} {{ domain }} · All rights reserved</p>
+                              text-align: center">© {% now "Y" %} <a href="{{ domain }}" style="color: #64748b; text-decoration: none;">{{ domain }}</a> · All rights reserved</p>
                 </td>
             </tr>
         </table>

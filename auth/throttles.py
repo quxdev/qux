@@ -16,9 +16,9 @@ class OTPRequestIPThrottle(SimpleRateThrottle):
 
 
 class OTPRequestEmailThrottle(SimpleRateThrottle):
-    """Limit OTP request attempts per email address to 3 per 15 minutes."""
+    """Limit OTP request attempts per email address to 3 per hour."""
 
-    rate = "3/15m"
+    rate = "3/hour"
 
     def get_cache_key(self, request, view):
         email = request.data.get("email")
@@ -26,9 +26,9 @@ class OTPRequestEmailThrottle(SimpleRateThrottle):
 
 
 class OTPVerifyThrottle(SimpleRateThrottle):
-    """Limit OTP verification attempts per email to 5 per minute."""
+    """Limit OTP verification attempts per email to 3 per minute."""
 
-    rate = "5/min"
+    rate = "3/minute"
 
     def get_cache_key(self, request, view):
         email = request.data.get("email")
