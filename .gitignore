@@ -8,11 +8,18 @@ data/
 
 # Django
 __pycache__/
-static/
 upload/
 db.sqlite3
 models*.pdf
 models*.png
+
+# Vendored static is unpacked from src/qux/_assets/bundles/ at install time.
+# Tracked source: the bundle .zip files. Unpacked outputs are gitignored.
+src/qux/static/bootstrap-icons/
+src/qux/static/bootstrap/
+src/qux/static/select2/
+src/qux/static/fonts/
+src/qux/static/.qux-bundles/
 
 # Python
 *.py[cod]
@@ -38,7 +45,6 @@ lib/
 lib64/
 parts/
 sdist/
-src/
 var/
 wheels/
 *.egg

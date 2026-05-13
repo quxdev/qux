@@ -1,0 +1,217 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qux"
+dynamic = ["version"]
+description = "Reusable Django app: augmented models, template tags, auth (incl. magic link/OTP), DRF logging, SEO, webhooks, utilities."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Qux contributors" }]
+keywords = ["django", "drf", "auth", "magic-link", "otp", "seo", "templates", "utilities"]
+classifiers = [
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+]
+
+dependencies = [
+    "Django>=4.2",
+    "djangorestframework>=3.14",
+    "beautifulsoup4>=4.12",
+    "phonenumbers>=8.13",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+numpy = ["numpy>=1.26"]
+# AWS SES via django-ses (boto3 + IAM creds, no SMTP). Required by
+# qux.backends.email.SESBackend.
+ses = ["django-ses>=4"]
+dev = [
+    "qux[numpy,ses]",
+    "django-impersonate>=1.9",
+    "black>=24.0",
+    "isort>=5.13",
+    "ruff>=0.6",
+    "import-linter>=2.0",
+    "pylint>=3.0",
+    "pylint-django>=2.5",
+    "build>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/quxdev/qux"
+Source = "https://github.com/quxdev/qux"
+
+[project.scripts]
+# Manual fallback for unpacking vendored static asset bundles. setup.py
+# cmdclass hooks fire automatically on `pip install -e` / `pip install` for
+# most setuptools versions; this command exists for the cases where they
+# don't (PEP 660 backend gaps, alternative installers like uv).
+qux-install-assets = "qux._assets.install:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["qux*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"qux" = [
+    "**/templates/**/*.html",
+    "**/static/**/*",
+    "**/fixtures/**/*",
+    "**/migrations/*.py",
+    "templates/**/*.html",
+    "static/**/*",
+    "fixtures/**/*",
+    # Vendored asset bundles must ship inside the package so the
+    # qux-install-assets script and apps.QuxConfig.ready() can find them.
+    "_assets/bundles/*.zip",
+]
+
+# Exclude bundled-vendor unpack targets from the wheel. The bundle .zip ships;
+# the unpacked tree is created at install-time by qux.apps.QuxConfig.ready()
+# (or qux-install-assets).
+[tool.setuptools.exclude-package-data]
+"qux" = [
+    "static/bootstrap-icons/*",
+    "static/bootstrap-icons/**/*",
+    "static/bootstrap/*",
+    "static/bootstrap/**/*",
+    "static/select2/*",
+    "static/select2/**/*",
+    "static/fonts/*",
+    "static/fonts/**/*",
+    "static/.qux-bundles/*",
+]
+
+# ---- Tooling configuration ----
+# Always run isort before black. Running them in the other order can leave a
+# layout that black would have re-wrapped after isort's import-block rearrangement.
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+extend-exclude = '''
+/(
+  | \.git
+  | __pycache__
+  | venv
+  | qux\.egg-info
+  | src/qux/static
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["qux"]
+known_django = ["django"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+src_paths = ["src"]
+skip = ["venv", "qux.egg-info", "src/qux/static", "migrations"]
+
+# Import-linter contracts — enforce qux's architectural intent.
+# Run with: lint-imports --config pyproject.toml
+[tool.importlinter]
+root_packages = ["qux"]
+
+[[tool.importlinter.contracts]]
+name = "Utilities don't depend on apps"
+type = "forbidden"
+source_modules = ["qux.utils"]
+forbidden_modules = [
+    "qux.auth",
+    "qux.seo",
+    "qux.token",
+    "qux.qhook",
+    "qux.contacts",
+    "qux.telemetry",
+    "qux.drf",
+    "qux.pagespeed",
+    "qux.sitespeed",
+]
+
+[[tool.importlinter.contracts]]
+name = "Apps stay independent"
+type = "forbidden"
+source_modules = ["qux.qhook", "qux.contacts", "qux.telemetry", "qux.pagespeed", "qux.sitespeed"]
+forbidden_modules = ["qux.auth", "qux.token", "qux.seo", "qux.drf"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["src/qux/static", "src/qux/_assets/bundles", "src/qux.egg-info"]
+
+[tool.ruff.lint]
+# E,F = pyflakes + pycodestyle baseline. UP = pyupgrade. B = flake8-bugbear.
+# SIM = flake8-simplify. RET = flake8-return. G = flake8-logging-format.
+# I = isort. PLC = a few pylint convention checks that ruff implements natively.
+select = ["E", "F", "I", "UP", "B", "SIM", "RET", "G", "PLC"]
+# E501 (line-too-long) is black/ruff-format's job; let the formatter own width.
+# UP032 (use f-string) conflicts with G004 in logging — keep G004's lazy %-format.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use assert / etc. without lint pressure.
+"**/tests/**" = ["B011"]
+# __init__.py re-exports legitimately import "unused" symbols.
+"**/__init__.py" = ["F401"]
+# Django AppConfig.ready() must defer model-touching imports until Django
+# has finished loading apps — top-level model imports trigger
+# AppRegistryNotReady during INSTALLED_APPS processing.
+"**/drf/log/apps.py" = ["PLC0415"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["qux"]
+section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.isort.sections]
+django = ["django"]
+
+[tool.pylint.main]
+load-plugins = ["pylint_django"]
+django-settings-module = "qux.tests.settings"
+fail-under = 10
+py-version = "3.10"
+jobs = 0
+
+[tool.pylint.MASTER]
+# Honored by scripts/check_docs.py to skip drift findings inside vendored trees.
+ignore-paths = [
+    "src/qux/static/",
+    "src/qux/_assets/bundles/",
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-few-public-methods",
+]

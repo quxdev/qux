@@ -1,0 +1,226 @@
+import time
+
+from django import forms
+from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms import ValidationError
+
+User = get_user_model()
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(
+        label="Email address",
+        widget=forms.TextInput(
+            attrs={"class": "form-control foo-border", "placeholder": "email@qux.dev"}
+        ),
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control foo-border", "placeholder": "password"}
+        ),
+    )
+
+    error_messages = {
+        "invalid_login": (
+            "Please enter a correct %(username)s and password. "
+            "Note that both fields may be case-sensitive."
+        ),
+        "inactive": "This account is inactive.",
+    }
+
+    def clean_username(self):
+        username = self.data["username"]
+        if "@" in username:
+            try:
+                username = User.objects.get(email=username).username
+            except ObjectDoesNotExist as exception:
+                raise ValidationError(
+                    self.error_messages["invalid_login"],
+                    code="invalid_login",
+                    params={"username": self.username_field.verbose_name},
+                ) from exception
+        return username
+
+
+class BaseSignupForm(UserCreationForm):
+    email = forms.EmailField(
+        label="Email address",
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control foo-border",
+                "placeholder": "Enter valid email address",
+                "autocomplete": "email",
+            }
+        ),
+        help_text="Required",
+    )
+
+    class Meta:
+        model = User
+        fields = ("email", "password1", "password2")
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("A user with that email address already exists.")
+        return email
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password1"].widget.attrs.update(
+            {"class": "form-control foo-border", "placeholder": "Enter password"}
+        )
+        self.fields["password2"].widget.attrs.update(
+            {
+                "class": "form-control foo-border",
+                "placeholder": "Enter same password again",
+            }
+        )
+
+
+class SignupForm(BaseSignupForm):
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update(
+            {
+                "class": "form-control foo-border",
+                "placeholder": "enter username or email address",
+            }
+        )
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+    new_password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super().__init__(*args, **kwargs)
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data.get("old_password")
+        if not old_password:
+            raise forms.ValidationError("Enter valid password")
+        if not self.user.check_password(old_password):
+            raise forms.ValidationError("Your password doesn't match")
+        return old_password
+
+    def clean(self):
+        new_pass = self.cleaned_data.get("new_password")
+        if not new_pass:
+            raise forms.ValidationError({"new_password": "Please enter a new password"})
+
+        confirm_pass = self.cleaned_data.get("confirm_password")
+        if not new_pass == confirm_pass:
+            raise forms.ValidationError(
+                {"confirm_password": "New passwords do not match each other"}
+            )
+
+        return self.cleaned_data
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(
+        label="Email address",
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control foo-border",
+                "placeholder": "email@qux.dev",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control foo-border", "autocomplete": "new-password"}
+        ),
+        strip=False,
+        help_text=password_validation.password_validators_help_text_html(),
+    )
+    new_password2 = forms.CharField(
+        label="Confirm new password",
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control foo-border", "autocomplete": "new-password"}
+        ),
+        strip=False,
+    )
+
+
+class MagicLinkRequestForm(forms.Form):
+    email = forms.EmailField(
+        label="Email address",
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control foo-border",
+                "placeholder": "email@example.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+    # Honeypot field - should be hidden via CSS in template
+    phone_number = forms.CharField(
+        label=None,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": "d-none",
+                "tabindex": "-1",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    # Timestamp field to track render time
+    render_ts = forms.FloatField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["render_ts"].initial = time.time()
+
+
+class CompleteProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name"]
+        widgets = {
+            "first_name": forms.TextInput(
+                attrs={"class": "form-control foo-border", "placeholder": "First name"}
+            ),
+            "last_name": forms.TextInput(
+                attrs={"class": "form-control foo-border", "placeholder": "Last name"}
+            ),
+        }

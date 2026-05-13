@@ -1,68 +1,30 @@
 #!/usr/bin/env python
+"""Run the qux test suite without installing the package.
+
+Adds src/ to sys.path so `import qux` resolves to the working tree, points
+DJANGO_SETTINGS_MODULE at `qux.tests.settings`, and runs the discovered tests.
+
+Equivalent installed-mode invocation (after `pip install -e '.[dev]'`):
+
+    DJANGO_SETTINGS_MODULE=qux.tests.settings django-admin test qux.<app>
+"""
+import os
 import sys
 
-import django
-from django.conf import settings
-from django.test.utils import get_runner
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_HERE, "src"))
 
-settings.configure(
-    SECRET_KEY="test-secret-key-do-not-use-in-production",
-    INSTALLED_APPS=[
-        "django.contrib.contenttypes",
-        "django.contrib.auth",
-        "django.contrib.sessions",
-        "django.contrib.messages",
-        "django.contrib.sites",
-        "django.contrib.admin",
-        "rest_framework",
-        "impersonate",
-        "qux",
-        "qux.auth",
-        "qux.seo",
-        "qux.token",
-        "qux.qhook",
-        "qux.drf.log",
-        "qux.contacts",
-        "qux.tests",
-    ],
-    MIDDLEWARE=[
-        "django.contrib.sessions.middleware.SessionMiddleware",
-        "django.contrib.auth.middleware.AuthenticationMiddleware",
-        "django.contrib.messages.middleware.MessageMiddleware",
-    ],
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    },
-    DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
-    DEBUG=True,
-    SITE_ID=1,
-    ROOT_URLCONF="qux.tests.urls",
-    BASE_DIR="/tmp/qux_test",
-    TEMPLATES=[
-        {
-            "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [],
-            "APP_DIRS": True,
-            "OPTIONS": {
-                "context_processors": [
-                    "django.template.context_processors.request",
-                    "django.contrib.auth.context_processors.auth",
-                    "django.contrib.messages.context_processors.messages",
-                ],
-            },
-        },
-    ],
-    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
-    ROOT_TEMPLATE="_blank.html",
-    STATIC_URL="/static/",
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "qux.tests.settings")
+
+import django  # noqa: E402
+from django.conf import settings  # noqa: E402
+from django.test.utils import get_runner  # noqa: E402
+
 django.setup()
 
+verbosity = int(os.environ.get("QUX_TEST_VERBOSITY", "1"))
 TestRunner = get_runner(settings)
-test_runner = TestRunner(verbosity=2)
+test_runner = TestRunner(verbosity=verbosity)
 failures = test_runner.run_tests(
     [
         "qux.tests",
@@ -70,7 +32,6 @@ failures = test_runner.run_tests(
         "qux.seo.tests",
         "qux.token.tests",
         "qux.qhook.tests",
-        "qux.logger.tests",
         "qux.drf.log.tests",
     ]
 )
