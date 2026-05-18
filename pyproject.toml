@@ -183,6 +183,9 @@ ignore = ["E501"]
 # has finished loading apps — top-level model imports trigger
 # AppRegistryNotReady during INSTALLED_APPS processing.
 "**/drf/log/apps.py" = ["PLC0415"]
+# APIRequestLogDBHandler defers model import to first emit() so the class
+# can be referenced in LOGGING config before django.setup() completes.
+"**/drf/log/handlers.py" = ["PLC0415"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["qux"]
@@ -207,6 +210,12 @@ ignore-paths = [
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.pylint.imports]
+# qux.drf.log.handlers defers this import to first emit() to avoid
+# AppRegistryNotReady when the handler class is referenced in LOGGING config
+# before django.setup() completes.
+allow-any-import-level = ["qux.drf.log.models"]
 
 [tool.pylint."messages control"]
 disable = [
