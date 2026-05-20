@@ -3,6 +3,7 @@ import logging
 import time
 from datetime import datetime, timezone
 from typing import cast
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
@@ -538,7 +539,7 @@ class MagicLinkRequestView(SEOMixin, TemplateView):
         callback_kwargs = {"uidb64": uid, "token": token}
         callback_url = reverse("qux_auth:login_link", kwargs=callback_kwargs)
         if next_path:
-            callback_url = f"{callback_url}?next={next_path}"
+            callback_url = f"{callback_url}?{urlencode({'next': next_path})}"
 
         expiration_time = self._get_expiration_time_str()
         magic_link_url = domain + callback_url

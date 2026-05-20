@@ -42,7 +42,7 @@
     <div class="form-container text-muted mx-auto my-4">
         We’ll email you a magic link for a password‑free sign‑in.
         <br />
-        Prefer to use your password? <a href="{% url "qux_auth:login" %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}"
+        Prefer to use your password? <a href="{% url "qux_auth:login" %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
     class="text-primary font-weight-bold">Sign in with a password</a>.
     </div>
 {% endblock form_body %}

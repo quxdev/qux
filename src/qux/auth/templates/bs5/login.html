@@ -22,14 +22,14 @@
   </form>
   {% if "SHOW_USERNAME_SIGNUP"|getconfig:False %}
     <div class="form-container text-muted mx-auto my-4">
-      <a href="{% url "qux_auth:signup" %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+      <a href="{% url "qux_auth:signup" %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
         New? Create an account
       </a>
     </div>
   {% endif %}
   {% if "USE_MAGIC_LINK"|getconfig:False %}
     <div class="form-container text-muted mx-auto my-2">
-      Want a faster sign‑in? <a href="{% url "qux_auth:magic_link" %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}"
+      Want a faster sign‑in? <a href="{% url "qux_auth:magic_link" %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
     class="text-primary font-weight-bold">Get a magic link</a> sent to your email.
     </div>
   {% endif %}
