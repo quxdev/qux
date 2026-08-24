@@ -5,9 +5,11 @@ and swallowed so a broken sub-system can't prevent the rest of qux from loading)
 
 1. Set ``boot_id`` ContextVar (anonymous per-process correlation key).
 2. Unpack vendored static asset bundles (``src/qux/_assets/bundles/*.zip``).
-3. Emit ``qux.startup`` (HTTP servers only) and ``qux.config.loaded`` lifecycle events.
-4. Register a ``post_migrate`` handler that emits ``qux.migration.applied`` for qux apps.
-5. Validate ``MIDDLEWARE`` ordering: ``QuxRequestIdMiddleware`` should be at index 0.
+3. Register the qux system checks (``qux.checks``), so a missing asset surfaces
+   as ``qux.W001`` on every ``manage.py check`` / ``collectstatic`` / ``runserver``.
+4. Emit ``qux.startup`` (HTTP servers only) and ``qux.config.loaded`` lifecycle events.
+5. Register a ``post_migrate`` handler that emits ``qux.migration.applied`` for qux apps.
+6. Validate ``MIDDLEWARE`` ordering: ``QuxRequestIdMiddleware`` should be at index 0.
 
 Asset unpack can be re-triggered manually via:
 
@@ -19,6 +21,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from importlib import import_module
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 from uuid import uuid4
@@ -69,6 +72,7 @@ class QuxConfig(AppConfig):
     def ready(self) -> None:
         self._setup_boot_id()
         self._setup_assets()
+        self._register_checks()
         self._setup_telemetry_lifecycle()
         self._validate_middleware_ordering()
 
@@ -82,6 +86,18 @@ class QuxConfig(AppConfig):
             install_all()
         except Exception as exc:
             _log.warning("qux asset unpack failed: %s; run `qux-install-assets`", exc)
+
+    def _register_checks(self) -> None:
+        """Import qux.checks — importing is what registers the check functions.
+
+        ``import_module`` rather than ``from qux import checks``: the latter
+        reads as an unused import to linters, since the registration is the
+        side effect.
+        """
+        try:
+            import_module("qux.checks")
+        except Exception as exc:
+            _log.warning("qux system checks not registered: %s", exc)
 
     def _setup_telemetry_lifecycle(self) -> None:
         """Emit qux.startup (HTTP servers) and qux.config.loaded lifecycle events.

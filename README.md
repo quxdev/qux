@@ -11,13 +11,13 @@ qux/                        ← repo root
   pyproject.toml            ← package metadata; dynamic version from VERSION
   VERSION                   ← single source of truth for package version
   README.md
+  CHANGELOG.md              ← per-release notes, newest first
   MIGRATION.md              ← downstream upgrade guide
   runtests.py
   setup.py                  ← cmdclass shim for asset unpack on install
   docs/
     SETTINGS.md             ← every Django setting qux reads
     plans/                  ← deferred design work
-    releases/               ← release notes
   scripts/
     migrate_qux_submodule.sh
   src/qux/                  ← THE package
@@ -32,7 +32,11 @@ qux/                        ← repo root
 
 Each subpackage's role is detailed in the [Subpackages table](#subpackages); each has its own `README.md`.
 
-Vendored third-party static (bootstrap-icons, bootstrap, select2, qux-fonts) ships as one zip per library under `src/qux/_assets/bundles/`. The unpacked tree is gitignored and recreated at install time by `qux.apps.QuxConfig.ready()` (idempotent via per-bundle marker files in `static/.qux-bundles/`). Manual re-trigger: `qux-install-assets`.
+Vendored third-party static (bootstrap-icons, bootstrap, select2, qux-fonts) ships as one zip per library under `src/qux/_assets/bundles/`. The unpacked tree is gitignored and recreated at install time by `qux.apps.QuxConfig.ready()` — idempotent via per-bundle marker files in `static/.qux-bundles/`, and a marker is believed only while the files it claims are still on disk. Manual re-trigger: `qux-install-assets`.
+
+On top of the versioned tree, `qux._assets.manifest.ALIASES` declares **stable paths** — `qux/js/bootstrap/`, `qux/css/bootstrap/`, `qux/css/fonts/bootstrap-icons*.css` — mirrored from the unpacked bundle at the same time. Downstream templates and stylesheets reference those, never a version literal, so a library bump is a change to `manifest.py` and a pin bump downstream, nothing else. The mirrors are generated output: gitignored, excluded from the wheel, rebuilt (and refreshed after a bump) on every boot.
+
+If anything the manifest declares is missing, the `qux.W001` system check names it on every `manage.py check`, `collectstatic`, and `runserver`, with `qux-install-assets` as the fix. Failure is loud on purpose: a project using `ManifestStaticFilesStorage` gets no unhashed fallback, so a silently skipped unpack is a sitewide 404. Details in [_assets/README.md](src/qux/_assets/README.md).
 
 ## Install
 
@@ -165,6 +169,10 @@ Runs the full suite (~640 tests, ~22s) with an in-memory SQLite database. No Dja
 ## Migrating from earlier versions
 
 If you're upgrading a downstream project from pre-May-2026 qux, read **[MIGRATION.md](MIGRATION.md)** first. The two changes that need attention: `Preference` / `Service` models removed from `qux.auth` (loud import error; downstream redefines them locally), and drf/log `LoggingMixin` no longer writes to `APIRequestLog` by default (silent behavior change; one-line LOGGING config addition restores the old behavior). Everything else is either zero-impact (verified zero downstream consumers) or a mechanical `qux.X → qux.utils.X` import rewrite documented in `MIGRATION.md §9`.
+
+## Release notes
+
+Per-release changes are in **[CHANGELOG.md](CHANGELOG.md)**, newest first. Releases before 0.8.3 predate the file; see `git log` and [MIGRATION.md](MIGRATION.md).
 
 ## Deferred work
 

@@ -1,9 +1,9 @@
 {% extends '_token.html' %}
-{% load static %}
+{% load static qux %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/listview.css' %}">
+  {% qux_static 'css/listview.css' lazy=False optional=True %}
 {% endblock stylesheets %}
 
 {% block ralph_headings %}

@@ -374,3 +374,28 @@ class QuxStaticTagTest(SimpleTestCase):
         result = qux_static("css/style.min.css", lazy=False)
         mock_find.assert_not_called()
         assert 'rel="stylesheet"' in result
+
+    @override_settings(DEBUG=True)
+    @patch("qux.templatetags.qux.static", return_value="/static/css/forms.css")
+    @patch("qux.templatetags.qux.staticfiles_find", return_value=None)
+    def test_optional_missing_renders_nothing(self, _mock_find, mock_static):
+        # A project theme hook qux references but does not ship. Under
+        # ManifestStaticFilesStorage a reference to an uncollected file is a
+        # hard 404, so the tag must render nothing at all.
+        result = qux_static("css/forms.css", lazy=False, optional=True)
+        assert result == ""
+        mock_static.assert_not_called()
+
+    @override_settings(DEBUG=True)
+    @patch("qux.templatetags.qux.static", return_value="/static/css/forms.css")
+    @patch("qux.templatetags.qux.staticfiles_find", return_value="/full/path/forms.css")
+    def test_optional_present_renders_link(self, _mock_find, _mock_static):
+        result = qux_static("css/forms.css", lazy=False, optional=True)
+        assert 'rel="stylesheet"' in result
+
+    @override_settings(DEBUG=True)
+    @patch("qux.templatetags.qux.static", return_value="/static/css/forms.css")
+    @patch("qux.templatetags.qux.staticfiles_find", return_value=None)
+    def test_non_optional_missing_still_renders(self, _mock_find, _mock_static):
+        result = qux_static("css/forms.css", lazy=False)
+        assert 'rel="stylesheet"' in result

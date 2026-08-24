@@ -21,6 +21,15 @@ src/qux/static/select2/
 src/qux/static/fonts/
 src/qux/static/.qux-bundles/
 
+# Stable-path mirrors of the unpacked bundle tree, generated from
+# manifest.ALIASES at install time. These were once tracked git symlinks into
+# the (gitignored) bundle tree — dangling in any clean checkout, so setuptools
+# dropped them from the wheel. Tracking them again would reintroduce that bug.
+src/qux/static/qux/js/bootstrap/
+src/qux/static/qux/css/bootstrap/
+src/qux/static/qux/css/fonts/bootstrap-icons.css
+src/qux/static/qux/css/fonts/bootstrap-icons.min.css
+
 # Python
 *.py[cod]
 *$py.class

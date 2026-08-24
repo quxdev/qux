@@ -162,7 +162,25 @@ class LinelessNode(template.Node):
 
 
 @register.simple_tag
-def qux_static(path, lazy=True):
+def qux_static(path, lazy=True, optional=False):
+    """Render a <link>/<script> tag for a static asset.
+
+    Args:
+        path: Static path, as given to ``{% static %}``.
+        lazy: Load without blocking render — ``media="print" onload`` for CSS,
+            ``defer`` for JS. Pass False for assets that must apply before first
+            paint.
+        optional: Render nothing when the file cannot be found. For project
+            theme hooks (``css/forms.css`` and friends) that qux references but
+            does not ship: under ``ManifestStaticFilesStorage`` a reference to a
+            file that was never collected is a hard 404 with no unhashed
+            fallback, so a project that supplies no such file would otherwise
+            take a broken asset on every page qux renders.
+
+    Returns:
+        The markup, or the URL for non-CSS/JS extensions, or "" when
+        ``optional`` and the file is absent.
+    """
     # Debug-aware min/max switching
     if not settings.DEBUG:
         name, ext = os.path.splitext(path)
@@ -170,6 +188,9 @@ def qux_static(path, lazy=True):
             min_path = f"{name}.min{ext}"
             if staticfiles_find(min_path):
                 path = min_path
+
+    if optional and not staticfiles_find(path):
+        return ""
 
     url = static(path)
     ext = os.path.splitext(path)[1].lower()

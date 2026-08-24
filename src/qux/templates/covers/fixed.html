@@ -2,7 +2,7 @@
 {% load qux %}
 
 {% block customstyle %}
-{% qux_static 'qux/css/qux_cover.css' %}
+{% qux_static 'qux/css/qux_cover.css' optional=True %}
 {% endblock %}
 
 {% block qux_content %}

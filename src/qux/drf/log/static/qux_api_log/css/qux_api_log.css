@@ -1,0 +1,22 @@
+/* Sizing for the API request-log chart on the admin change_list page.
+ *
+ * The chart is Chart.js with `maintainAspectRatio: false`, which makes the
+ * canvas take its height from the container instead of from its own aspect
+ * ratio. Without a height here the container lays out zero pixels tall and the
+ * chart is invisible — which is exactly what happened while this stylesheet was
+ * referenced by the template but never shipped.
+ */
+
+#api-log-chart {
+  margin: 0 0 1.5rem;
+}
+
+#api-log-chart .api-log-chart-canvas {
+  position: relative;
+  height: 260px;
+}
+
+#api-log-chart canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

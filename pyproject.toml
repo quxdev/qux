@@ -104,6 +104,13 @@ namespaces = true
     "static/fonts/*",
     "static/fonts/**/*",
     "static/.qux-bundles/*",
+    # Stable-path mirrors generated from manifest.ALIASES at install time.
+    # Excluded for the same reason as the bundle tree: a wheel built on a
+    # machine that happens to have them would differ from one built clean.
+    "static/qux/js/bootstrap/*",
+    "static/qux/css/bootstrap/*",
+    "static/qux/css/fonts/bootstrap-icons.css",
+    "static/qux/css/fonts/bootstrap-icons.min.css",
 ]
 
 # ---- Tooling configuration ----

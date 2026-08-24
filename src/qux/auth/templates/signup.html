@@ -1,10 +1,10 @@
 {% extends 'forms/_form.html' %}
-{% load static %}
+{% load static qux %}
 {% load quxform %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  {% qux_static 'css/forms.css' lazy=False optional=True %}
 {% endblock stylesheets %}
 
 {% block form_title %}{{ form_title }}{% endblock %}

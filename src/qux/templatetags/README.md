@@ -15,6 +15,10 @@ Common ones (see source for the full list):
 - `{{ value|multiply:other }}` — multiply two values; returns None on TypeError.
 - `{{ items|get:key }}` — dict lookup that doesn't crash on missing key.
 - `{% qux_static_exists "path/to/file.svg" %}` — True if the file resolves through Django's staticfiles finders. Useful for "use the project's logo if present, fallback otherwise" templates.
+- `{% qux_static "css/app.css" lazy=True optional=False %}` — renders the whole `<link>` / `<script>` tag, not just a URL. Three behaviors worth knowing before swapping a `{% static %}` call for it:
+  - **Minified swap.** When `DEBUG` is False and a `.min` sibling of the path exists, the `.min` file is served instead. A project shipping both `app.css` and `app.min.css` gets the minified one.
+  - **`lazy`** (default True) loads without blocking render — `media="print" onload` for CSS, `defer` for JS. Pass `lazy=False` for anything that must apply before first paint.
+  - **`optional`** (default False) renders nothing when the file cannot be found. This is for theme hooks qux references but does not ship (`css/forms.css`, `css/listview.css`, the cover assets): under `ManifestStaticFilesStorage` a reference to a file that was never collected is a hard 404 with no fallback, so a project that supplies no such file would otherwise take a broken asset on every qux-rendered page.
 
 ## `quxform.py` — form-rendering helpers
 

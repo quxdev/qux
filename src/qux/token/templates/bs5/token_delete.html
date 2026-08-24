@@ -1,9 +1,9 @@
 {% extends 'app/_app_hform.html' %}
-{% load static %}
+{% load static qux %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  {% qux_static 'css/forms.css' lazy=False optional=True %}
 {% endblock stylesheets %}
 
 {% block form_title %}Manage Key{% endblock %}

@@ -3,7 +3,7 @@
 
 {% block javascript %}
 {{ block.super }}
-{% qux_static 'qux/js/qux/qux_cover.js' %}
+{% qux_static 'qux/js/qux/qux_cover.js' optional=True %}
 {% endblock javascript %}
 
 {% block customstyle %}
